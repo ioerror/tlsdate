@@ -271,7 +271,7 @@ main(int argc, char **argv)
   if (ca_racket)
   {
     // Tor Project HTTPS server
-    BIO_set_conn_hostname(s_bio, "check.torproject.org:443");
+    BIO_set_conn_hostname(s_bio, "www.torproject.org:443");
   } else {
     // Tor Directory Authority OR port
     BIO_set_conn_hostname(s_bio, "rgnx.net:80");
