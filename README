@@ -1,0 +1,17 @@
+This is an example run - starting as root and dropping to nobody:
+
+  % sudo ./tlsdate -v
+  V: tlsdate version 0.1
+  V: We were called with the following arguments:
+  V: verbose = 1, help = 0
+  V: time is currently 1325865059 sec and 671981 usec
+  V: SSL_get_peer_certificate returned
+  V: verification OK: 0
+  V: ssl_verify_result returned 0
+  V: server_random fetched in 0 sec
+  V: server_random with ntohl is: 1325865060 and 0 usec
+  V: setting time returned: 0
+  tlsdate: SUCCESS
+
+"It's a piece of shit but It Works." - this is not yet secure and it needs
+an audit before it should be used for anything, ever.
