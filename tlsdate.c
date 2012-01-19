@@ -10,11 +10,14 @@
 /*
  * tlsdate is a tool for setting the system clock by hand or by communication
  * with the network. It does not set the RTC. It is designed to be as secure as
- * TLS (RFC 2246) and additionally as secure as the Tor protocol itself. This
- * tool is designed to be run by hand or as a system daemon. It may be run by
- * Tor at a later date but unless tlsdate has the proper caps, it will not be
- * able to set the system time without running as root or another privileged
- * user.
+ * TLS (RFC 2246) but of course the security of TLS is often reduced to
+ * whichever CA racket you believe is trustworthy. By default, tlsdate trusts
+ * your local CA root store - so any of these companies could assist in a MITM
+ * attack against you and you'd be screwed.
+
+ * This tool is designed to be run by hand or as a system daemon. It must be
+ * run as root or otherwise have the proper caps; it will not be able to set
+ * the system time without running as root or another privileged user.
  */
 
 #include <stdio.h>
