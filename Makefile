@@ -1,7 +1,7 @@
 build:
 	gcc -g -O2 -Wall -fno-strict-aliasing -lcap -lz -lm -lssl -lcrypto -lrt -ldl -o tlsdate tlsdate.c
 
-install:
+install: build
 	install -o root -m 755 tlsdate $(DESTDIR)/usr/sbin/tlsdate
 
 uninstall:
