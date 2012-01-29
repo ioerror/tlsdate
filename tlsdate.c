@@ -134,11 +134,22 @@ int switch_uid(struct passwd *pw)
   return r;
 }
 
-int chroot_tmp(void)
+/** create a temp directory, chroot into it, and chdir to the new root. */
+char chroot_tmp(void)
 {
+  // XXX TODO: this file is left behind - we should unlink it somehow
+  char template[] = "/tmp/tlsdate_XXXXXX";
+  char *tmp_dir;
   int r = 0;
-  r = chroot("/tmp/");
+  tmp_dir = mkdtemp(template);
+  if (tmp_dir == NULL)
+    exit(23);
+  r = chroot(tmp_dir);
+  if (r != 0)
+   exit(23);
   r = chdir("/");
+  if (r != 0)
+   exit(23);
   return r;
 }
 
