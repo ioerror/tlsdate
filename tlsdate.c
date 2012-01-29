@@ -327,7 +327,8 @@ main(int argc, char **argv)
   memcpy(&server_time_tmp, ssl->s3->server_random, 4);
   server_time.tv_sec = ntohl(server_time_tmp);
   if (tlsdate_options.verbose)
-    fprintf(stdout, "V: server_random with ntohl is: %lu and 0 usec\n", server_time.tv_sec);
+    fprintf(stdout, "V: server_random with ntohl is: %lu.0\n",
+            (unsigned long)server_time.tv_sec);
 
   // Set the time absolutely...
   // r = set_absolute_time(&server_time);
