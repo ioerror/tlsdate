@@ -234,8 +234,8 @@ main(int argc, char **argv)
   /* Get the current time from the system clock. */
   gettimeofday(&timeval, NULL);
   if (tlsdate_options.verbose)
-    fprintf(stderr, "V: time is currently %lu sec and %lu usec\n", timeval.tv_sec,
-                                                                   timeval.tv_usec);
+    fprintf(stderr, "V: time is currently %lu.%06lu\n",
+            (unsigned long)timeval.tv_sec, (unsigned long)timeval.tv_usec);
 
   ctx = SSL_CTX_new(SSLv23_client_method());
   if (ctx == NULL)
