@@ -1,8 +1,15 @@
+# Debug and hardening flags all in one shot
+CFLAGS = -g -O1 -Wall -fno-strict-aliasing \
+ -D_FORTIFY_SOURCE=2 -fstack-protector-all \
+ -fwrapv -fPIE -Wstack-protector \
+ --param ssp-buffer-size=1
+LDFLAGS = -pie -z relro -z now
+
 build:
-	gcc -g -O2 -Wall -fno-strict-aliasing -lcap -lz -lm -lssl -lcrypto -lrt -ldl -o tlsdate tlsdate.c
+	gcc $(CFLAGS) $(LDFLAGS) -lcap -lssl -o tlsdate tlsdate.c
 
 install: build
-	install -o root -m 755 tlsdate $(DESTDIR)/usr/sbin/tlsdate
+	install --strip -o root -m 755 tlsdate $(DESTDIR)/usr/sbin/tlsdate
 	cp tlsdate.1 $(DESTDIR)/usr/share/man/man1/
 
 uninstall:
