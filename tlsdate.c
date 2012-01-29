@@ -283,10 +283,7 @@ main(int argc, char **argv)
   // XXX TODO: this should happen way way before here...
   r = drop_privs();
   if (r != 0)
-  {
-    fprintf(stderr, "drop_privs() failed\n");
-    exit(23);
-  }
+    die("drop_privs() failed: %s\n", strerror(errno));
 
   gettimeofday(&start_timeval, NULL);
   r = BIO_do_handshake(s_bio);
