@@ -55,6 +55,17 @@
 #define tlsdate_version "0.1"
 #define UNPRIV_USER "nobody"
 
+static void
+die(char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  va_end(ap);
+  exit(1);
+}
+
 /** Return the proper commandline switches when the user needs information. */
 static void
 usage(void)
@@ -86,56 +97,46 @@ int set_adj_time(const struct timeval *delta, struct timeval *olddelta)
 }
 
 // Drop all caps except CAP_SYS_TIME
-int drop_caps(void)
+void drop_caps(void)
 {
   int r = 0;
   cap_t caps;
-
   cap_value_t needed_caps[1] = {CAP_SYS_TIME};
+
   caps = cap_init();
   if (caps == NULL)
-  {
-    fprintf(stderr, "cap_init() failed\n");
-    exit(23);
-  }
+    die("cap_init: %s\n", strerror(errno));
   r = cap_set_flag(caps, CAP_EFFECTIVE, 1, needed_caps, CAP_SET);
   if (r != 0)
-  {
-    fprintf(stderr, "cap_set_flag() failed\n");
-    exit(23);
-  }
+    die("cap_set_flag() failed\n");
   r = cap_set_flag(caps, CAP_PERMITTED, 1, needed_caps, CAP_SET);
   if (r != 0)
-  {
-    fprintf(stderr, "cap_set_flag() failed\n");
-    exit(23);
-  }
+    die("cap_set_flag: %s\n", strerror(errno));
   r = cap_set_proc(caps);
   if (r != 0)
-  {
-    fprintf(stderr, "cap_set_proc() failed\n");
-    exit(23);
-  }
+    die("cap_set_proc: %s\n", strerror(errno));
   r = cap_free(caps);
   if (r != 0)
-  {
-    fprintf(stderr, "cap_free() failed\n");
-    exit(23);
-  }
-  return r;
+    die("cap_free: %s\n", strerror(errno));
 }
 
-int switch_uid(struct passwd *pw)
+void switch_uid(struct passwd *pw)
 {
-  int r = 0;
+  int r;
+
   r = setgid(pw->pw_gid);
+  if (r != 0)
+    die("setgid(%d): %s\n", (int)pw->pw_gid, strerror(errno));
   r = initgroups(UNPRIV_USER, pw->pw_gid);
+  if (r != 0)
+    die("initgroups: %s\n", strerror(errno));
   r = setuid(pw->pw_uid);
-  return r;
+  if (r != 0)
+    die("setuid(%d): %s\n", (int)pw->pw_uid, strerror(errno));
 }
 
 /** create a temp directory, chroot into it, and chdir to the new root. */
-int chroot_tmp(void)
+void chroot_tmp(void)
 {
   // XXX TODO: this file is left behind - we should unlink it somehow
   char template[] = "/tmp/tlsdate_XXXXXX";
@@ -143,14 +144,14 @@ int chroot_tmp(void)
   int r = 0;
   tmp_dir = mkdtemp(template);
   if (tmp_dir == NULL)
-    exit(23);
+    die("mkdtemp(%s): %s\n", template, strerror(errno));
   r = chroot(tmp_dir);
   if (r != 0)
-   exit(23);
+    die("chroot(%s): %s\n", tmp_dir, strerror(errno));
   r = chdir("/");
   if (r != 0)
-   exit(23);
-  return r;
+    die("chdir: %s\n", strerror(errno));
+  return;
 }
 
 /* This is inspired by conversations with stealth */
@@ -160,38 +161,16 @@ int drop_privs(void)
   int r = 0;
   pw = getpwnam(UNPRIV_USER);
   if (pw == NULL)
-  {
-    fprintf(stderr, "getpwnam() failed\n");
-    exit(23);
-  }
+    die("getpwnam(%s): %s\n", UNPRIV_USER, strerror(errno));
   // check these to ensure they're always 0, less is bad
   r = prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
   if (r != 0)
-  {
-    fprintf(stderr, "prctl() failed\n");
-    exit(23);
-  }
+    die("prctl(PR_SET_KEEPCAPS): %s\n", strerror(errno));
 
-  r = chroot_tmp();
-  if (r != 0)
-  {
-    fprintf(stderr, "chroot_tmp() failed\n");
-    exit(23);
-  }
+  chroot_tmp();
+  switch_uid(pw);
 
-  r = switch_uid(pw);
-  if (r != 0)
-  {
-    fprintf(stderr, "switch_uid() failed\n");
-    exit(23);
-  }
-
-  r = drop_caps();
-  if (r != 0)
-  {
-    fprintf(stderr, "drop_caps() failed\n");
-    exit(23);
-  }
+  drop_caps();
 
   return r;
 }
