@@ -135,7 +135,7 @@ int switch_uid(struct passwd *pw)
 }
 
 /** create a temp directory, chroot into it, and chdir to the new root. */
-char chroot_tmp(void)
+int chroot_tmp(void)
 {
   // XXX TODO: this file is left behind - we should unlink it somehow
   char template[] = "/tmp/tlsdate_XXXXXX";
