@@ -11,6 +11,7 @@ build:
 install: build
 	install --strip -o root -m 755 tlsdate $(DESTDIR)/usr/sbin/tlsdate
 	cp tlsdate.1 $(DESTDIR)/usr/share/man/man1/
+	install -o root -m 644 apparmor-profile /etc/apparmor.d/usr.sbin.tlsdate
 
 uninstall:
 	rm $(DESTDIR)/usr/sbin/tlsdate
@@ -18,3 +19,6 @@ uninstall:
 
 clean:
 	-rm tlsdate
+
+reload-apparmor-profile:
+	apparmor_parser -T -W -v -r usr.sbin.tlsdate
