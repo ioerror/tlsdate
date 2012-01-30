@@ -10,7 +10,7 @@ Here is a nice list of things to do to improve tlsdate:
 
  2)  allow users to pass certs for custom verification
  3)  allow users to provide custom hostnames or IP addresses
- 4)  allow users to disable verification entirely
+
  5)  daemonize and regularly slam the clock
  6)  skew the clock rather than slamming it
  7)  drop privs earlier
