@@ -340,9 +340,9 @@ main(int argc, char **argv)
   {
     fprintf(stderr, "V: setting time returned: %i\n", r);
     if (r == 0) {
-      fprintf(stdout, "tlsdate: SUCCESS\n");
+      fprintf(stdout, "V: tlsdate: SUCCESS\n");
     } else {
-      fprintf(stderr, "tlsdate: FAILURE\n");
+      fprintf(stderr, "V: tlsdate: FAILURE\n");
     }
   }
   exit(r);
