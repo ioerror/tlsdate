@@ -16,5 +16,7 @@ Here is a nice list of things to do to improve tlsdate:
  7)  drop privs earlier
  8)  audit the code for show stopping bugs
  9)  make this work with Tor in a proxy safe manner (no DNS mode)
+10)  pin SSL certs for racket mode
+11)  verification of remote certificate for Tor nodes
 
 Patches welcome!
