@@ -54,6 +54,8 @@
 #include "tlsdate.h"
 #define tlsdate_version "0.1"
 #define UNPRIV_USER "nobody"
+#define DEFAULT_HOST "www.torproject.org"
+#define DEFAULT_PORT "443"
 
 static void
 die(char *fmt, ...)
@@ -73,6 +75,8 @@ usage(void)
   fprintf(stderr, "tlsdate usage:\n"
           " [-h|--help]\n"
           " [-s|--skip-verification]\n"
+          " [-H|--host]\n"
+          " [-p|--port]\n"
           " [-v|--verbose]\n");
 }
 
@@ -194,6 +198,14 @@ main(int argc, char **argv)
 
   // By default, we're buying into the CA racket
   tlsdate_options.ca_racket = 1;
+  tlsdate_options.host = malloc(strlen(DEFAULT_HOST));
+  if (tlsdate_options.host == NULL)
+    die("malloc() failed: %s\n", strerror(errno));
+  tlsdate_options.port = malloc(strlen(DEFAULT_PORT));
+  if (tlsdate_options.port == NULL)
+    die("malloc() failed: %s\n", strerror(errno));
+  strncpy(tlsdate_options.host, DEFAULT_HOST, strlen(DEFAULT_HOST));
+  strncpy(tlsdate_options.port, DEFAULT_PORT, strlen(DEFAULT_PORT));
 
   while (1) {
     int option_index = 0;
@@ -202,10 +214,12 @@ main(int argc, char **argv)
         {"verbose", 0, 0, 'v'},
         {"skip-verification", 0, 0, 's'},
         {"help", 0, 0, 'h'},
+        {"host", 0, 0, 'H'},
+        {"port", 0, 0, 'p'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vsh",
+    c = getopt_long(argc, argv, "vshH:p:",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -214,6 +228,22 @@ main(int argc, char **argv)
       case 'v': tlsdate_options.verbose = 1; break;
       case 's': tlsdate_options.ca_racket = 0; break;
       case 'h': tlsdate_options.help = 1; usage(); exit(1); break;
+      case 'H': tlsdate_options.host = optarg; break;
+      case 'p': tlsdate_options.port = optarg; break;
+      /* We could verify things like so... do we care?
+                check = realloc(tlsdate_options.port, strlen(optarg));
+                if (tlsdate_options.port == NULL || check == NULL)
+                  die("realloc() failed: %s\n", strerror(errno));
+                check = memset(tlsdate_options.port, 0, strlen(optarg));
+                if (tlsdate_options.port != check)
+                  die("memset() failed: %s\n", strerror(errno));
+                check = strncpy(tlsdate_options.port, optarg, strlen(optarg - 1));
+                if (check == NULL)
+                  die("strncpy() failed: %s\n", strerror(errno));
+                // XXX TODO: ensure that tlsdate_options.port is > 0 && < 65536
+                // if not, die("invalid port!\n");
+                break;
+      */
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
     }
@@ -222,9 +252,11 @@ main(int argc, char **argv)
   if (tlsdate_options.verbose) {
     fprintf(stderr, "V: tlsdate version %s\n"
             "V: We were called with the following arguments:\n"
-            "V: ca_racket = %d, verbose = %d, help = %d\n",
+            "V: ca_racket = %d, verbose = %d, help = %d\n"
+            "V: host = %s, port = %s\n",
             tlsdate_version, tlsdate_options.ca_racket,
-            tlsdate_options.verbose, tlsdate_options.help);
+            tlsdate_options.verbose, tlsdate_options.help,
+            tlsdate_options.host, tlsdate_options.port);
     if (tlsdate_options.ca_racket == 0)
     {
       fprintf(stdout, "V: !!!!!!!!!!!!! WARNING !!!!!!!!!!!!\n");
@@ -262,8 +294,8 @@ main(int argc, char **argv)
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 
-  // Tor Project HTTPS server
-  BIO_set_conn_hostname(s_bio, "www.torproject.org:443");
+  BIO_set_conn_hostname(s_bio, tlsdate_options.host);
+  BIO_set_conn_port(s_bio, tlsdate_options.port);
 
   c_bio = BIO_new_fp(stdout, BIO_NOCLOSE);
   if (c_bio == NULL)

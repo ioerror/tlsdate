@@ -25,6 +25,8 @@ typedef struct {
   int ca_racket;
   int help;
   time_t manual_time;
+  char *host;
+  char *port;
 } tlsdate_options_t;
 
 #endif

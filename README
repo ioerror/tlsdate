@@ -3,15 +3,34 @@ This is an example run - starting as root and dropping to nobody:
   % sudo ./tlsdate -v
   V: tlsdate version 0.1
   V: We were called with the following arguments:
-  V: verbose = 1, help = 0
-  V: time is currently 1325865059 sec and 671981 usec
+  V: ca_racket = 1, verbose = 1, help = 0
+  V: host = www.torproject.org, port = 443
+  V: time is currently 1327923928.555499
+  V: Attempting to verify certificate
   V: SSL_get_peer_certificate returned
   V: verification OK: 0
   V: ssl_verify_result returned 0
   V: server_random fetched in 0 sec
-  V: server_random with ntohl is: 1325865060 and 0 usec
+  V: server_random with ntohl is: 1327923933.0
   V: setting time returned: 0
-  tlsdate: SUCCESS
+  V: tlsdate: SUCCESS
+
+Here is an example with a custom host and custom port:
+
+  % sudo tlsdate -v -p 80 -H rgnx.net
+  V: tlsdate version 0.1
+  V: We were called with the following arguments:
+  V: ca_racket = 1, verbose = 1, help = 0
+  V: host = rgnx.net, port = 80
+  V: time is currently 1327923852.540550
+  V: Attempting to verify certificate
+  V: SSL_get_peer_certificate returned
+  E: verification error: 20
+  V: ssl_verify_result returned 20
+  V: server_random fetched in 0 sec
+  V: server_random with ntohl is: 1327923858.0
+  V: setting time returned: 0
+  V: tlsdate: SUCCESS
 
 "It's a piece of shit but It Works." - this is not yet secure and it needs
 an audit before it should be used for anything, ever.
