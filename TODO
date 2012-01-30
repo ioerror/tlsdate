@@ -1,0 +1,20 @@
+
+Here is a nice list of things to do to improve tlsdate:
+
+ 0)  autoconf the project
+       move code into src/
+       move configs into configs/
+
+ 1)  hack the client handshake to not leak the clock to the server
+       set it to all zeros or something cute or something random
+
+ 2)  allow users to pass certs for custom verification
+ 3)  allow users to provide custom hostnames or IP addresses
+ 4)  allow users to disable verification entirely
+ 5)  daemonize and regularly slam the clock
+ 6)  skew the clock rather than slamming it
+ 7)  drop privs earlier
+ 8)  audit the code for show stopping bugs
+ 9)  make this work with Tor in a proxy safe manner (no DNS mode)
+
+Patches welcome!
