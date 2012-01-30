@@ -22,6 +22,7 @@
 /** This is where we store parsed commandline options. */
 typedef struct {
   int verbose;
+  int ca_racket;
   int help;
   time_t manual_time;
 } tlsdate_options_t;

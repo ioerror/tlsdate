@@ -72,18 +72,9 @@ usage(void)
 {
   fprintf(stderr, "tlsdate usage:\n"
           " [-h|--help]\n"
+          " [-s|--skip-verification]\n"
           " [-v|--verbose]\n");
 }
-
-/*
-XXX: TODO
-
-Functions to implement:
-
-  Verification of remote certificate for Tor nodes
-  Pin SSL certs for racket mode
-
-*/
 
 /** Set the system clock to the value stored in <b>now</b>. */
 int set_absolute_time(const struct timeval *now)
@@ -120,6 +111,7 @@ void drop_caps(void)
     die("cap_free: %s\n", strerror(errno));
 }
 
+/** Switch to a different uid and gid. */
 void switch_uid(struct passwd *pw)
 {
   int r;
@@ -154,7 +146,7 @@ void chroot_tmp(void)
   return;
 }
 
-/* This is inspired by conversations with stealth */
+/** This is inspired by conversations with stealth. */
 int drop_privs(void)
 {
   struct passwd *pw;
@@ -162,14 +154,13 @@ int drop_privs(void)
   pw = getpwnam(UNPRIV_USER);
   if (pw == NULL)
     die("getpwnam(%s): %s\n", UNPRIV_USER, strerror(errno));
-  // check these to ensure they're always 0, less is bad
   r = prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
   if (r != 0)
     die("prctl(PR_SET_KEEPCAPS): %s\n", strerror(errno));
 
+  // These all fail closed with die() - no need to check return values
   chroot_tmp();
   switch_uid(pw);
-
   drop_caps();
 
   return r;
@@ -189,7 +180,6 @@ main(int argc, char **argv)
   server_time.tv_sec = 0;
   server_time.tv_usec = 0;
   uint32_t rt_time = 0;
-  uint32_t ca_racket = 1;
   long ssl_verify_result = 0;
 
   BIO *s_bio, *c_bio;
@@ -202,22 +192,27 @@ main(int argc, char **argv)
 
   memset(&tlsdate_options, 0, sizeof(tlsdate_options));
 
+  // By default, we're buying into the CA racket
+  tlsdate_options.ca_racket = 1;
+
   while (1) {
     int option_index = 0;
     static struct option long_options[] =
       {
         {"verbose", 0, 0, 'v'},
+        {"skip-verification", 0, 0, 's'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vh",
+    c = getopt_long(argc, argv, "vsh",
                     long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 'v': tlsdate_options.verbose = 1; break;
+      case 's': tlsdate_options.ca_racket = 0; break;
       case 'h': tlsdate_options.help = 1; usage(); exit(1); break;
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
@@ -227,8 +222,15 @@ main(int argc, char **argv)
   if (tlsdate_options.verbose) {
     fprintf(stderr, "V: tlsdate version %s\n"
             "V: We were called with the following arguments:\n"
-            "V: verbose = %d, help = %d\n",
-            tlsdate_version, tlsdate_options.verbose, tlsdate_options.help);
+            "V: ca_racket = %d, verbose = %d, help = %d\n",
+            tlsdate_version, tlsdate_options.ca_racket,
+            tlsdate_options.verbose, tlsdate_options.help);
+    if (tlsdate_options.ca_racket == 0)
+    {
+      fprintf(stdout, "V: !!!!!!!!!!!!! WARNING !!!!!!!!!!!!\n");
+      fprintf(stdout, "V: Skipping certificate verification!\n");
+      fprintf(stdout, "V: !!!!!!!!!!!!! WARNING !!!!!!!!!!!!\n");
+    }
   }
 
   /* Get the current time from the system clock. */
@@ -241,7 +243,7 @@ main(int argc, char **argv)
   if (ctx == NULL)
     exit(1);
 
-  if (ca_racket)
+  if (tlsdate_options.ca_racket)
   {
     // For google specifically:
     // r = SSL_CTX_load_verify_locations(ctx, "/etc/ssl/certs/Equifax_Secure_CA.pem", NULL);
@@ -260,15 +262,8 @@ main(int argc, char **argv)
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 
-  // XXX TODO: Don't hardcode this garbage...
-  if (ca_racket)
-  {
-    // Tor Project HTTPS server
-    BIO_set_conn_hostname(s_bio, "www.torproject.org:443");
-  } else {
-    // Tor Directory Authority OR port
-    BIO_set_conn_hostname(s_bio, "rgnx.net:80");
-  }
+  // Tor Project HTTPS server
+  BIO_set_conn_hostname(s_bio, "www.torproject.org:443");
 
   c_bio = BIO_new_fp(stdout, BIO_NOCLOSE);
   if (c_bio == NULL)
@@ -291,7 +286,9 @@ main(int argc, char **argv)
     exit(6);
   gettimeofday(&end_timeval, NULL);
   // Verify the peer certificate against the CA certs on the local system
-  if (ca_racket) {
+  if (tlsdate_options.ca_racket) {
+    if (tlsdate_options.verbose)
+      fprintf(stdout, "V: Attempting to verify certificate\n");
     x509 = SSL_get_peer_certificate(ssl);
     if (x509 == NULL)
       exit(7);
@@ -303,7 +300,7 @@ main(int argc, char **argv)
     if ( ssl_verify_result == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT ||
          ssl_verify_result == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN )
     {
-      fprintf(stderr, "self signed cert\n");
+      fprintf(stderr, "E: self signed cert\n");
     } else {
       if (  ssl_verify_result == X509_V_OK )
       {
@@ -316,6 +313,11 @@ main(int argc, char **argv)
 
     if (tlsdate_options.verbose)
       fprintf(stdout, "V: ssl_verify_result returned %ld\n", ssl_verify_result);
+  } else {
+    if (tlsdate_options.verbose)
+    {
+      fprintf(stdout, "V: Certificate verification skipped!\n");
+    }
   }
 
   rt_time = abs(end_timeval.tv_sec - start_timeval.tv_sec);
