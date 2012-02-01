@@ -19,5 +19,7 @@ Here is a nice list of things to do to improve tlsdate:
 11)  verification of remote certificate for Tor nodes
 12)  ensure remote time is grater than COMPILE_DATE and less than 2**32
        says crash during code review
+13)  account for servers that do not send UTC (Microsoft sends local time)
+14)  port to nss, gnutls, yassl and other libraries
 
 Patches welcome!
