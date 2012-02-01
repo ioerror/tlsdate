@@ -22,5 +22,6 @@ Here is a nice list of things to do to improve tlsdate:
 13)  account for servers that do not send UTC (Microsoft sends local time)
 14)  port to nss, gnutls, yassl and other libraries
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
+16)  explictly set ssl/tls versions
 
 Patches welcome!
