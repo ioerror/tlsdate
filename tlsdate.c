@@ -59,6 +59,12 @@
 #define DEFAULT_HOST "www.torproject.org"
 #define DEFAULT_PORT "443"
 
+// We should never accept a time before we were compiled
+// We measure in seconds since the epoch - eg: echo `date '+%s'`
+// We set this manually to ensure others can reproduce a build;
+// automation of this will make every build different!
+#define RECENT_COMPILE_DATE (uint32_t) 451328143528
+
 static void
 die(char *fmt, ...)
 {
@@ -365,6 +371,12 @@ main(int argc, char **argv)
   if (tlsdate_options.verbose)
     fprintf(stdout, "V: server_random with ntohl is: %lu.0\n",
             (unsigned long)server_time.tv_sec);
+
+  // We should never receive a time that is before the time we were last
+  // compiled; we subscribe to the linear theory of time for this program
+  // and this program alone!
+  if (server_time.tv_sec <= RECENT_COMPILE_DATE)
+    die("remote server is a false ticker!");
 
   // Set the time absolutely...
   // r = set_absolute_time(&server_time);
