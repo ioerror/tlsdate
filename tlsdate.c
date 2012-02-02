@@ -58,6 +58,7 @@
 #define UNPRIV_USER "nobody"
 #define DEFAULT_HOST "www.torproject.org"
 #define DEFAULT_PORT "443"
+#define DEFAULT_PROTOCOL "tlsv1"
 
 // We should never accept a time before we were compiled
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
@@ -83,8 +84,9 @@ usage(void)
   fprintf(stderr, "tlsdate usage:\n"
           " [-h|--help]\n"
           " [-s|--skip-verification]\n"
-          " [-H|--host]\n"
-          " [-p|--port]\n"
+          " [-H|--host] [hostname|ip]\n"
+          " [-p|--port] [port number]\n"
+          " [-P]--protocol] [sslv23|sslv3|tlsv1]\n"
           " [-v|--verbose]\n");
 }
 
@@ -212,8 +214,14 @@ main(int argc, char **argv)
   tlsdate_options.port = malloc(strlen(DEFAULT_PORT));
   if (tlsdate_options.port == NULL)
     die("malloc() failed: %s\n", strerror(errno));
+  tlsdate_options.protocol = malloc(strlen(DEFAULT_PROTOCOL));
+  if (tlsdate_options.protocol == NULL)
+    die("malloc() failed: %s\n", strerror(errno));
   strncpy(tlsdate_options.host, DEFAULT_HOST, strlen(DEFAULT_HOST));
   strncpy(tlsdate_options.port, DEFAULT_PORT, strlen(DEFAULT_PORT));
+  strncpy(tlsdate_options.protocol, DEFAULT_PROTOCOL, strlen(DEFAULT_PROTOCOL));
+  /* By default, we don't have a context. */
+  ctx = NULL;
 
   while (1) {
     int option_index = 0;
@@ -224,10 +232,11 @@ main(int argc, char **argv)
         {"help", 0, 0, 'h'},
         {"host", 0, 0, 'H'},
         {"port", 0, 0, 'p'},
+        {"protocol", 0, 0, 'P'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vshH:p:",
+    c = getopt_long(argc, argv, "vshH:p:P:",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -252,6 +261,7 @@ main(int argc, char **argv)
                 // if not, die("invalid port!\n");
                 break;
       */
+      case 'P': tlsdate_options.protocol = optarg; break;
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
     }
@@ -279,9 +289,27 @@ main(int argc, char **argv)
     fprintf(stderr, "V: time is currently %lu.%06lu\n",
             (unsigned long)timeval.tv_sec, (unsigned long)timeval.tv_usec);
 
-  ctx = SSL_CTX_new(SSLv23_client_method());
+  if (tlsdate_options.protocol == NULL)
+    die("no protocol set; unable to proceed\n");
+
+  if (strncmp("sslv23", tlsdate_options.protocol, 6) == 0)
+  {
+    fprintf(stdout, "V: using SSLv23_client_method()\n");
+    ctx = SSL_CTX_new(SSLv23_client_method());
+  }
+  if (strncmp("sslv3", tlsdate_options.protocol, 5) == 0)
+  {
+    fprintf(stdout, "V: using SSLv3_client_method()\n");
+    ctx = SSL_CTX_new(SSLv3_client_method());
+  }
+  if (strncmp("tlsv1", tlsdate_options.protocol, 5) == 0)
+  {
+    fprintf(stdout, "V: using TLSv1_client_method()\n");
+    ctx = SSL_CTX_new(TLSv1_client_method());
+  }
+
   if (ctx == NULL)
-    exit(1);
+    die("unable to init context\n");
 
   if (tlsdate_options.ca_racket)
   {

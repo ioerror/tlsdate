@@ -27,6 +27,7 @@ typedef struct {
   time_t manual_time;
   char *host;
   char *port;
+  char *protocol;
 } tlsdate_options_t;
 
 #endif
