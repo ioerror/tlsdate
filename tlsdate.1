@@ -5,7 +5,7 @@
 .SH NAME
 tlsdate \- secure parasitic rdate replacement
 .SH SYNOPSIS
-.B tlsdate [-hv]
+.B tlsdate [-hvs] [-H [hostname]] [-p [port]] [-P [sslv23|sslv3|tlsv1]]
 .SH DESCRIPTION
 .B tlsdate
 is a tool for setting the system clock by hand or by communication
@@ -21,6 +21,14 @@ the system time without running as root or another privileged user.
 .SH OPTIONS
 .IP -h | --help
 Print the help message
+.IP -s | --skip-verification
+Skip certificate verification
+.IP -H | --host [hostname|ip]
+Set remote hostname (default: 'www.torproject.org')
+.IP -p | --port [port]
+Set remote port (default: '443')
+.IP -P | --protocol [sslv23|sslv3|tlsv1]
+Set protocol to use when communicating with server (default: 'tlsv1')
 .IP -v | --verbose
 Provide verbose output
 .SH BUGS
