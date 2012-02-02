@@ -20,16 +20,18 @@
  * the system time without running as root or another privileged user.
  */
 
+#include "tlsdate-config.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <getopt.h>
-//#ifdef HAVE_SYS_TIME_H
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-//#endif
-//#ifdef HAVE_TIME_H
+#endif
+#ifdef HAVE_TIME_H
 #include <time.h>
-//#endif
+#endif
 #include <string.h>
 
 #include <arpa/inet.h>
@@ -39,12 +41,12 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
-//#ifdef HAVE_PRCTL
+#ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
-//#endif
-//#ifdef HAVE_SYS_CAPABILITY_H
+#endif
+#ifdef HAVE_SYS_CAPABILITY_H
 #include <sys/capability.h>
-//#endif
+#endif
 
 #include <sys/types.h>
 #include <unistd.h>

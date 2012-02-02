@@ -1,0 +1,10 @@
+Building and install of tlsdate should be as easy as:
+
+  ./autogen.sh
+  ./configure
+  make
+  make install
+
+Cleaning is the usual:
+
+  make clean

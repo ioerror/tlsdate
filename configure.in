@@ -1,0 +1,49 @@
+AC_INIT
+AM_INIT_AUTOMAKE(tlsdate, 0.1, jacob at appelbaum.net)
+AM_CONFIG_HEADER(tlsdate-config.h)
+AC_CANONICAL_HOST
+
+# Debug and hardening flags all in one shot
+CFLAGS=" -g -O1 -Wall -fno-strict-aliasing "
+CFLAGS+=" -D_FORTIFY_SOURCE=2 -fstack-protector-all "
+CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
+CFLAGS+=" --param ssp-buffer-size=1 "
+LDFLAGS=" -pie -z relro -z now "
+
+OPENSSL_LIBS=" -lssl "
+CAP_LIBS=" -lcap "
+
+# Required headers
+AC_CHECK_HEADERS(
+  stdio.h  \
+  stdint.h \
+  stdlib.h \
+  getopt.h \
+  sys/time.h \
+  time.h \
+  string.h \
+  arpa/inet.h \
+  openssl/bio.h \
+  openssl/ssl.h \
+  openssl/err.h \
+  openssl/evp.h \
+  sys/prctl.h \
+  sys/capability.h \
+  sys/types.h \
+  unistd.h \
+  pwd.h \
+  grp.h
+, , AC_MSG_ERROR([Required headers missing; compilation will not succeed]))
+
+CFLAGS+="$CFLAGS $OPENSSL_LIBS $CAP_LIBS"
+
+# XXX TODO:
+# We need to add the following:
+#    cp tlsdate.1 $(DESTDIR)/usr/share/man/man1/
+#    install -o root -m 644 apparmor-profile \
+#    /etc/apparmor.d/usr.sbin.tlsdate
+# XXX TODO:
+# We also need an uninstall target
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

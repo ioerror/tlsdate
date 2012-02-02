@@ -1,9 +1,9 @@
 
 Here is a nice list of things to do to improve tlsdate:
 
- 0)  autoconf the project
-       move code into src/
-       move configs into configs/
+ 0)   relocate source and configs into subdirs
+        move code into src/
+        move configs into configs/
 
  1)  hack the client handshake to not leak the clock to the server
        set it to all zeros or something cute or something random
