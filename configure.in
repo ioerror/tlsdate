@@ -10,7 +10,7 @@ CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
 CFLAGS+=" --param ssp-buffer-size=1 "
 LDFLAGS=" -pie -z relro -z now "
 
-OPENSSL_LIBS=" -lssl "
+OPENSSL_LIBS=" -lssl -lcrypto "
 CAP_LIBS=" -lcap "
 
 # Required headers
