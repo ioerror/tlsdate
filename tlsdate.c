@@ -388,6 +388,9 @@ main(int argc, char **argv)
     }
   }
 
+  if (ssl_verify_result != 0 && tlsdate_options.ca_racket != 1)
+    die("certificate verification failed!\n");
+
   rt_time = abs(end_timeval.tv_sec - start_timeval.tv_sec);
   if (tlsdate_options.verbose)
     fprintf(stdout, "V: server_random fetched in %i sec\n", rt_time);
