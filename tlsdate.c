@@ -147,10 +147,10 @@ static void switch_uid(const struct passwd *pw)
 void chroot_tmp(void)
 {
   // XXX TODO: this file is left behind - we should unlink it somehow
-  char template[] = "/tmp/tlsdate_XXXXXX"; // BUG
+  char template[] = "/tmp/tlsdate_XXXXXX";
   char *tmp_dir;
   int r = 0;
-  tmp_dir = mkdtemp(template); // BUG
+  tmp_dir = mkdtemp(template);
   if (tmp_dir == NULL) // bad order
     die("mkdtemp(%s): %s\n", template, strerror(errno));
   r = chroot(tmp_dir);
