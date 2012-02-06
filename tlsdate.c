@@ -67,7 +67,7 @@
 #define RECENT_COMPILE_DATE (uint32_t) 451328143528
 
 static void
-die(char *fmt, ...)
+die(const char *fmt, ...)
 {
   va_list ap;
 
@@ -91,53 +91,55 @@ usage(void)
 }
 
 /** Set the system clock to the value stored in <b>now</b>. */
-int set_absolute_time(const struct timeval *now)
+static int set_absolute_time(const struct timeval *now)
 {
   return settimeofday(now, NULL);
 }
 
-int set_adj_time(const struct timeval *delta, struct timeval *olddelta)
+static int set_adj_time(const struct timeval *delta, struct timeval *olddelta)
 {
   return adjtime(delta, olddelta);
 }
 
+#define NUM_OF(x) (sizeof (x) / sizeof *(x))
+
 // Drop all caps except CAP_SYS_TIME
-void drop_caps(void)
+static void drop_caps(void)
 {
-  int r = 0;
+  int r;
   cap_t caps;
-  cap_value_t needed_caps[1] = {CAP_SYS_TIME};
+  cap_value_t needed_caps[] = {CAP_SYS_TIME};
 
   caps = cap_init();
   if (caps == NULL)
     die("cap_init: %s\n", strerror(errno));
-  r = cap_set_flag(caps, CAP_EFFECTIVE, 1, needed_caps, CAP_SET);
-  if (r != 0)
+  r = cap_set_flag(caps, CAP_EFFECTIVE, NUM_OF (needed_caps), needed_caps, CAP_SET);
+  if (0 != r)
     die("cap_set_flag() failed\n");
-  r = cap_set_flag(caps, CAP_PERMITTED, 1, needed_caps, CAP_SET);
-  if (r != 0)
+  r = cap_set_flag(caps, CAP_PERMITTED, NUM_OF (needed_caps), needed_caps, CAP_SET);
+  if (0 != r)
     die("cap_set_flag: %s\n", strerror(errno));
   r = cap_set_proc(caps);
-  if (r != 0)
+  if (0 != r)
     die("cap_set_proc: %s\n", strerror(errno));
   r = cap_free(caps);
-  if (r != 0)
+  if (0 != r)
     die("cap_free: %s\n", strerror(errno));
 }
 
 /** Switch to a different uid and gid. */
-void switch_uid(struct passwd *pw)
+static void switch_uid(const struct passwd *pw)
 {
   int r;
 
   r = setgid(pw->pw_gid);
-  if (r != 0)
+  if (0 != r)
     die("setgid(%d): %s\n", (int)pw->pw_gid, strerror(errno));
   r = initgroups(UNPRIV_USER, pw->pw_gid);
-  if (r != 0)
+  if (0 != r)
     die("initgroups: %s\n", strerror(errno));
   r = setuid(pw->pw_uid);
-  if (r != 0)
+  if (0 != r)
     die("setuid(%d): %s\n", (int)pw->pw_uid, strerror(errno));
 }
 
@@ -145,11 +147,11 @@ void switch_uid(struct passwd *pw)
 void chroot_tmp(void)
 {
   // XXX TODO: this file is left behind - we should unlink it somehow
-  char template[] = "/tmp/tlsdate_XXXXXX";
+  char template[] = "/tmp/tlsdate_XXXXXX"; // BUG
   char *tmp_dir;
   int r = 0;
-  tmp_dir = mkdtemp(template);
-  if (tmp_dir == NULL)
+  tmp_dir = mkdtemp(template); // BUG
+  if (tmp_dir == NULL) // bad order
     die("mkdtemp(%s): %s\n", template, strerror(errno));
   r = chroot(tmp_dir);
   if (r != 0)
@@ -157,7 +159,7 @@ void chroot_tmp(void)
   r = chdir("/");
   if (r != 0)
     die("chdir: %s\n", strerror(errno));
-  return;
+  return; // bad style
 }
 
 /** This is inspired by conversations with stealth. */
