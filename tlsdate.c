@@ -263,15 +263,18 @@ main(int argc, char **argv)
 
   // By default, we're buying into the CA racket
   tlsdate_options.ca_racket = 1;
-  tlsdate_options.host = malloc(strlen(DEFAULT_HOST));
+  tlsdate_options.host = malloc(strlen(DEFAULT_HOST) + 1);
   if (tlsdate_options.host == NULL)
     die("malloc() failed: %s\n", strerror(errno));
-  tlsdate_options.port = malloc(strlen(DEFAULT_PORT));
+  memset(tlsdate_options.host, 0, strlen(DEFAULT_HOST) + 1);
+  tlsdate_options.port = malloc(strlen(DEFAULT_PORT) + 1);
   if (tlsdate_options.port == NULL)
     die("malloc() failed: %s\n", strerror(errno));
-  tlsdate_options.protocol = malloc(strlen(DEFAULT_PROTOCOL));
+  memset(tlsdate_options.port, 0, strlen(DEFAULT_PORT) + 1);
+  tlsdate_options.protocol = malloc(strlen(DEFAULT_PROTOCOL) + 1);
   if (tlsdate_options.protocol == NULL)
     die("malloc() failed: %s\n", strerror(errno));
+  memset(tlsdate_options.protocol, 0, strlen(DEFAULT_PROTOCOL) + 1);
   strncpy(tlsdate_options.host, DEFAULT_HOST, strlen(DEFAULT_HOST));
   strncpy(tlsdate_options.port, DEFAULT_PORT, strlen(DEFAULT_PORT));
   strncpy(tlsdate_options.protocol, DEFAULT_PROTOCOL, strlen(DEFAULT_PROTOCOL));
