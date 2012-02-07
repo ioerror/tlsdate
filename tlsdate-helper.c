@@ -249,7 +249,6 @@ main(int argc, char **argv)
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
 
-  fprintf (stderr, "V: %d\n", verbose);
   SSL_load_error_strings();
   SSL_library_init();
 
