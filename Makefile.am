@@ -7,9 +7,10 @@ EXTRA_DIST = \
   autogen.sh
 
 # Our main program
-bin_PROGRAMS = tlsdate
+bin_PROGRAMS = tlsdate tlsdate-helper
 tlsdate_SOURCES = tlsdate.c
-noinst_HEADERS = tlsdate.h
+tlsdate_helper_SOURCES = tlsdate-helper.c
+tlsdate_helper_LDADD = -lcap -lssl -lcrypto
 
 # Our documentation
 doc_DATA = tlsdate.1
