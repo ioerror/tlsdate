@@ -118,7 +118,7 @@ know:
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
-#define MAX_REASONABLE_TIME (uint32_t) 9999991337
+#define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
 static void
 die(const char *fmt, ...)
