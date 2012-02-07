@@ -118,6 +118,7 @@ know:
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
 #define RECENT_COMPILE_DATE (uint32_t) 451328143528
+#define MAX_REASONABLE_TIME (uint32_t) 999999133700
 
 static void
 die(const char *fmt, ...)
@@ -466,6 +467,10 @@ main(int argc, char **argv)
   // and this program alone!
   if (server_time.tv_sec <= RECENT_COMPILE_DATE)
     die("remote server is a false ticker!");
+
+  // This is the time in the future we'll stop working
+  if (server_time.tv_sec >= MAX_REASONABLE_TIME)
+    die("remote server is a false ticker from the future!");
 
   // Set the time absolutely...
   // r = set_absolute_time(&server_time);
