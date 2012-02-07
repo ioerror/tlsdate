@@ -242,7 +242,6 @@ main(int argc, char **argv)
 
   if (argc != 6)
     return 1;
-  drop_privs();
   host = argv[1];
   port = argv[2];
   protocol = argv[3];
@@ -295,7 +294,8 @@ main(int argc, char **argv)
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
   if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
-    die ("SSL connection failed\n");
+    die ("SSL connection failed\n");    
+  drop_privs();
 
   /* Get the current time from the system clock. */
   if (0 != gettimeofday(&start_timeval, NULL))
