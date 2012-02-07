@@ -31,7 +31,5 @@ AC_CHECK_HEADERS(
   grp.h
 , , AC_MSG_ERROR([Required headers missing; compilation will not succeed]))
 
-man_MANS = tlsdate.1
-
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

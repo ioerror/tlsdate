@@ -13,7 +13,8 @@ tlsdate_helper_SOURCES = tlsdate-helper.c
 tlsdate_helper_LDADD = -lcap -lssl -lcrypto
 
 # Our documentation
-doc_DATA = tlsdate.1
+man_MANS = tlsdate.1
+EXTRA_DIST = $(man_MANS)
 
 CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
   tlsdate-config.h \
