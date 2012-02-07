@@ -221,7 +221,6 @@ verb (const char *fmt, ...)
   // FIXME: stdout or stderr for verbose messages?
   vfprintf(stderr, fmt, ap);
   va_end(ap);
-  exit(1);
 }
 
 
@@ -266,6 +265,7 @@ main(int argc, char **argv)
   {
     verb ("V: using TLSv1_client_method()\n");
     ctx = SSL_CTX_new(TLSv1_client_method());
+    verb ("V: using TLSv1_client_method()\n");
   } else
     die("Unsupported protocol `%s'\n", protocol);
 
