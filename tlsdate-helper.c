@@ -275,7 +275,7 @@ main(int argc, char **argv)
   {
     // For google specifically:
     // SSL_CTX_load_verify_locations(ctx, "/etc/ssl/certs/Equifax_Secure_CA.pem", NULL);
-    if (0 != SSL_CTX_load_verify_locations(ctx, NULL, "/etc/ssl/certs/"))
+    if (1 != SSL_CTX_load_verify_locations(ctx, NULL, "/etc/ssl/certs/"))
       fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
   }
 
@@ -294,7 +294,7 @@ main(int argc, char **argv)
 
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
-  if (0 >= BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
+  if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
     die ("SSL connection failed\n");
 
   /* Get the current time from the system clock. */
