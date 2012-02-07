@@ -161,7 +161,7 @@ main(int argc, char **argv)
             "V: host = %s, port = %s\n",
             PACKAGE_VERSION,
 	    ca_racket,
-            verbose, 
+            verbose,
             host, port);
     if (0 == ca_racket)
     {
@@ -172,7 +172,7 @@ main(int argc, char **argv)
   }
 
   execlp ("tlsdate-helper",
-	  "tlsdate", 
+	  "tlsdate",
 	  host,
 	  port,
 	  protocol,

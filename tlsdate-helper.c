@@ -180,7 +180,7 @@ static void chroot_tmp(void)
 	    (EAGAIN == errno) ) ;
     if (ret != cpid)
       die ("waitpid failed: %s\n", strerror (errno));
-    if (0 != unlink (jaildir))
+    if (0 != rmdir (jaildir))
       fprintf (stderr, "Failed to remove jail directory `%s': %s\n",
 	       jaildir,
 	       strerror (errno));
@@ -217,11 +217,11 @@ verb (const char *fmt, ...)
 {
   va_list ap;
 
+  if (! verbose) return;
   va_start(ap, fmt);
   // FIXME: stdout or stderr for verbose messages?
   vfprintf(stderr, fmt, ap);
   va_end(ap);
-  exit(1);
 }
 
 
@@ -243,7 +243,6 @@ main(int argc, char **argv)
 
   if (argc != 6)
     return 1;
-  drop_privs();
   host = argv[1];
   port = argv[2];
   protocol = argv[3];
@@ -276,7 +275,7 @@ main(int argc, char **argv)
   {
     // For google specifically:
     // SSL_CTX_load_verify_locations(ctx, "/etc/ssl/certs/Equifax_Secure_CA.pem", NULL);
-    if (0 != SSL_CTX_load_verify_locations(ctx, NULL, "/etc/ssl/certs/"))
+    if (1 != SSL_CTX_load_verify_locations(ctx, NULL, "/etc/ssl/certs/"))
       fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
   }
 
@@ -295,8 +294,10 @@ main(int argc, char **argv)
 
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
-  if (0 >= BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
-    die ("SSL connection failed\n");
+  if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
+    die ("SSL connection failed\n");    
+  
+  drop_privs();
 
   /* Get the current time from the system clock. */
   if (0 != gettimeofday(&start_timeval, NULL))
