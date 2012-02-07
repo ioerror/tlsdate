@@ -265,7 +265,6 @@ main(int argc, char **argv)
   {
     verb ("V: using TLSv1_client_method()\n");
     ctx = SSL_CTX_new(TLSv1_client_method());
-    verb ("V: using TLSv1_client_method()\n");
   } else
     die("Unsupported protocol `%s'\n", protocol);
 
