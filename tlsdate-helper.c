@@ -217,6 +217,7 @@ verb (const char *fmt, ...)
 {
   va_list ap;
 
+  if (! verbose) return;
   va_start(ap, fmt);
   // FIXME: stdout or stderr for verbose messages?
   vfprintf(stderr, fmt, ap);
@@ -248,6 +249,7 @@ main(int argc, char **argv)
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
 
+  fprintf (stderr, "V: %d\n", verbose);
   SSL_load_error_strings();
   SSL_library_init();
 
@@ -295,6 +297,7 @@ main(int argc, char **argv)
   // eg:     prctl(PR_SET_SECCOMP, 1);
   if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
     die ("SSL connection failed\n");    
+  
   drop_privs();
 
   /* Get the current time from the system clock. */
