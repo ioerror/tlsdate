@@ -180,7 +180,7 @@ static void chroot_tmp(void)
 	    (EAGAIN == errno) ) ;
     if (ret != cpid)
       die ("waitpid failed: %s\n", strerror (errno));
-    if (0 != unlink (jaildir))
+    if (0 != rmdir (jaildir))
       fprintf (stderr, "Failed to remove jail directory `%s': %s\n",
 	       jaildir,
 	       strerror (errno));
