@@ -85,6 +85,13 @@ know:
 #define DEFAULT_PORT "443"
 #define DEFAULT_PROTOCOL "tlsv1"
 
+// We should never accept a time before we were compiled
+// We measure in seconds since the epoch - eg: echo `date '+%s'`
+// We set this manually to ensure others can reproduce a build;
+// automation of this will make every build different!
+#define RECENT_COMPILE_DATE (uint32_t) 1328610583
+#define MAX_REASONABLE_TIME (uint32_t) 9999991337
+
 
 /** Return the proper commandline switches when the user needs information. */
 static void

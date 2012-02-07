@@ -113,7 +113,8 @@ know:
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
-#define RECENT_COMPILE_DATE (uint32_t) 451328143528
+#define RECENT_COMPILE_DATE (uint32_t) 1328610583
+#define MAX_REASONABLE_TIME (uint32_t) 9999991337
 
 
 static void
@@ -364,6 +365,8 @@ main(int argc, char **argv)
     // We should never receive a time that is before the time we were last
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
+    if (server_time.tv_sec >= MAX_REASONABLE_TIME)
+      die("remote server is a false ticker from the future!");
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!");
 
