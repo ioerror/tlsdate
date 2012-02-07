@@ -22,5 +22,9 @@ Here is a nice list of things to do to improve tlsdate:
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
 16)  ensure that 32bit time isn't near wrapping time on 32bit systems
 17)  find others to audit it - we need more eyes!
+18)  cache recent time to /tmp/tlsdate_stamp or something
+19)  override client time
+       ensure we only believe the time to be the one compiled in or...
+       we read the cache of the time and read that.
 
 Patches welcome!
