@@ -334,6 +334,28 @@ run_ssl (uint32_t *time_map)
 }
 
 
+static void
+become_nobody ()
+{
+  uid_t uid;
+  struct passwd *pw;
+
+  pw = getpwnam(UNPRIV_USER);
+  if (NULL == pw)
+    die ("Failed to obtain UID for `%s'\n", UNPRIV_USER);
+  uid = pw->pw_uid;
+  if (0 == uid)
+    die ("UID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
+#ifdef HAVE_SETRESUID
+  if (0 != setresuid (uid, uid, uid))
+    die ("Failed to setresuid: %s\n", strerror (errno));
+#else
+  if (0 != (setuid (uid) | seteuid (uid)))
+    die ("Failed to setuid: %s\n", strerror (errno));
+#endif  
+}
+
+
 int
 main(int argc, char **argv)
 {
@@ -368,7 +390,7 @@ main(int argc, char **argv)
     die ("fork failed: %s\n", strerror (errno));
   if (0 == ssl_child)
   {
-    
+    become_nobody ();
     run_ssl (time_map);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
