@@ -4,7 +4,7 @@ EXTRA_DIST = \
   LICENSE \
   TODO \
   apparmor-profile \
-  autogen.sh
+  autogen.sh 
 
 # Our main program
 bin_PROGRAMS = tlsdate tlsdate-helper
@@ -14,7 +14,7 @@ tlsdate_helper_LDADD = -lcap -lssl -lcrypto
 
 # Our documentation
 man_MANS = tlsdate.1
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST += $(man_MANS)
 
 CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
   tlsdate-config.h \
