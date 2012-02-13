@@ -89,6 +89,9 @@ know:
 #include <pwd.h>
 #include <grp.h>
 
+#include <stdio.h>
+#include <sys/mman.h>
+
 #include <arpa/inet.h>
 
 #include <openssl/bio.h>
@@ -130,7 +133,6 @@ die(const char *fmt, ...)
 
 
 #define NUM_OF(x) (sizeof (x) / sizeof *(x))
-
 /** Drop all caps except CAP_SYS_TIME */
 static void drop_caps(void)
 {
@@ -211,6 +213,15 @@ static void drop_privs(void)
 
 static int verbose;
 
+static int ca_racket;
+
+static const char *host;
+
+static const char *port;
+
+static const char *protocol;
+
+
 /** helper function for 'verbose' output */
 static void
 verb (const char *fmt, ...)
@@ -225,29 +236,21 @@ verb (const char *fmt, ...)
 }
 
 
-int
-main(int argc, char **argv)
+/**
+ * Run SSL handshake and store the resulting time value in the
+ * 'time_map'.
+ *
+ * @param time_map where to store the current time
+ */
+static void
+run_ssl (uint32_t *time_map)
 {
-  int ca_racket;
-  const char *host;
-  const char *port;
-  const char *protocol;
-
-  struct timeval start_timeval;
-  struct timeval end_timeval;
-
   BIO *s_bio;
   BIO *c_bio;
   SSL_CTX *ctx;
   SSL *ssl;
 
-  if (argc != 6)
-    return 1;
-  host = argv[1];
-  port = argv[2];
-  protocol = argv[3];
-  ca_racket = (0 != strcmp ("unchecked", argv[4]));
-  verbose = (0 != strcmp ("quiet", argv[5]));
+  
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -296,22 +299,8 @@ main(int argc, char **argv)
   // eg:     prctl(PR_SET_SECCOMP, 1);
   if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
     die ("SSL connection failed\n");    
-  
-  drop_privs();
-
-  /* Get the current time from the system clock. */
-  if (0 != gettimeofday(&start_timeval, NULL))
-    die ("Failed to read current time of day: %s\n", strerror (errno));
-  verb ("V: time is currently %lu.%06lu\n",
-	(unsigned long)start_timeval.tv_sec, 
-	(unsigned long)start_timeval.tv_usec);  
-
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
-
-  if (0 != gettimeofday(&end_timeval, NULL))
-    die ("Failed to read current time of day: %s\n", strerror (errno));
-
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
     X509 *x509;
@@ -341,9 +330,63 @@ main(int argc, char **argv)
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
+  memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));  
+}
 
 
-  if (verbose)
+int
+main(int argc, char **argv)
+{
+  uint32_t *time_map;
+  struct timeval start_timeval;
+  struct timeval end_timeval;
+  int status;
+  pid_t ssl_child;
+
+  if (argc != 6)
+    return 1;
+  host = argv[1];
+  port = argv[2];
+  protocol = argv[3];
+  ca_racket = (0 != strcmp ("unchecked", argv[4]));
+  verbose = (0 != strcmp ("quiet", argv[5]));
+
+  time_map = mmap (NULL, sizeof (uint32_t),
+		   PROT_READ | PROT_WRITE,
+		   MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  if (MAP_FAILED == time_map)
+  {
+    fprintf (stderr, "mmap failed: %s\n",
+	     strerror (errno));
+    return 1;
+  }
+  if (0 != gettimeofday(&start_timeval, NULL))
+    die ("Failed to read current time of day: %s\n", strerror (errno));
+  *time_map = 0;
+  ssl_child = fork ();
+  if (-1 == ssl_child)
+    die ("fork failed: %s\n", strerror (errno));
+  if (0 == ssl_child)
+  {
+    
+    run_ssl (time_map);
+    (void) munmap (time_map, sizeof (uint32_t));
+    _exit (0);
+  } 
+  if (ssl_child != waitpid (ssl_child, &status, 0))
+    die ("waitpid failed: %s\n", strerror (errno));
+  
+  drop_privs();
+
+  /* Get the current time from the system clock. */
+  verb ("V: time is currently %lu.%06lu\n",
+	(unsigned long)start_timeval.tv_sec, 
+	(unsigned long)start_timeval.tv_usec);  
+
+
+  if (0 != gettimeofday(&end_timeval, NULL))
+    die ("Failed to read current time of day: %s\n", strerror (errno));
+
   {
     uint32_t rt_time;
 
@@ -356,10 +399,8 @@ main(int argc, char **argv)
   //  ssl->s3->server_random is an unsigned char of 32 bytes
   {
     struct timeval server_time;
-    uint32_t server_time_tmp;
 
-    memcpy(&server_time_tmp, ssl->s3->server_random, sizeof (uint32_t));
-    server_time.tv_sec = ntohl(server_time_tmp);
+    server_time.tv_sec = ntohl(*time_map);
     server_time.tv_usec = 0;
     verb ("V: server_random with ntohl is: %lu.0\n",
 	  (unsigned long)server_time.tv_sec);
@@ -375,6 +416,7 @@ main(int argc, char **argv)
     if (0 != settimeofday(&server_time, NULL))
       die ("V: setting time failed: %s\n", strerror (errno));
   }
+  munmap (time_map, sizeof (uint32_t));
   verb ("V: setting time succeeded\n");
   return 0;
 }
