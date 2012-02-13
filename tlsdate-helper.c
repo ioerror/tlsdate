@@ -77,21 +77,14 @@ know:
 
 #include <stdarg.h>
 #include <stdint.h>
-#ifdef HAVE_SYS_TIME_H
+#include <stdio.h>
+#include <unistd.h>
 #include <sys/time.h>
-#endif
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <grp.h>
-
-#include <stdio.h>
 #include <sys/mman.h>
-
+#include <time.h>
+#include <pwd.h>
 #include <arpa/inet.h>
 
 #include <openssl/bio.h>
@@ -99,17 +92,7 @@ know:
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
-#ifdef HAVE_SYS_PRCTL_H
-#include <sys/prctl.h>
-#endif
-#ifdef HAVE_SYS_CAPABILITY_H
-#include <sys/capability.h>
-#endif
-#ifdef HAVE_LINUX_CAPABILITY_H
-#include <linux/capability.h>
-#endif
-
-
+/** Name of user that we feel safe to run SSL handshake with. */
 #define UNPRIV_USER "nobody"
 
 // We should never accept a time before we were compiled
@@ -118,97 +101,6 @@ know:
 // automation of this will make every build different!
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
-
-
-static void
-die(const char *fmt, ...)
-{
-  va_list ap;
-
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-  exit(1);
-}
-
-
-#define NUM_OF(x) (sizeof (x) / sizeof *(x))
-/** Drop all caps except CAP_SYS_TIME */
-static void drop_caps(void)
-{
-  cap_t caps;
-  cap_value_t needed_caps[] = {CAP_SYS_TIME};
-
-  if (NULL == (caps = cap_init()))
-    die("cap_init: %s\n", strerror(errno));
-  if (0 != cap_set_flag(caps, CAP_EFFECTIVE, NUM_OF (needed_caps), needed_caps, CAP_SET))
-    die("cap_set_flag() failed\n");
-  if (0 != cap_set_flag(caps, CAP_PERMITTED, NUM_OF (needed_caps), needed_caps, CAP_SET))
-    die("cap_set_flag: %s\n", strerror(errno));
-  if (0 != cap_set_proc(caps))
-    die("cap_set_proc: %s\n", strerror(errno));
-  if (0 != cap_free(caps))
-    die("cap_free: %s\n", strerror(errno));
-}
-
-/** Switch to a different uid and gid */
-static void switch_uid(const struct passwd *pw)
-{
-  if (0 != setgid(pw->pw_gid))
-    die("setgid(%d): %s\n", (int)pw->pw_gid, strerror(errno));
-  if (0 != initgroups(UNPRIV_USER, pw->pw_gid))
-    die("initgroups: %s\n", strerror(errno));
-  if (0 != setuid(pw->pw_uid))
-    die("setuid(%d): %s\n", (int)pw->pw_uid, strerror(errno));
-}
-
-/** create a temp directory, chroot into it, and chdir to the new root. */
-static void chroot_tmp(void)
-{
-  char jaildir[] = "/tmp/tlsdate_XXXXXX";
-  pid_t cpid;
-
-  if (NULL == mkdtemp(jaildir))
-    die("mkdtemp(%s): %s\n", jaildir, strerror(errno));
-  cpid = fork ();
-  if (-1 == cpid)
-    die("fork failed: %s\n", strerror (errno));
-  if (0 != cpid)
-  {
-    int status;
-    int ret;
-
-    while ( (cpid != (ret = waitpid (cpid, &status, 0))) &&
-	    (EAGAIN == errno) ) ;
-    if (ret != cpid)
-      die ("waitpid failed: %s\n", strerror (errno));
-    if (0 != rmdir (jaildir))
-      fprintf (stderr, "Failed to remove jail directory `%s': %s\n",
-	       jaildir,
-	       strerror (errno));
-    if (WIFEXITED (status))
-      exit (WEXITSTATUS (status));
-    exit (1);
-  }
-  if (0 != chroot(jaildir))
-    die("chroot(%s): %s\n", jaildir, strerror(errno));
-  if (0 != chdir("/"))
-    die("chdir: %s\n", strerror(errno));
-}
-
-/** This is inspired by conversations with stealth. */
-static void drop_privs(void)
-{
-  struct passwd *pw;
-
-  if (NULL == (pw = getpwnam(UNPRIV_USER)))
-    die("getpwnam(%s): %s\n", UNPRIV_USER, strerror(errno));
-  if (0 != prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0))
-    die("prctl(PR_SET_KEEPCAPS): %s\n", strerror(errno));
-  chroot_tmp();
-  switch_uid(pw);
-  drop_caps();
-}
 
 
 static int verbose;
@@ -220,6 +112,19 @@ static const char *host;
 static const char *port;
 
 static const char *protocol;
+
+
+/** helper function to print message and die */
+static void
+die(const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  va_end(ap);
+  exit(1);
+}
 
 
 /** helper function for 'verbose' output */
@@ -249,8 +154,6 @@ run_ssl (uint32_t *time_map)
   BIO *c_bio;
   SSL_CTX *ctx;
   SSL *ssl;
-
-  
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -330,10 +233,14 @@ run_ssl (uint32_t *time_map)
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
+
+  // from /usr/include/openssl/ssl3.h
+  //  ssl->s3->server_random is an unsigned char of 32 bytes
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));  
 }
 
 
+/** drop root rights and become 'nobody' */
 static void
 become_nobody ()
 {
@@ -382,8 +289,15 @@ main(int argc, char **argv)
 	     strerror (errno));
     return 1;
   }
+
+  /* Get the current time from the system clock. */
   if (0 != gettimeofday(&start_timeval, NULL))
     die ("Failed to read current time of day: %s\n", strerror (errno));
+  verb ("V: time is currently %lu.%06lu\n",
+	(unsigned long)start_timeval.tv_sec, 
+	(unsigned long)start_timeval.tv_usec);  
+
+  /* initialize to bogus value, just to be on the safe side */
   *time_map = 0;
   ssl_child = fork ();
   if (-1 == ssl_child)
@@ -397,14 +311,8 @@ main(int argc, char **argv)
   } 
   if (ssl_child != waitpid (ssl_child, &status, 0))
     die ("waitpid failed: %s\n", strerror (errno));
-  
-  drop_privs();
-
-  /* Get the current time from the system clock. */
-  verb ("V: time is currently %lu.%06lu\n",
-	(unsigned long)start_timeval.tv_sec, 
-	(unsigned long)start_timeval.tv_usec);  
-
+  if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
+    die ("child process failed in SSL handshake\n");
 
   if (0 != gettimeofday(&end_timeval, NULL))
     die ("Failed to read current time of day: %s\n", strerror (errno));
@@ -417,8 +325,8 @@ main(int argc, char **argv)
     rt_time = abs(end_timeval.tv_sec - start_timeval.tv_sec);
     verb ("V: server_random fetched in %i sec\n", rt_time);
   }
-  // from /usr/include/openssl/ssl3.h
-  //  ssl->s3->server_random is an unsigned char of 32 bytes
+
+  /* finally, actually set the time */
   {
     struct timeval server_time;
 
@@ -438,6 +346,7 @@ main(int argc, char **argv)
     if (0 != settimeofday(&server_time, NULL))
       die ("V: setting time failed: %s\n", strerror (errno));
   }
+  /* clean up */
   munmap (time_map, sizeof (uint32_t));
   verb ("V: setting time succeeded\n");
   return 0;

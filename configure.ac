@@ -16,20 +16,19 @@ AC_CHECK_HEADERS(
   stdio.h  \
   stdint.h \
   stdlib.h \
+  unistd.h \
   getopt.h \
   sys/time.h \
+  sys/types.h \
+  sys/wait.h \
+  sys/mman.h \
   time.h \
+  pwd.h \
   arpa/inet.h \
   openssl/bio.h \
   openssl/ssl.h \
   openssl/err.h \
-  openssl/evp.h \
-  sys/prctl.h \
-  sys/types.h \
-  sys/capability.h \
-  unistd.h \
-  pwd.h \
-  grp.h
+  openssl/evp.h 
 , , AC_MSG_ERROR([Required headers missing; compilation will not succeed]))
 
 AC_CHECK_FUNCS([setresuid])

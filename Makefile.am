@@ -10,7 +10,7 @@ EXTRA_DIST = \
 bin_PROGRAMS = tlsdate tlsdate-helper
 tlsdate_SOURCES = tlsdate.c
 tlsdate_helper_SOURCES = tlsdate-helper.c
-tlsdate_helper_LDADD = -lcap -lssl -lcrypto
+tlsdate_helper_LDADD = -lssl -lcrypto
 
 # Our documentation
 man_MANS = tlsdate.1
