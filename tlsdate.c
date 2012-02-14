@@ -147,20 +147,15 @@ main(int argc, char **argv)
   }
 
   if (verbose) {
-    fprintf(stderr, "V: tlsdate version %s\n"
+    fprintf(stderr, 
+	    "V: tlsdate version %s\n"
             "V: We were called with the following arguments:\n"
-            "V: ca_racket = %d, verbose = %d\n"
-            "V: host = %s, port = %s\n",
+            "V: %s host = %s:%s\n",
             PACKAGE_VERSION,
-	    ca_racket,
-            verbose, 
+	    ca_racket ? "validate SSL certificates" : "disable SSL certificate check",
             host, port);
-    if (0 == ca_racket)
-    {
-      fprintf(stdout, "V: !!!!!!!!!!!!! WARNING !!!!!!!!!!!!\n");
-      fprintf(stdout, "V: Skipping certificate verification!\n");
-      fprintf(stdout, "V: !!!!!!!!!!!!! WARNING !!!!!!!!!!!!\n");
-    }
+    if (0 == ca_racket)    
+      fprintf(stderr, "WARNING: Skipping certificate verification!\n");    
   }
 
   execlp ("tlsdate-helper",

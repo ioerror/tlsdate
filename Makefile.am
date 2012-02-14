@@ -1,5 +1,6 @@
 AUTOMAKE_OPTIONS = foreign 1.7
 EXTRA_DIST = \
+  AUTHORS \
   README \
   LICENSE \
   TODO \

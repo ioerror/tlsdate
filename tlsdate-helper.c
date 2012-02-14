@@ -56,8 +56,8 @@ know:
 */
 
 /**
- * \file tlsdate.c
- * \brief The main program to assist in setting the system clock.
+ * \file tlsdate-helper.c
+ * \brief Helper program that does the actual work of setting the system clock.
  **/
 
 /*
@@ -209,7 +209,6 @@ run_ssl (uint32_t *time_map)
     X509 *x509;
     long ssl_verify_result;
 
-    verb ("V: Attempting to verify certificate\n");
     if (NULL == (x509 = SSL_get_peer_certificate(ssl)) )
       die ("Getting SSL certificate failed\n");
 
@@ -219,17 +218,14 @@ run_ssl (uint32_t *time_map)
     {
     case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
     case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-      fprintf (stderr, "E: self signed cert\n");
-      break;
+      die ("SSL certificate is self signed\n");
     case X509_V_OK:
-      verb ("V: verification OK: %ld\n", ssl_verify_result);
+      verb ("V: SSL certificate verification passed\n");
       break;
     default:
-      fprintf(stderr, "E: verification error: %ld\n", ssl_verify_result);
-      break;
+      die ("SSL certification verification error: %ld\n", 
+	   ssl_verify_result);
     }
-    if (ssl_verify_result != X509_V_OK)
-      die("certificate verification failed!\n");
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
@@ -247,6 +243,9 @@ become_nobody ()
   uid_t uid;
   struct passwd *pw;
 
+  if (0 != getuid ())
+    return; /* not running as root to begin with; should (!) be harmless to continue
+	       without dropping to 'nobody' (setting time will fail in the end) */
   pw = getpwnam(UNPRIV_USER);
   if (NULL == pw)
     die ("Failed to obtain UID for `%s'\n", UNPRIV_USER);
@@ -271,6 +270,8 @@ main(int argc, char **argv)
   struct timeval end_timeval;
   int status;
   pid_t ssl_child;
+  long long rt_time_ms;
+  uint32_t server_time_s;
 
   if (argc != 6)
     return 1;
@@ -299,6 +300,8 @@ main(int argc, char **argv)
 
   /* initialize to bogus value, just to be on the safe side */
   *time_map = 0;
+
+  /* Run SSL interaction in separate process (and not as 'root') */
   ssl_child = fork ();
   if (-1 == ssl_child)
     die ("fork failed: %s\n", strerror (errno));
@@ -316,24 +319,27 @@ main(int argc, char **argv)
 
   if (0 != gettimeofday(&end_timeval, NULL))
     die ("Failed to read current time of day: %s\n", strerror (errno));
+  
+  /* calculate RTT */
+  rt_time_ms = (end_timeval.tv_sec - start_timeval.tv_sec) * 1000 + (end_timeval.tv_usec - start_timeval.tv_usec) / 1000;
+  if (rt_time_ms < 0)
+    rt_time_ms = 0; /* non-linear time... */
+  server_time_s = ntohl (*time_map);
+  munmap (time_map, sizeof (uint32_t));
 
-  {
-    uint32_t rt_time;
-
-    /* FIXME: report in ms instead... */
-    /* FIXME: abs!? */
-    rt_time = abs(end_timeval.tv_sec - start_timeval.tv_sec);
-    verb ("V: server_random fetched in %i sec\n", rt_time);
-  }
+  verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n", 
+	(unsigned int) server_time_s,
+	start_timeval.tv_sec - server_time_s,
+	rt_time_ms);
 
   /* finally, actually set the time */
   {
     struct timeval server_time;
 
-    server_time.tv_sec = ntohl(*time_map);
-    server_time.tv_usec = 0;
-    verb ("V: server_random with ntohl is: %lu.0\n",
-	  (unsigned long)server_time.tv_sec);
+    /* correct server time by half of RTT */
+    server_time.tv_sec = server_time_s + (rt_time_ms / 2 / 1000);
+    server_time.tv_usec = (rt_time_ms / 2) % 1000;
+
     // We should never receive a time that is before the time we were last
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
@@ -341,13 +347,9 @@ main(int argc, char **argv)
       die("remote server is a false ticker from the future!");
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!");
-
-    // FIXME: correct by RTT?
     if (0 != settimeofday(&server_time, NULL))
-      die ("V: setting time failed: %s\n", strerror (errno));
+      die ("setting time failed: %s\n", strerror (errno));
   }
-  /* clean up */
-  munmap (time_map, sizeof (uint32_t));
   verb ("V: setting time succeeded\n");
   return 0;
 }
