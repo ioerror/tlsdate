@@ -116,10 +116,6 @@ know:
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
-// After the duration of the TLS handshake exceeds this threshold
-// (in usec), a warning is printed.
-#define TLS_RTT_THRESHOLD	2000000
-
 
 static void
 die(const char *fmt, ...)
@@ -236,7 +232,6 @@ main(int argc, char **argv)
   const char *host;
   const char *port;
   const char *protocol;
-  double rtt_usec;
 
   struct timeval start_timeval;
   struct timeval end_timeval;
@@ -297,6 +292,13 @@ main(int argc, char **argv)
   if (NULL == (c_bio = BIO_new_fp(stdout, BIO_NOCLOSE)))
     die ("FIXME: error message");
 
+  // This should run in seccomp
+  // eg:     prctl(PR_SET_SECCOMP, 1);
+  if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
+    die ("SSL connection failed\n");    
+  
+  drop_privs();
+
   /* Get the current time from the system clock. */
   if (0 != gettimeofday(&start_timeval, NULL))
     die ("Failed to read current time of day: %s\n", strerror (errno));
@@ -304,28 +306,11 @@ main(int argc, char **argv)
 	(unsigned long)start_timeval.tv_sec, 
 	(unsigned long)start_timeval.tv_usec);  
 
-  // This should run in seccomp
-  // eg:     prctl(PR_SET_SECCOMP, 1);
-  if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
-    die ("SSL connection failed\n");    
-
-  /* Get time again to see how long it took us to conduct the TLS handshake */
-  if (0 != gettimeofday(&end_timeval, NULL))
-    die ("Failed to read current time of day: %s\n", strerror (errno));
-
-  rtt_usec = (end_timeval.tv_sec - start_timeval.tv_sec) * 1000000;
-  rtt_usec += (end_timeval.tv_usec - start_timeval.tv_usec);
-  verb ("V: the TLS handshake took us %.3f msec\n", rtt_usec/1000);
-
-  if (rtt_usec > TLS_RTT_THRESHOLD) {
-    verb ("V: it took longer than %d msec to fetch the server certificate - " \
-          "consider using a different server\n", TLS_RTT_THRESHOLD/1000);
-  }
-
-  drop_privs();
-
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
+
+  if (0 != gettimeofday(&end_timeval, NULL))
+    die ("Failed to read current time of day: %s\n", strerror (errno));
 
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
@@ -358,6 +343,15 @@ main(int argc, char **argv)
   }
 
 
+  if (verbose)
+  {
+    uint32_t rt_time;
+
+    /* FIXME: report in ms instead... */
+    /* FIXME: abs!? */
+    rt_time = abs(end_timeval.tv_sec - start_timeval.tv_sec);
+    verb ("V: server_random fetched in %i sec\n", rt_time);
+  }
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bytes
   {
@@ -373,9 +367,9 @@ main(int argc, char **argv)
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
     if (server_time.tv_sec >= MAX_REASONABLE_TIME)
-      die("remote server is a false ticker from the future!\n");
+      die("remote server is a false ticker from the future!");
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
-      die ("remote server is a false ticker!\n");
+      die ("remote server is a false ticker!");
 
     // FIXME: correct by RTT?
     if (0 != settimeofday(&server_time, NULL))

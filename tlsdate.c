@@ -171,7 +171,8 @@ main(int argc, char **argv)
 	  (ca_racket ? "racket" : "unchecked"),
 	  (verbose ? "verbose" : "quiet"),
 	  NULL);
-  perror("Failed to run tlsdate-helper");
+  fprintf (stderr,
+	   "Failed to run tlsdate-helper\n");
   return 1;
 }
 
