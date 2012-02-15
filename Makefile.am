@@ -1,20 +1,21 @@
 AUTOMAKE_OPTIONS = foreign 1.7
 EXTRA_DIST = \
+  AUTHORS \
   README \
   LICENSE \
   TODO \
   apparmor-profile \
-  autogen.sh
+  autogen.sh 
 
 # Our main program
 bin_PROGRAMS = tlsdate tlsdate-helper
 tlsdate_SOURCES = tlsdate.c
 tlsdate_helper_SOURCES = tlsdate-helper.c
-tlsdate_helper_LDADD = -lcap -lssl -lcrypto
+tlsdate_helper_LDADD = -lssl -lcrypto
 
 # Our documentation
 man_MANS = tlsdate.1
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST += $(man_MANS)
 
 CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
   tlsdate-config.h \

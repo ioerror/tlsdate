@@ -56,8 +56,8 @@ know:
 */
 
 /**
- * \file tlsdate.c
- * \brief The main program to assist in setting the system clock.
+ * \file tlsdate-helper.c
+ * \brief Helper program that does the actual work of setting the system clock.
  **/
 
 /*
@@ -77,18 +77,14 @@ know:
 
 #include <stdarg.h>
 #include <stdint.h>
-#ifdef HAVE_SYS_TIME_H
+#include <stdio.h>
+#include <unistd.h>
 #include <sys/time.h>
-#endif
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
+#include <sys/mman.h>
+#include <time.h>
 #include <pwd.h>
-#include <grp.h>
-
 #include <arpa/inet.h>
 
 #include <openssl/bio.h>
@@ -96,17 +92,7 @@ know:
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
-#ifdef HAVE_SYS_PRCTL_H
-#include <sys/prctl.h>
-#endif
-#ifdef HAVE_SYS_CAPABILITY_H
-#include <sys/capability.h>
-#endif
-#ifdef HAVE_LINUX_CAPABILITY_H
-#include <linux/capability.h>
-#endif
-
-
+/** Name of user that we feel safe to run SSL handshake with. */
 #define UNPRIV_USER "nobody"
 
 // We should never accept a time before we were compiled
@@ -116,7 +102,17 @@ know:
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
+static int verbose;
 
+static int ca_racket;
+
+static const char *host;
+
+static const char *port;
+
+static const char *protocol;
+
+/** helper function to print message and die */
 static void
 die(const char *fmt, ...)
 {
@@ -128,88 +124,6 @@ die(const char *fmt, ...)
   exit(1);
 }
 
-
-#define NUM_OF(x) (sizeof (x) / sizeof *(x))
-
-/** Drop all caps except CAP_SYS_TIME */
-static void drop_caps(void)
-{
-  cap_t caps;
-  cap_value_t needed_caps[] = {CAP_SYS_TIME};
-
-  if (NULL == (caps = cap_init()))
-    die("cap_init: %s\n", strerror(errno));
-  if (0 != cap_set_flag(caps, CAP_EFFECTIVE, NUM_OF (needed_caps), needed_caps, CAP_SET))
-    die("cap_set_flag() failed\n");
-  if (0 != cap_set_flag(caps, CAP_PERMITTED, NUM_OF (needed_caps), needed_caps, CAP_SET))
-    die("cap_set_flag: %s\n", strerror(errno));
-  if (0 != cap_set_proc(caps))
-    die("cap_set_proc: %s\n", strerror(errno));
-  if (0 != cap_free(caps))
-    die("cap_free: %s\n", strerror(errno));
-}
-
-/** Switch to a different uid and gid */
-static void switch_uid(const struct passwd *pw)
-{
-  if (0 != setgid(pw->pw_gid))
-    die("setgid(%d): %s\n", (int)pw->pw_gid, strerror(errno));
-  if (0 != initgroups(UNPRIV_USER, pw->pw_gid))
-    die("initgroups: %s\n", strerror(errno));
-  if (0 != setuid(pw->pw_uid))
-    die("setuid(%d): %s\n", (int)pw->pw_uid, strerror(errno));
-}
-
-/** create a temp directory, chroot into it, and chdir to the new root. */
-static void chroot_tmp(void)
-{
-  char jaildir[] = "/tmp/tlsdate_XXXXXX";
-  pid_t cpid;
-
-  if (NULL == mkdtemp(jaildir))
-    die("mkdtemp(%s): %s\n", jaildir, strerror(errno));
-  cpid = fork ();
-  if (-1 == cpid)
-    die("fork failed: %s\n", strerror (errno));
-  if (0 != cpid)
-  {
-    int status;
-    int ret;
-
-    while ( (cpid != (ret = waitpid (cpid, &status, 0))) &&
-	    (EAGAIN == errno) ) ;
-    if (ret != cpid)
-      die ("waitpid failed: %s\n", strerror (errno));
-    if (0 != rmdir (jaildir))
-      fprintf (stderr, "Failed to remove jail directory `%s': %s\n",
-	       jaildir,
-	       strerror (errno));
-    if (WIFEXITED (status))
-      exit (WEXITSTATUS (status));
-    exit (1);
-  }
-  if (0 != chroot(jaildir))
-    die("chroot(%s): %s\n", jaildir, strerror(errno));
-  if (0 != chdir("/"))
-    die("chdir: %s\n", strerror(errno));
-}
-
-/** This is inspired by conversations with stealth. */
-static void drop_privs(void)
-{
-  struct passwd *pw;
-
-  if (NULL == (pw = getpwnam(UNPRIV_USER)))
-    die("getpwnam(%s): %s\n", UNPRIV_USER, strerror(errno));
-  if (0 != prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0))
-    die("prctl(PR_SET_KEEPCAPS): %s\n", strerror(errno));
-  chroot_tmp();
-  switch_uid(pw);
-  drop_caps();
-}
-
-
-static int verbose;
 
 /** helper function for 'verbose' output */
 static void
@@ -225,29 +139,19 @@ verb (const char *fmt, ...)
 }
 
 
-int
-main(int argc, char **argv)
+/**
+ * Run SSL handshake and store the resulting time value in the
+ * 'time_map'.
+ *
+ * @param time_map where to store the current time
+ */
+static void
+run_ssl (uint32_t *time_map)
 {
-  int ca_racket;
-  const char *host;
-  const char *port;
-  const char *protocol;
-
-  struct timeval start_timeval;
-  struct timeval end_timeval;
-
   BIO *s_bio;
   BIO *c_bio;
   SSL_CTX *ctx;
   SSL *ssl;
-
-  if (argc != 6)
-    return 1;
-  host = argv[1];
-  port = argv[2];
-  protocol = argv[3];
-  ca_racket = (0 != strcmp ("unchecked", argv[4]));
-  verbose = (0 != strcmp ("quiet", argv[5]));
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -296,28 +200,13 @@ main(int argc, char **argv)
   // eg:     prctl(PR_SET_SECCOMP, 1);
   if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
     die ("SSL connection failed\n");    
-  
-  drop_privs();
-
-  /* Get the current time from the system clock. */
-  if (0 != gettimeofday(&start_timeval, NULL))
-    die ("Failed to read current time of day: %s\n", strerror (errno));
-  verb ("V: time is currently %lu.%06lu\n",
-	(unsigned long)start_timeval.tv_sec, 
-	(unsigned long)start_timeval.tv_usec);  
-
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
-
-  if (0 != gettimeofday(&end_timeval, NULL))
-    die ("Failed to read current time of day: %s\n", strerror (errno));
-
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
     X509 *x509;
     long ssl_verify_result;
 
-    verb ("V: Attempting to verify certificate\n");
     if (NULL == (x509 = SSL_get_peer_certificate(ssl)) )
       die ("Getting SSL certificate failed\n");
 
@@ -327,42 +216,128 @@ main(int argc, char **argv)
     {
     case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
     case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-      fprintf (stderr, "E: self signed cert\n");
-      break;
+      die ("SSL certificate is self signed\n");
     case X509_V_OK:
-      verb ("V: verification OK: %ld\n", ssl_verify_result);
+      verb ("V: SSL certificate verification passed\n");
       break;
     default:
-      fprintf(stderr, "E: verification error: %ld\n", ssl_verify_result);
-      break;
+      die ("SSL certification verification error: %ld\n", 
+	   ssl_verify_result);
     }
-    if (ssl_verify_result != X509_V_OK)
-      die("certificate verification failed!\n");
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
 
-
-  if (verbose)
-  {
-    uint32_t rt_time;
-
-    /* FIXME: report in ms instead... */
-    /* FIXME: abs!? */
-    rt_time = abs(end_timeval.tv_sec - start_timeval.tv_sec);
-    verb ("V: server_random fetched in %i sec\n", rt_time);
-  }
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bytes
+  memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));  
+}
+
+
+/** drop root rights and become 'nobody' */
+static void
+become_nobody ()
+{
+  uid_t uid;
+  struct passwd *pw;
+
+  if (0 != getuid ())
+    return; /* not running as root to begin with; should (!) be harmless to continue
+	       without dropping to 'nobody' (setting time will fail in the end) */
+  pw = getpwnam(UNPRIV_USER);
+  if (NULL == pw)
+    die ("Failed to obtain UID for `%s'\n", UNPRIV_USER);
+  uid = pw->pw_uid;
+  if (0 == uid)
+    die ("UID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
+#ifdef HAVE_SETRESUID
+  if (0 != setresuid (uid, uid, uid))
+    die ("Failed to setresuid: %s\n", strerror (errno));
+#else
+  if (0 != (setuid (uid) | seteuid (uid)))
+    die ("Failed to setuid: %s\n", strerror (errno));
+#endif  
+}
+
+
+int
+main(int argc, char **argv)
+{
+  uint32_t *time_map;
+  struct timeval start_timeval;
+  struct timeval end_timeval;
+  int status;
+  pid_t ssl_child;
+  long long rt_time_ms;
+  uint32_t server_time_s;
+
+  if (argc != 6)
+    return 1;
+  host = argv[1];
+  port = argv[2];
+  protocol = argv[3];
+  ca_racket = (0 != strcmp ("unchecked", argv[4]));
+  verbose = (0 != strcmp ("quiet", argv[5]));
+
+  time_map = mmap (NULL, sizeof (uint32_t),
+		   PROT_READ | PROT_WRITE,
+		   MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  if (MAP_FAILED == time_map)
+  {
+    fprintf (stderr, "mmap failed: %s\n",
+	     strerror (errno));
+    return 1;
+  }
+
+  /* Get the current time from the system clock. */
+  if (0 != gettimeofday(&start_timeval, NULL))
+    die ("Failed to read current time of day: %s\n", strerror (errno));
+  verb ("V: time is currently %lu.%06lu\n",
+	(unsigned long)start_timeval.tv_sec, 
+	(unsigned long)start_timeval.tv_usec);  
+
+  /* initialize to bogus value, just to be on the safe side */
+  *time_map = 0;
+
+  /* Run SSL interaction in separate process (and not as 'root') */
+  ssl_child = fork ();
+  if (-1 == ssl_child)
+    die ("fork failed: %s\n", strerror (errno));
+  if (0 == ssl_child)
+  {
+    become_nobody ();
+    run_ssl (time_map);
+    (void) munmap (time_map, sizeof (uint32_t));
+    _exit (0);
+  } 
+  if (ssl_child != waitpid (ssl_child, &status, 0))
+    die ("waitpid failed: %s\n", strerror (errno));
+  if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
+    die ("child process failed in SSL handshake\n");
+
+  if (0 != gettimeofday(&end_timeval, NULL))
+    die ("Failed to read current time of day: %s\n", strerror (errno));
+  
+  /* calculate RTT */
+  rt_time_ms = (end_timeval.tv_sec - start_timeval.tv_sec) * 1000 + (end_timeval.tv_usec - start_timeval.tv_usec) / 1000;
+  if (rt_time_ms < 0)
+    rt_time_ms = 0; /* non-linear time... */
+  server_time_s = ntohl (*time_map);
+  munmap (time_map, sizeof (uint32_t));
+
+  verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n", 
+	(unsigned int) server_time_s,
+	start_timeval.tv_sec - server_time_s,
+	rt_time_ms);
+
+  /* finally, actually set the time */
   {
     struct timeval server_time;
-    uint32_t server_time_tmp;
 
-    memcpy(&server_time_tmp, ssl->s3->server_random, sizeof (uint32_t));
-    server_time.tv_sec = ntohl(server_time_tmp);
-    server_time.tv_usec = 0;
-    verb ("V: server_random with ntohl is: %lu.0\n",
-	  (unsigned long)server_time.tv_sec);
+    /* correct server time by half of RTT */
+    server_time.tv_sec = server_time_s + (rt_time_ms / 2 / 1000);
+    server_time.tv_usec = (rt_time_ms / 2) % 1000;
+
     // We should never receive a time that is before the time we were last
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
@@ -370,10 +345,8 @@ main(int argc, char **argv)
       die("remote server is a false ticker from the future!");
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!");
-
-    // FIXME: correct by RTT?
     if (0 != settimeofday(&server_time, NULL))
-      die ("V: setting time failed: %s\n", strerror (errno));
+      die ("setting time failed: %s\n", strerror (errno));
   }
   verb ("V: setting time succeeded\n");
   return 0;
