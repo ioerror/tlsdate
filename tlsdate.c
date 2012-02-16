@@ -81,7 +81,7 @@ know:
 #include <unistd.h>
 
 #define UNPRIV_USER "nobody"
-#define DEFAULT_HOST "www.torproject.org"
+#define DEFAULT_HOST "www.ptb.de"
 #define DEFAULT_PORT "443"
 #define DEFAULT_PROTOCOL "tlsv1"
 
