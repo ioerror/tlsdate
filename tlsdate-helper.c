@@ -102,6 +102,10 @@ know:
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
+// After the duration of the TLS handshake exceeds this threshold
+// (in usec), a warning is printed.
+#define TLS_RTT_THRESHOLD      2000000
+
 static int verbose;
 
 static int ca_racket;
@@ -222,7 +226,7 @@ run_ssl (uint32_t *time_map)
       break;
     default:
       die ("SSL certification verification error: %ld\n", 
-	   ssl_verify_result);
+     ssl_verify_result);
     }
   } else {
     verb ("V: Certificate verification skipped!\n");
@@ -243,7 +247,7 @@ become_nobody ()
 
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
-	       without dropping to 'nobody' (setting time will fail in the end) */
+         without dropping to 'nobody' (setting time will fail in the end) */
   pw = getpwnam(UNPRIV_USER);
   if (NULL == pw)
     die ("Failed to obtain UID for `%s'\n", UNPRIV_USER);
@@ -280,12 +284,12 @@ main(int argc, char **argv)
   verbose = (0 != strcmp ("quiet", argv[5]));
 
   time_map = mmap (NULL, sizeof (uint32_t),
-		   PROT_READ | PROT_WRITE,
-		   MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+       PROT_READ | PROT_WRITE,
+       MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   if (MAP_FAILED == time_map)
   {
     fprintf (stderr, "mmap failed: %s\n",
-	     strerror (errno));
+       strerror (errno));
     return 1;
   }
 
@@ -293,8 +297,8 @@ main(int argc, char **argv)
   if (0 != gettimeofday(&start_timeval, NULL))
     die ("Failed to read current time of day: %s\n", strerror (errno));
   verb ("V: time is currently %lu.%06lu\n",
-	(unsigned long)start_timeval.tv_sec, 
-	(unsigned long)start_timeval.tv_usec);  
+  (unsigned long)start_timeval.tv_sec, 
+  (unsigned long)start_timeval.tv_usec);  
 
   /* initialize to bogus value, just to be on the safe side */
   *time_map = 0;
@@ -326,9 +330,9 @@ main(int argc, char **argv)
   munmap (time_map, sizeof (uint32_t));
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n", 
-	(unsigned int) server_time_s,
-	start_timeval.tv_sec - server_time_s,
-	rt_time_ms);
+  (unsigned int) server_time_s,
+  start_timeval.tv_sec - server_time_s,
+  rt_time_ms);
 
   /* finally, actually set the time */
   {
@@ -342,9 +346,9 @@ main(int argc, char **argv)
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
     if (server_time.tv_sec >= MAX_REASONABLE_TIME)
-      die("remote server is a false ticker from the future!");
+      die("remote server is a false ticker from the future!\n");
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
-      die ("remote server is a false ticker!");
+      die ("remote server is a false ticker!\n");
     if (0 != settimeofday(&server_time, NULL))
       die ("setting time failed: %s\n", strerror (errno));
   }
