@@ -32,5 +32,18 @@ Here is an example with a custom host and custom port:
   V: setting time returned: 0
   V: tlsdate: SUCCESS
 
+Here is an example of a false ticker that is detected and rejected:
+
+  % sudo tlsdate -v -H facebook.com
+  V: tlsdate version 0.1
+  V: We were called with the following arguments:
+  V: validate SSL certificates host = www.facebook.com:443
+  V: time is currently 1329350443.903045
+  V: using TLSv1_client_method()
+  V: SSL certificate verification passed
+  V: server time 3599738087 (difference is about 2024579652 s) was fetched in
+  1287 ms
+  remote server is a false ticker from the future!
+
 "It's a piece of shit but It Works." - this is not yet secure and it needs
 an audit before it should be used for anything, ever.
