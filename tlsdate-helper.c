@@ -103,8 +103,8 @@ know:
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
 // After the duration of the TLS handshake exceeds this threshold
-// (in usec), a warning is printed.
-#define TLS_RTT_THRESHOLD      2000000
+// (in msec), a warning is printed.
+#define TLS_RTT_THRESHOLD      2000
 
 static int verbose;
 
@@ -333,6 +333,12 @@ main(int argc, char **argv)
   (unsigned int) server_time_s,
   start_timeval.tv_sec - server_time_s,
   rt_time_ms);
+
+  /* warning if the handshake took too long */
+  if (rt_time_ms > TLS_RTT_THRESHOLD) {
+    verb ("V: the TLS handshake took more than %d msecs - consider using a different " \
+      "server or run it again\n", TLS_RTT_THRESHOLD);
+  }
 
   /* finally, actually set the time */
   {
