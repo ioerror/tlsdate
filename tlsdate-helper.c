@@ -203,7 +203,7 @@ run_ssl (uint32_t *time_map)
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
   if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
-    die ("SSL connection failed\n");    
+    die ("SSL connection failed\n");
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
   // Verify the peer certificate against the CA certs on the local system
@@ -225,7 +225,7 @@ run_ssl (uint32_t *time_map)
       verb ("V: SSL certificate verification passed\n");
       break;
     default:
-      die ("SSL certification verification error: %ld\n", 
+      die ("SSL certification verification error: %ld\n",
      ssl_verify_result);
     }
   } else {
@@ -234,7 +234,7 @@ run_ssl (uint32_t *time_map)
 
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bytes
-  memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));  
+  memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
 }
 
 
@@ -297,8 +297,8 @@ main(int argc, char **argv)
   if (0 != gettimeofday(&start_timeval, NULL))
     die ("Failed to read current time of day: %s\n", strerror (errno));
   verb ("V: time is currently %lu.%06lu\n",
-  (unsigned long)start_timeval.tv_sec, 
-  (unsigned long)start_timeval.tv_usec);  
+  (unsigned long)start_timeval.tv_sec,
+  (unsigned long)start_timeval.tv_usec);
 
   /* initialize to bogus value, just to be on the safe side */
   *time_map = 0;
@@ -329,7 +329,7 @@ main(int argc, char **argv)
   server_time_s = ntohl (*time_map);
   munmap (time_map, sizeof (uint32_t));
 
-  verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n", 
+  verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
   (unsigned int) server_time_s,
   start_timeval.tv_sec - server_time_s,
   rt_time_ms);
