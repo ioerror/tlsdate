@@ -85,6 +85,7 @@ know:
 #include <sys/mman.h>
 #include <time.h>
 #include <pwd.h>
+#include <grp.h>
 #include <arpa/inet.h>
 
 #include <openssl/bio.h>
@@ -94,6 +95,7 @@ know:
 
 /** Name of user that we feel safe to run SSL handshake with. */
 #define UNPRIV_USER "nobody"
+#define UNPRIV_GROUP "nogroup"
 
 // We should never accept a time before we were compiled
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
@@ -243,24 +245,42 @@ static void
 become_nobody ()
 {
   uid_t uid;
+  gid_t gid;
   struct passwd *pw;
+  struct group  *gr;
 
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
          without dropping to 'nobody' (setting time will fail in the end) */
   pw = getpwnam(UNPRIV_USER);
+  gr = getgrnam(UNPRIV_GROUP);
   if (NULL == pw)
     die ("Failed to obtain UID for `%s'\n", UNPRIV_USER);
+  if (NULL == gr)
+    die ("Failed to obtain GID for `%s'\n", UNPRIV_GROUP);
   uid = pw->pw_uid;
   if (0 == uid)
     die ("UID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
+  gid = pw->pw_gid;
+  if (0 == gid || 0 == gr->gr_gid)
+    die ("GID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
+  if (pw->pw_gid != gr->gr_gid)
+    die ("GID for `%s' is not `%s' as expected, refusing to run SSL\n", UNPRIV_USER, UNPRIV_GROUP);
+
+#ifdef HAVE_SETRESGID
+  if (0 != setresgid (gid, gid, gid))
+    die ("Failed to setresgid: %s\n", strerror (errno));
+#else
+  if (0 != (setgid (gid) | setegid (gid)))
+    die ("Failed to setgid: %s\n", strerror (errno));
+#endif
 #ifdef HAVE_SETRESUID
   if (0 != setresuid (uid, uid, uid))
     die ("Failed to setresuid: %s\n", strerror (errno));
 #else
   if (0 != (setuid (uid) | seteuid (uid)))
     die ("Failed to setuid: %s\n", strerror (errno));
-#endif  
+#endif
 }
 
 

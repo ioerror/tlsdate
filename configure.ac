@@ -24,6 +24,7 @@ AC_CHECK_HEADERS(
   sys/mman.h \
   time.h \
   pwd.h \
+  grp.h \
   arpa/inet.h \
   openssl/bio.h \
   openssl/ssl.h \
