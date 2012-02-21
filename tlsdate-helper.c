@@ -265,7 +265,12 @@ become_nobody ()
   if (0 == gid || 0 == gr->gr_gid)
     die ("GID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
   if (pw->pw_gid != gr->gr_gid)
-    die ("GID for `%s' is not `%s' as expected, refusing to run SSL\n", UNPRIV_USER, UNPRIV_GROUP);
+    die ("GID for `%s' is not `%s' as expected, refusing to run SSL\n",
+          UNPRIV_USER, UNPRIV_GROUP);
+
+  if (0 != initgroups((const char *)UNPRIV_USER, gr->gr_gid))
+    die ("Unable to initgroups for `%s' in group `%s' as expected\n",
+          UNPRIV_USER, UNPRIV_GROUP);
 
 #ifdef HAVE_SETRESGID
   if (0 != setresgid (gid, gid, gid))
