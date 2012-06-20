@@ -94,14 +94,20 @@ know:
 #include <openssl/evp.h>
 
 /** Name of user that we feel safe to run SSL handshake with. */
+#ifndef UNPRIV_USER
 #define UNPRIV_USER "nobody"
+#endif
+#ifndef UNPRIV_GROUP
 #define UNPRIV_GROUP "nogroup"
+#endif
 
 // We should never accept a time before we were compiled
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
+#ifndef RECENT_COMPILE_DATE
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
+#endif
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
 // After the duration of the TLS handshake exceeds this threshold
