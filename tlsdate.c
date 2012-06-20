@@ -94,7 +94,7 @@ usage(void)
           " [-s|--skip-verification]\n"
           " [-H|--host] [hostname|ip]\n"
           " [-p|--port] [port number]\n"
-          " [-P]--protocol] [sslv23|sslv3|tlsv1]\n"
+          " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
           " [-v|--verbose]\n");
 }
 
