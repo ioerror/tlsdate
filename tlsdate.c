@@ -84,6 +84,7 @@ know:
 #define DEFAULT_HOST "www.ptb.de"
 #define DEFAULT_PORT "443"
 #define DEFAULT_PROTOCOL "tlsv1"
+#define DEFAULT_CERTDIR "/etc/ssl/certs"
 
 /** Return the proper commandline switches when the user needs information. */
 static void
@@ -95,6 +96,7 @@ usage(void)
           " [-H|--host] [hostname|ip]\n"
           " [-p|--port] [port number]\n"
           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
+          " [-C|--certdir] [dirname]\n"
           " [-v|--verbose]\n");
 }
 
@@ -107,10 +109,12 @@ main(int argc, char **argv)
   const char *host;
   const char *port;
   const char *protocol;
+  const char *certdir;
 
   host = DEFAULT_HOST;
   port = DEFAULT_PORT;
   protocol = DEFAULT_PROTOCOL;
+  certdir = DEFAULT_CERTDIR;
   verbose = 0;
   ca_racket = 1;
 
@@ -126,10 +130,11 @@ main(int argc, char **argv)
         {"host", 0, 0, 'H'},
         {"port", 0, 0, 'p'},
         {"protocol", 0, 0, 'P'},
+        {"certdir", 0, 0, 'C'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vshH:p:P:",
+    c = getopt_long(argc, argv, "vshH:p:P:C:",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -141,6 +146,7 @@ main(int argc, char **argv)
       case 'H': host = optarg; break;
       case 'p': port = optarg; break;
       case 'P': protocol = optarg; break;
+      case 'C': certdir = optarg; break;
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
     }
@@ -165,6 +171,7 @@ main(int argc, char **argv)
     protocol,
     (ca_racket ? "racket" : "unchecked"),
     (verbose ? "verbose" : "quiet"),
+    certdir,
     NULL);
   perror("Failed to run tlsdate-helper");
   return 1;
