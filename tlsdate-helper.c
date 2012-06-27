@@ -94,14 +94,20 @@ know:
 #include <openssl/evp.h>
 
 /** Name of user that we feel safe to run SSL handshake with. */
+#ifndef UNPRIV_USER
 #define UNPRIV_USER "nobody"
+#endif
+#ifndef UNPRIV_GROUP
 #define UNPRIV_GROUP "nogroup"
+#endif
 
 // We should never accept a time before we were compiled
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
+#ifndef RECENT_COMPILE_DATE
 #define RECENT_COMPILE_DATE (uint32_t) 1328610583
+#endif
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
 // After the duration of the TLS handshake exceeds this threshold
@@ -117,6 +123,8 @@ static const char *host;
 static const char *port;
 
 static const char *protocol;
+
+static const char *certdir;
 
 /** helper function to print message and die */
 static void
@@ -183,9 +191,7 @@ run_ssl (uint32_t *time_map)
 
   if (ca_racket)
   {
-    // For google specifically:
-    // SSL_CTX_load_verify_locations(ctx, "/etc/ssl/certs/Equifax_Secure_CA.pem", NULL);
-    if (1 != SSL_CTX_load_verify_locations(ctx, NULL, "/etc/ssl/certs/"))
+    if (1 != SSL_CTX_load_verify_locations(ctx, NULL, certdir))
       fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
   }
 
@@ -300,11 +306,12 @@ main(int argc, char **argv)
   long long rt_time_ms;
   uint32_t server_time_s;
 
-  if (argc != 6)
+  if (argc != 7)
     return 1;
   host = argv[1];
   port = argv[2];
   protocol = argv[3];
+  certdir = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
 
