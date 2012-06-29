@@ -239,7 +239,7 @@ run_ssl (uint32_t *time_map)
   }
 
   // from /usr/include/openssl/ssl3.h
-  //  ssl->s3->server_random is an unsigned char of 32 bytes
+  //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
 }
 
