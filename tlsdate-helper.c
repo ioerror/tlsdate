@@ -388,7 +388,9 @@ main(int argc, char **argv)
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!\n");
     if (0 != settimeofday(&server_time, NULL))
-      die ("setting time failed: %s\n", strerror (errno));
+      die ("setting time failed: %s (Difference from server is about %d)\n",
+	   strerror (errno),
+	   start_timeval.tv_sec - server_time_s);
   }
   verb ("V: setting time succeeded\n");
   return 0;
