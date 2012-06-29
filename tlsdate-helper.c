@@ -163,7 +163,6 @@ static void
 run_ssl (uint32_t *time_map)
 {
   BIO *s_bio;
-  BIO *c_bio;
   SSL_CTX *ctx;
   SSL *ssl;
 
@@ -205,8 +204,8 @@ run_ssl (uint32_t *time_map)
        (1 != BIO_set_conn_port(s_bio, port)) )
     die ("Failed to initialize connection to `%s:%s'\n", host, port);
 
-  if (NULL == (c_bio = BIO_new_fp(stdout, BIO_NOCLOSE)))
-    die ("FIXME: error message");
+  if (NULL == BIO_new_fp(stdout, BIO_NOCLOSE))
+    die ("BIO_new_fp returned error, possibly: %s", strerror(errno));
 
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
@@ -216,10 +215,9 @@ run_ssl (uint32_t *time_map)
     die ("SSL handshake failed\n");
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
-    X509 *x509;
     long ssl_verify_result;
 
-    if (NULL == (x509 = SSL_get_peer_certificate(ssl)) )
+    if (NULL == SSL_get_peer_certificate(ssl))
       die ("Getting SSL certificate failed\n");
 
     // In theory, we verify that the cert is valid
@@ -388,7 +386,9 @@ main(int argc, char **argv)
     if (server_time.tv_sec <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!\n");
     if (0 != settimeofday(&server_time, NULL))
-      die ("setting time failed: %s\n", strerror (errno));
+      die ("setting time failed: %s (Difference from server is about %d)\n",
+	   strerror (errno),
+	   start_timeval.tv_sec - server_time_s);
   }
   verb ("V: setting time succeeded\n");
   return 0;
