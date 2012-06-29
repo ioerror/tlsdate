@@ -215,10 +215,9 @@ run_ssl (uint32_t *time_map)
     die ("SSL handshake failed\n");
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
-    X509 *x509;
     long ssl_verify_result;
 
-    if (NULL == (x509 = SSL_get_peer_certificate(ssl)) )
+    if (NULL == SSL_get_peer_certificate(ssl))
       die ("Getting SSL certificate failed\n");
 
     // In theory, we verify that the cert is valid
