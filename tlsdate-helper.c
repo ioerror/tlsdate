@@ -163,7 +163,6 @@ static void
 run_ssl (uint32_t *time_map)
 {
   BIO *s_bio;
-  BIO *c_bio;
   SSL_CTX *ctx;
   SSL *ssl;
 
@@ -205,8 +204,8 @@ run_ssl (uint32_t *time_map)
        (1 != BIO_set_conn_port(s_bio, port)) )
     die ("Failed to initialize connection to `%s:%s'\n", host, port);
 
-  if (NULL == (c_bio = BIO_new_fp(stdout, BIO_NOCLOSE)))
-    die ("FIXME: error message");
+  if (NULL == BIO_new_fp(stdout, BIO_NOCLOSE))
+    die ("BIO_new_fp returned error, possibly: %s", strerror(errno));
 
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
