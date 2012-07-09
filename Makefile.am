@@ -36,3 +36,8 @@ CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
 # XXX TODO:
 # We also should remove the follow dirs with `make clean`
 # autom4te.cache & .deps
+
+.PHONY: debian_orig
+debian_orig:
+	$(MAKE) dist
+	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
