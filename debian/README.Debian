@@ -1,8 +1,0 @@
-tlsdate for Debian
-------------------
-
-tlsdate may assist Debian users in a reasonably secure leap of faith first
-clock setting on systems without a normal RTC, a broken RTC or in cases where
-DNSSEC will be entirely broken without such a leap.
-
- -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 09 Jul 2012 21:04:36 +0200
