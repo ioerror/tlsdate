@@ -1,3 +1,11 @@
+tlsdate: secure parasitic rdate replacement
+
+ tlsdate sets the local clock by securely connecting with TLS to remote
+ servers and extracting the remote time out of the secure handshake. Unlike
+ ntpdate, tlsdate uses TCP, for instance connecting to a remote HTTPS or TLS
+ enabled service, and provides some protection against adversaries that try to
+ feed you malicious time information.
+
 This is an example run - starting as root and dropping to nobody:
 
   % sudo ./tlsdate -v
@@ -45,5 +53,3 @@ Here is an example of a false ticker that is detected and rejected:
   1287 ms
   remote server is a false ticker from the future!
 
-"It's a piece of shit but It Works." - this is not yet secure and it needs
-an audit before it should be used for anything, ever.

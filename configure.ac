@@ -1,5 +1,5 @@
-AC_INIT([tlsdate], [0.1], [jacob at appelbaum.net])
-AM_INIT_AUTOMAKE([tlsdate], [0.1])
+AC_INIT([tlsdate], [0.0.1], [jacob at appelbaum.net])
+AM_INIT_AUTOMAKE([tlsdate], [0.0.1])
 AM_CONFIG_HEADER([tlsdate-config.h])
 AC_CANONICAL_HOST
 AH_TOP([#define _GNU_SOURCE  1])
