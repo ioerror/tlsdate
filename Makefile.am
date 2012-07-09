@@ -37,7 +37,14 @@ CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
 # We also should remove the follow dirs with `make clean`
 # autom4te.cache & .deps
 
-.PHONY: debian_orig
+.PHONY: debian_orig git-tag git-push
 debian_orig:
 	$(MAKE) dist
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
+
+git-tag:
+	git tag -u 0xD81D840E -s tlsdate-$(VERSION)
+
+git-push:
+	git push --tags
+	git push
