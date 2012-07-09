@@ -8,3 +8,8 @@ Building and install of tlsdate should be as easy as:
 Cleaning is the usual:
 
   make clean
+
+To make a Debian package:
+
+  git checkout debian-master
+  make deb
