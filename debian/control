@@ -1,0 +1,16 @@
+Source: tlsdate
+Section: net
+Priority: extra
+Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
+Build-Depends: debhelper (>= 7.0.50~), autotools-dev
+Standards-Version: 3.9.1
+Homepage: https://www.github.com/ioerror/tlsdate/
+#Vcs-Git: git://github.com/ioerror/tlsdate.git
+
+Package: tlsdate
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: secure parasitic rdate replacement
+ tlsdate sets the local clock by securely connecting with TLS to remote
+ servers and extracting the remote time out of the secure handshake. Unlike
+ ntpdate, tlsdate uses TCP and verifies all data with cryptographic signatures.
