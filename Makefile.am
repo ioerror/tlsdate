@@ -17,7 +17,7 @@ tlsdate_helper_LDADD = -lssl -lcrypto
 noinst_HEADERS = tlsdate.h
 
 # Our documentation
-man_MANS = tlsdate.1
+man_MANS = tlsdate.1 tlsdate-helper.1
 EXTRA_DIST += $(man_MANS)
 
 CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \

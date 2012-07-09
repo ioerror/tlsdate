@@ -1,0 +1,29 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TLSDATE 1 "JANUARY 2011" Linux "User Manuals"
+.SH NAME
+tlsdate-helper \- secure parasitic rdate replacement
+.SH SYNOPSIS
+.B tlsdate-helper host port protocol certdir ca_racket verbose 
+.SH DESCRIPTION
+.B tlsdate-helper
+is a tool for setting the system clock by hand or by communication
+with the network. It does not set the Real Time Clock. It is designed to be as
+secure as TLS (RFC 2246) but of course the security of TLS is often reduced to
+whichever CA racket you believe is trustworthy. By default, tlsdate-helper
+trusts your local CA root store - so any of these companies could assist in a
+MITM attack against you and you'd be screwed.
+
+This tool is designed to be run by hand or as a system daemon. It must be
+run as root or otherwise have the proper caps; it will not be able to set
+the system time without running as root or another privileged user.
+.SH BUGS
+It's likely! Let us know by contacting jacob@appelbaum.net
+
+Note that
+.B tlsdate(1)
+is still in Alpha, and may not work as expected.
+.SH AUTHOR
+Jacob Appelbaum <jacob at appelbaum dot net>
+.SH "SEE ALSO"
