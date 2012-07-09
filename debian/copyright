@@ -1,6 +1,6 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: tlsdate
-Source: <https://github.com/ioerror/tlsdate/>
+Source: https://github.com/ioerror/tlsdate/
 
 Files: *
 Copyright: 2012 Jacob Appelbaum <jacob@appelbaum.net>
@@ -36,5 +36,3 @@ License: BSD-3-Clause
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
