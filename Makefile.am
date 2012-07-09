@@ -16,6 +16,9 @@ tlsdate_SOURCES = tlsdate.c
 tlsdate_helper_SOURCES = tlsdate-helper.c
 tlsdate_helper_LDADD = -lssl -lcrypto
 
+# We're not shipping headers
+noinst_HEADERS = tlsdate.h
+
 # Our documentation
 man_MANS = tlsdate.1
 EXTRA_DIST += $(man_MANS)
