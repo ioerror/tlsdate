@@ -1,2 +1,16 @@
 .deps/
 autom4te.cache/
+Makefile
+Makefile.in
+aclocal.m4
+config.guess
+config.log
+config.status
+config.sub
+configure
+depcomp
+install-sh
+missing
+stamp-h1
+tlsdate-config.h
+tlsdate-config.h.in
