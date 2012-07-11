@@ -15,6 +15,7 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 override_dh_install:
 	dh_install
+	dh_installchangelogs CHANGELOG
 	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
 	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
 
