@@ -23,9 +23,6 @@ noinst_HEADERS = tlsdate.h
 man_MANS = tlsdate.1 tlsdate-helper.1
 EXTRA_DIST += $(man_MANS)
 
-install-data:
-	install apparmor-profile /etc/apparmor.d/usr.bin.tlsdate
-
 CLEANFILES = tlsdate-config.h.in~ \
   tlsdate-config.h \
   Makefile.noautoconf \
