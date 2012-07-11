@@ -14,10 +14,9 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@ 
 
 override_dh_install:
-	dh_installdirs
+	dh_install
 	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
 	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
-	dh_install
 
 # Ubuntu does the following for apparmor
 #binary-install/tlsdate::
