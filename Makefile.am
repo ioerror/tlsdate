@@ -28,9 +28,7 @@ CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
   Makefile.noautoconf \
   Makefile.in \
   Makefile \
-  install-sh \
   depcomp \
-  configure \
   config.sub \
   config.status \
   config.log \
@@ -43,7 +41,7 @@ CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
 # We also should remove the follow dirs with `make clean`
 # autom4te.cache & .deps
 
-.PHONY: debian_orig git-tag git-push git-tag-debian deb
+.PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean
 debian_orig:
 	$(MAKE) dist
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
@@ -60,3 +58,7 @@ git-push:
 
 deb: debian_orig
 	debuild -rfakeroot -uc -us
+
+really-clean:
+	rm configure install-sh
+
