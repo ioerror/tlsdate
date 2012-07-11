@@ -23,17 +23,6 @@ noinst_HEADERS = tlsdate.h
 man_MANS = tlsdate.1 tlsdate-helper.1
 EXTRA_DIST += $(man_MANS)
 
-CLEANFILES = tlsdate-config.h.in~ \
-  tlsdate-config.h \
-  Makefile.noautoconf \
-  config.log \
-  aclocal.m4 \
-  stamp-h1
-
-# XXX TODO:
-# We also should remove the follow dirs with `make clean`
-# autom4te.cache & .deps
-
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean
 debian_orig:
 	$(MAKE) dist
@@ -51,7 +40,3 @@ git-push:
 
 deb: debian_orig
 	debuild -rfakeroot -uc -us
-
-really-clean: clean
-	rm configure install-sh config.sub config.guess missing Makefile.in tlsdate-config.h.in depcomp Makefile config.status
-
