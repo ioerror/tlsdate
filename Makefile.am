@@ -23,18 +23,13 @@ noinst_HEADERS = tlsdate.h
 man_MANS = tlsdate.1 tlsdate-helper.1
 EXTRA_DIST += $(man_MANS)
 
-CLEANFILES = tlsdate-config.h.in tlsdate-config.h.in~ \
+CLEANFILES = tlsdate-config.h.in~ \
   tlsdate-config.h \
   Makefile.noautoconf \
-  Makefile.in \
   Makefile \
-  depcomp \
-  config.sub \
   config.status \
   config.log \
-  config.guess \
   aclocal.m4 \
-  missing \
   stamp-h1
 
 # XXX TODO:
@@ -59,6 +54,6 @@ git-push:
 deb: debian_orig
 	debuild -rfakeroot -uc -us
 
-really-clean:
-	rm configure install-sh
+really-clean: clean
+	rm configure install-sh config.sub config.guess missing Makefile.in tlsdate-config.h.in depcomp
 
