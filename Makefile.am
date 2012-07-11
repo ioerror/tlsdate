@@ -8,6 +8,7 @@ EXTRA_DIST = \
   LICENSE \
   TODO \
   apparmor-profile \
+  ChangeLog \
   autogen.sh 
 
 # Our main program
