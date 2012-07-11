@@ -9,7 +9,18 @@ Cleaning is the usual:
 
   make clean
 
-To make a Debian package:
+To make an unsigned Debian package:
 
   git checkout debian-master
   make deb
+
+
+To make a Debian source package:
+
+  git checkout master
+  ./autogen.sh
+  ./configure && make debian_orig
+  git checkout debian-master
+  fakeroot debian/rules clean
+  dpkg-source -b tlsdate
+
