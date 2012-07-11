@@ -26,7 +26,6 @@ EXTRA_DIST += $(man_MANS)
 CLEANFILES = tlsdate-config.h.in~ \
   tlsdate-config.h \
   Makefile.noautoconf \
-  config.status \
   config.log \
   aclocal.m4 \
   stamp-h1
@@ -54,5 +53,5 @@ deb: debian_orig
 	debuild -rfakeroot -uc -us
 
 really-clean: clean
-	rm configure install-sh config.sub config.guess missing Makefile.in tlsdate-config.h.in depcomp Makefile
+	rm configure install-sh config.sub config.guess missing Makefile.in tlsdate-config.h.in depcomp Makefile config.status
 
