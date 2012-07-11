@@ -19,17 +19,17 @@ This tool is designed to be run by hand or as a system daemon. It must be
 run as root or otherwise have the proper caps; it will not be able to set
 the system time without running as root or another privileged user.
 .SH OPTIONS
-.IP -h | --help
+.IP "-h | --help"
 Print the help message
-.IP -s | --skip-verification
+.IP "-s | --skip-verification"
 Skip certificate verification
-.IP -H | --host [hostname|ip]
+.IP "-H | --host [hostname|ip]"
 Set remote hostname (default: 'www.ptb.de')
-.IP -p | --port [port]
+.IP "-p | --port [port]"
 Set remote port (default: '443')
-.IP -P | --protocol [sslv23|sslv3|tlsv1]
+.IP "-P | --protocol [sslv23|sslv3|tlsv1]"
 Set protocol to use when communicating with server (default: 'tlsv1')
-.IP -v | --verbose
+.IP "-v | --verbose"
 Provide verbose output
 .SH BUGS
 It's likely! Let us know by contacting jacob@appelbaum.net
