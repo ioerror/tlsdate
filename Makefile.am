@@ -1,5 +1,5 @@
 # Our Debian version
-DEBIAN_VERSION := $(shell if [ -d debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi) 
+DEBIAN_VERSION := $(shell if [ -e debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi)
 
 AUTOMAKE_OPTIONS = foreign 1.7
 EXTRA_DIST = \
