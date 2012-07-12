@@ -22,5 +22,6 @@ To make a Debian source package:
   ./configure && make debian_orig
   git checkout debian-master
   fakeroot debian/rules clean
+  cd ../
   dpkg-source -b tlsdate
 
