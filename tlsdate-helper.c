@@ -118,6 +118,8 @@ static int verbose;
 
 static int ca_racket;
 
+static int force_set;
+
 static const char *host;
 
 static const char *port;
@@ -230,6 +232,13 @@ run_ssl (uint32_t *time_map)
     case X509_V_OK:
       verb ("V: SSL certificate verification passed\n");
       break;
+    case X509_V_ERR_CERT_HAS_EXPIRED:
+    case X509_V_ERR_CRL_NOT_YET_VALID:
+    case X509_V_ERR_CRL_HAS_EXPIRED:
+      if (force_set) {
+	      verb ("V: Ignoring expired/not yet valid certificate validation failure due to -f/--force option.\n");
+	      break;
+      }
     default:
       die ("SSL certification verification error: %ld\n",
      ssl_verify_result);
@@ -304,14 +313,15 @@ main(int argc, char **argv)
   long long rt_time_ms;
   uint32_t server_time_s;
 
-  if (argc != 7)
+  if (argc != 8)
     return 1;
   host = argv[1];
   port = argv[2];
   protocol = argv[3];
-  certdir = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
-  verbose = (0 != strcmp ("quiet", argv[5]));
+  force_set = (0 != strcmp ("no_force_set", argv[5]));
+  verbose = (0 != strcmp ("quiet", argv[6]));
+  certdir = argv[7];
 
   time_map = mmap (NULL, sizeof (uint32_t),
        PROT_READ | PROT_WRITE,
@@ -378,17 +388,27 @@ main(int argc, char **argv)
     server_time.tv_sec = server_time_s + (rt_time_ms / 2 / 1000);
     server_time.tv_usec = (rt_time_ms / 2) % 1000;
 
-    // We should never receive a time that is before the time we were last
-    // compiled; we subscribe to the linear theory of time for this program
-    // and this program alone!
-    if (server_time.tv_sec >= MAX_REASONABLE_TIME)
-      die("remote server is a false ticker from the future!\n");
-    if (server_time.tv_sec <= RECENT_COMPILE_DATE)
-      die ("remote server is a false ticker!\n");
-    if (0 != settimeofday(&server_time, NULL))
-      die ("setting time failed: %s (Difference from server is about %d)\n",
-	   strerror (errno),
-	   start_timeval.tv_sec - server_time_s);
+    if(! force_set) {
+	    // We should never receive a time that is before the time we were last
+	    // compiled; we subscribe to the linear theory of time for this program
+	    // and this program alone!
+	    if (server_time.tv_sec >= MAX_REASONABLE_TIME)
+	      die("remote server is a false ticker from the future!\n");
+	    if (server_time.tv_sec <= RECENT_COMPILE_DATE)
+	      die ("remote server is a false ticker!\n");
+	    if (0 != settimeofday(&server_time, NULL))
+	      die ("setting time failed: %s (Difference from server is about %d)\n",
+		   strerror (errno),
+		   start_timeval.tv_sec - server_time_s);
+    } else {
+	    // Well, okay - we'll pretend time doesn't need to be linear because you
+	    // are forcing us to do so. AT YOUR OWN RISK!
+	    verb ("V: Forcefully setting time due to presence of -f/--force option\n");
+	    if (0 != settimeofday(&server_time, NULL))
+	      die ("setting time (FORCEFULLY) failed: %s (Difference from server is about %d)\n",
+		   strerror (errno),
+		   start_timeval.tv_sec - server_time_s);
+    }
   }
   verb ("V: setting time succeeded\n");
   return 0;
