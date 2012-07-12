@@ -32,3 +32,8 @@ Example of how to build a package for Debian:
   # Download or build the package locally
   # and sign the .changes or .dsc file
   debsign -k0xD81D840E tlsdate_0.0.1-1.dsc 
+
+Example of how to upload it (after a Debian sponsor signs off on it):
+  dget http://www.example.com/tlsdate_0.0.1-1_amd64.changes
+  dput tlsdate_0.0.1-1_amd64.changes
+
