@@ -23,6 +23,7 @@
 typedef struct {
   int verbose;
   int ca_racket;
+  int force_set;
   int help;
   time_t manual_time;
   char *host;

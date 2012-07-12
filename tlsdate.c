@@ -93,6 +93,7 @@ usage(void)
   fprintf(stderr, "tlsdate usage:\n"
           " [-h|--help]\n"
           " [-s|--skip-verification]\n"
+          " [-f|--force]\n"
           " [-H|--host] [hostname|ip]\n"
           " [-p|--port] [port number]\n"
           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
@@ -106,6 +107,7 @@ main(int argc, char **argv)
 {
   int verbose;
   int ca_racket;
+  int force_set;
   const char *host;
   const char *port;
   const char *protocol;
@@ -117,6 +119,7 @@ main(int argc, char **argv)
   certdir = DEFAULT_CERTDIR;
   verbose = 0;
   ca_racket = 1;
+  force_set = 0;
 
   while (1) {
     int option_index = 0;
@@ -126,6 +129,7 @@ main(int argc, char **argv)
       {
         {"verbose", 0, 0, 'v'},
         {"skip-verification", 0, 0, 's'},
+        {"force", 0, 0, 'f'},
         {"help", 0, 0, 'h'},
         {"host", 0, 0, 'H'},
         {"port", 0, 0, 'p'},
@@ -134,7 +138,7 @@ main(int argc, char **argv)
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vshH:p:P:C:",
+    c = getopt_long(argc, argv, "vsfhH:p:P:C:",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -142,6 +146,7 @@ main(int argc, char **argv)
     switch (c) {
       case 'v': verbose = 1; break;
       case 's': ca_racket = 0; break;
+      case 'f': force_set = 1; break;
       case 'h': usage(); exit(1); break;
       case 'H': host = optarg; break;
       case 'p': port = optarg; break;
@@ -162,6 +167,8 @@ main(int argc, char **argv)
             host, port);
     if (0 == ca_racket)
       fprintf(stderr, "WARNING: Skipping certificate verification!\n");
+    if (1 == force_set)
+      fprintf(stderr, "WARNING: Forcefully setting date, even if skew is high!\n");
   }
 
   execlp ("tlsdate-helper",
@@ -170,6 +177,7 @@ main(int argc, char **argv)
     port,
     protocol,
     (ca_racket ? "racket" : "unchecked"),
+    (force_set ? "force_set" : "no_force_set"),
     (verbose ? "verbose" : "quiet"),
     certdir,
     NULL);
