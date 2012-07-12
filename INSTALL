@@ -31,4 +31,4 @@ Example of how to build a package for Debian:
   ~/bin/sbuild-stuff tlsdate_0.0.1-1.dsc
   # Download or build the package locally
   # and sign the .changes or .dsc file
-  debsign -k 0xD81D840E tlsdate_0.0.1-1.changes
+  debsign -k0xD81D840E tlsdate_0.0.1-1.dsc 
