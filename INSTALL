@@ -14,7 +14,6 @@ To make an unsigned Debian package:
   git checkout debian-master
   make deb
 
-
 To make a Debian source package:
 
   git checkout master
@@ -25,3 +24,11 @@ To make a Debian source package:
   cd ../
   dpkg-source -b tlsdate
 
+Example of how to build a package for Debian:
+
+  # First build the source package above
+  scp tlsdate_* dixie.torproject.org:~/src/debian-builds/
+  ~/bin/sbuild-stuff tlsdate_0.0.1-1.dsc
+  # Download or build the package locally
+  # and sign the .changes or .dsc file
+  debsign -k 0xD81D840E tlsdate_0.0.1-1.changes
