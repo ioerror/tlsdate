@@ -26,5 +26,6 @@ Here is a nice list of things to do to improve tlsdate:
 19)  override client time
        ensure we only believe the time to be the one compiled in or...
        we read the cache of the time and read that.
+20)  Add option to tell us the remote time and to also print the difference
 
 Patches welcome!
