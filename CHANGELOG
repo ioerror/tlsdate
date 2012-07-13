@@ -1,2 +1,7 @@
-0.0.1 XXX
+0.0.2 XXX
+  Add '-n' and '--dont-set-clock' option to fetch but not set time
+  Add '-V' and '--showtime' option to display remote time
+  Update usage documentation
+
+0.0.1 Fri Jul 13, 2012
   First git tagged release
