@@ -303,8 +303,10 @@ main(int argc, char **argv)
   pid_t ssl_child;
   long long rt_time_ms;
   uint32_t server_time_s;
+  int setclock;
+  int showtime;
 
-  if (argc != 7)
+  if (argc != 9)
     return 1;
   host = argv[1];
   port = argv[2];
@@ -312,6 +314,12 @@ main(int argc, char **argv)
   certdir = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
+  setclock = (0 == strcmp ("setclock", argv[7]));
+  showtime = (0 == strcmp ("showtime", argv[8]));
+
+  /* We are not going to set the clock, thus no need to stay root */
+  if (setclock == 0)
+    become_nobody ();
 
   time_map = mmap (NULL, sizeof (uint32_t),
        PROT_READ | PROT_WRITE,
@@ -370,7 +378,19 @@ main(int argc, char **argv)
       "server or run it again\n", TLS_RTT_THRESHOLD);
   }
 
+  if (showtime)
+  {
+     struct tm	ltm;
+     time_t	tim = server_time_s;
+     char       buf[256];
+
+     localtime_r(&tim, &ltm);
+     (void) strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y", &ltm);
+     fprintf(stdout, "%s\n", buf);
+  }
+
   /* finally, actually set the time */
+  if (setclock)
   {
     struct timeval server_time;
 
@@ -389,8 +409,8 @@ main(int argc, char **argv)
       die ("setting time failed: %s (Difference from server is about %d)\n",
 	   strerror (errno),
 	   start_timeval.tv_sec - server_time_s);
+    verb ("V: setting time succeeded\n");
   }
-  verb ("V: setting time succeeded\n");
   return 0;
 }
 
