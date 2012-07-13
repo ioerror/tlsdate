@@ -24,6 +24,8 @@ typedef struct {
   int verbose;
   int ca_racket;
   int help;
+  int showtime;
+  int setclock;
   time_t manual_time;
   char *host;
   char *port;
