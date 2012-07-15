@@ -73,7 +73,7 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "tlsdate-config.h"
+#include "../config/tlsdate-config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +99,8 @@ usage(void)
           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
           " [-C|--certdir] [dirname]\n"
           " [-v|--verbose]\n"
-          " [-V|--showtime]\n");
+          " [-V|--showtime]\n"
+          " [-t|--timewarp]\n");
 }
 
 
@@ -114,6 +115,7 @@ main(int argc, char **argv)
   const char *port;
   const char *protocol;
   const char *certdir;
+  int timewarp;
 
   host = DEFAULT_HOST;
   port = DEFAULT_PORT;
@@ -123,6 +125,7 @@ main(int argc, char **argv)
   ca_racket = 1;
   showtime = 0;
   setclock = 1;
+  timewarp = 0;
 
   while (1) {
     int option_index = 0;
@@ -139,10 +142,11 @@ main(int argc, char **argv)
         {"protocol", 0, 0, 'P'},
         {"dont-set-clock", 0, 0, 'n'},
         {"certdir", 0, 0, 'C'},
+        {"timewarp", 0, 0, 't'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vVshH:p:P:nC:",
+    c = getopt_long(argc, argv, "vVshH:p:P:nC:t",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -157,6 +161,7 @@ main(int argc, char **argv)
       case 'P': protocol = optarg; break;
       case 'n': setclock = 0; break;
       case 'C': certdir = optarg; break;
+      case 't': timewarp = 1; break;
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
     }
@@ -184,6 +189,7 @@ main(int argc, char **argv)
     certdir,
     (setclock ? "setclock" : "dont-set-clock"),
     (showtime ? "showtime" : "no-showtime"),
+    (timewarp ? "timewarp" : "no-fun"),
     NULL);
   perror("Failed to run tlsdate-helper");
   return 1;
