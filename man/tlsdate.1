@@ -5,7 +5,8 @@
 .SH NAME
 tlsdate \- secure parasitic rdate replacement
 .SH SYNOPSIS
-.B tlsdate [-hnvVs] [-H [hostname]] [-p [port]] [-P [sslv23|sslv3|tlsv1]]
+.B tlsdate [-hnvVst] [-H [hostname]] [-p [port]] [-P [sslv23|sslv3|tlsv1]] \
+[--certdir [dirname]]
 .SH DESCRIPTION
 .B tlsdate
 is a tool for setting the system clock by hand or by communication
@@ -31,10 +32,27 @@ Do not set the system clock to the time of the remote server
 Set remote port (default: '443')
 .IP "-P | --protocol [sslv23|sslv3|tlsv1]"
 Set protocol to use when communicating with server (default: 'tlsv1')
+.IP "-C | --certdir [dirname]"
+Set the local directory where certificates are located
+(default: '/etc/ssl/certs')
+This allows for certificate or certificate authority (CA) pinning. To ensure
+that signatures are only valid if they are signed by a specific CA or
+certificate, set the path to a directory containing only the desired
+certificates.
 .IP "-v | --verbose"
 Provide verbose output
 .IP "-V | --showtime"
 Show the time retrieved from the remote server
+.IP "-t | --timewarp"
+If the local clock is before RECENT_COMPILE_DATE; we set the clock to the
+RECENT_COMPILE_DATE. If the local clock is after RECENT_COMPILE_DATE, we leave
+the clock alone. Clock setting is performed as the first operation and will
+impact certificate verification. Specifically, this option is helpful if on
+first boot, the local system clock is set back to the era of Disco and Terrible
+Hair. This should ensure that X509_V_ERR_CERT_NOT_YET_VALID or
+X509_V_ERR_CERT_HAS_EXPIRED are not encountered because of a broken RTC or the
+lack of a local RTC; we assume that tlsdate is recompiled yearly and that all
+certificates are otherwise considered valid.
 .SH BUGS
 It's likely! Let us know by contacting jacob@appelbaum.net
 

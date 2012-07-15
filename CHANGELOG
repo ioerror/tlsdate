@@ -1,6 +1,9 @@
 0.0.2 XXX
   Add '-n' and '--dont-set-clock' option to fetch but not set time
   Add '-V' and '--showtime' option to display remote time
+  Add '-t' and '--timewarp' option
+    When doing the time warp, we set time to RECENT_COMPILE_DATE if the local
+    clock is less than RECENT_COMPILE_DATE.
   Update usage documentation
   Move {*.c,h} into src/
   Move *.1 into man/

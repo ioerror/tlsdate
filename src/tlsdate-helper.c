@@ -106,7 +106,7 @@ know:
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
 #ifndef RECENT_COMPILE_DATE
-#define RECENT_COMPILE_DATE (uint32_t) 1328610583
+#define RECENT_COMPILE_DATE (uint32_t) 1342323666
 #endif
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
@@ -299,14 +299,16 @@ main(int argc, char **argv)
   uint32_t *time_map;
   struct timeval start_timeval;
   struct timeval end_timeval;
+  struct timeval warp_time;
   int status;
   pid_t ssl_child;
   long long rt_time_ms;
   uint32_t server_time_s;
   int setclock;
   int showtime;
+  int timewarp;
 
-  if (argc != 9)
+  if (argc != 10)
     return 1;
   host = argv[1];
   port = argv[2];
@@ -316,10 +318,19 @@ main(int argc, char **argv)
   verbose = (0 != strcmp ("quiet", argv[5]));
   setclock = (0 == strcmp ("setclock", argv[7]));
   showtime = (0 == strcmp ("showtime", argv[8]));
+  timewarp = (0 == strcmp ("timewarp", argv[9]));
+
+  if (timewarp)
+  {
+    warp_time.tv_sec = RECENT_COMPILE_DATE;
+    warp_time.tv_usec = 0;
+  }
 
   /* We are not going to set the clock, thus no need to stay root */
-  if (setclock == 0)
+  if (0 == setclock && 0 == timewarp)
+  {
     become_nobody ();
+  }
 
   time_map = mmap (NULL, sizeof (uint32_t),
        PROT_READ | PROT_WRITE,
@@ -327,16 +338,45 @@ main(int argc, char **argv)
   if (MAP_FAILED == time_map)
   {
     fprintf (stderr, "mmap failed: %s\n",
-       strerror (errno));
+             strerror (errno));
     return 1;
   }
 
   /* Get the current time from the system clock. */
   if (0 != gettimeofday(&start_timeval, NULL))
+  {
     die ("Failed to read current time of day: %s\n", strerror (errno));
+  }
+
   verb ("V: time is currently %lu.%06lu\n",
-  (unsigned long)start_timeval.tv_sec,
-  (unsigned long)start_timeval.tv_usec);
+       (unsigned long)start_timeval.tv_sec,
+       (unsigned long)start_timeval.tv_usec);
+
+  if (((unsigned long)start_timeval.tv_sec) < ((unsigned long)warp_time.tv_sec))
+  {
+    verb ("V: local clock time is less than RECENT_COMPILE_DATE\n");
+    if (timewarp)
+    {
+      verb ("V: Attempting to warp local clock into the future\n");
+      if (0 != settimeofday(&warp_time, NULL))
+      {
+        die ("setting time failed: %s (Attempted to set clock to %lu.%06lu)\n",
+        strerror (errno),
+        (unsigned long)warp_time.tv_sec,
+        (unsigned long)warp_time.tv_usec);
+      }
+      if (0 != gettimeofday(&start_timeval, NULL))
+      {
+        die ("Failed to read current time of day: %s\n", strerror (errno));
+      }
+      verb ("V: time is currently %lu.%06lu\n",
+           (unsigned long)start_timeval.tv_sec,
+           (unsigned long)start_timeval.tv_usec);
+      verb ("V: It's just a step to the left...\n");
+    }
+  } else {
+    verb ("V: time is greater than RECENT_COMPILE_DATE\n");
+  }
 
   /* initialize to bogus value, just to be on the safe side */
   *time_map = 0;
