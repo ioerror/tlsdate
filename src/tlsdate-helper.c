@@ -105,10 +105,13 @@ know:
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
-//#ifndef RECENT_COMPILE_DATE
-//#define RECENT_COMPILE_DATE (uint32_t) 1342323666
-//#endif
+#ifndef RECENT_COMPILE_DATE
+#define RECENT_COMPILE_DATE (uint32_t) 1342323666
+#endif
+
+#ifndef MAX_REASONABLE_TIME
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
+#endif
 
 // After the duration of the TLS handshake exceeds this threshold
 // (in msec), a warning is printed.
@@ -165,6 +168,11 @@ run_ssl (uint32_t *time_map)
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
+  int time_is_an_illusion;
+  // XXX TODO: remove this and add an argument like '--wanderlust'
+  time_is_an_illusion = 1;
+  uint32_t compiled_time = RECENT_COMPILE_DATE;
+  uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -219,6 +227,39 @@ run_ssl (uint32_t *time_map)
 
     if (NULL == SSL_get_peer_certificate(ssl))
       die ("Getting SSL certificate failed\n");
+
+    if (time_is_an_illusion)
+    {
+      // XXX TODO: If we want to trust the remote system for time,
+      // can we just read that time out of the remote system and if the
+      // cert verifies, decide that the time is reasonable?
+      // Such a process seems to indicate that a once valid cert would be
+      // forever valid - we stopgap that by ensuring it isn't less than
+      // the latest compiled_time and isn't above max_reasonable_time...
+      // XXX TODO: Solve eternal question about the Chicken and the Egg...
+      verb("V: freezing time for x509 verification\n");
+      //verb("V: compiled_time is: %d\n", compiled_time);
+      memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
+      //verb("V: server_random is: %d\n", ntohl( *time_map ));
+      if (compiled_time < ntohl( * time_map)
+          &&
+          ntohl(*time_map) < max_reasonable_time)
+      {
+        //verb("V: compiled_time is: %d\n", compiled_time);
+        verb("V: we trust the remote peer to verify the cert with %d\n"
+             "rather than compiled_time %d\n",
+              ntohl( *time_map), compiled_time);
+        //X509_STORE_CTX_set_time(ssl, X509_V_FLAG_USE_CHECK_TIME, (time_t) ntohl(*time_map));
+        // In theory, we instruct verify to check if it _would be valid_ if the
+        // verification happened at ((time_t) ntohl(*time_map))
+        X509_VERIFY_PARAM_set_time(ctx->param, (time_t) ntohl(*time_map));
+      } else {
+        // If we hit this branch, the remote server returned a time closer to
+        // 1970 than our last compile time. Danger!
+        die("V: the remote server is a false ticker! server: %d compile: %d\n",
+             ntohl(*time_map), compiled_time);
+      }
+    }
 
     // In theory, we verify that the cert is valid
     ssl_verify_result = SSL_get_verify_result(ssl);
