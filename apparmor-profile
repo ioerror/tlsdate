@@ -7,7 +7,7 @@
 #
 
 #include <tunables/global>
-/usr/sbin/tlsdate {
+/usr/bin/tlsdate {
   #include <abstractions/consoles>
   #include <abstractions/ssl_certs>
 
@@ -38,6 +38,7 @@
 
   # Required for getpwnam
   /etc/passwd r,
+  /etc/group r,
 
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
@@ -57,4 +58,6 @@
   /tmp/ r,
   owner /tmp/tlsdate_*/ rw,
 
+  # We'll allow tlsdate to exec tlsdate-helper
+  /usr/bin/tlsdate-helper pxm,
 }
