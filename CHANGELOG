@@ -2,6 +2,9 @@
   Add '-n' and '--dont-set-clock' option to fetch but not set time
   Add '-V' and '--showtime' option to display remote time
   Update usage documentation
+  Move {*.c,h} into src/
+  Move *.1 into man/
+  Update TODO list to reflect desired changes
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
