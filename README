@@ -56,3 +56,8 @@ Here is an example of a false ticker that is detected and rejected:
   V: server time 2693501503 (difference is about -1351304124 s) was fetched in 724 ms
   remote server is a false ticker from the future!
 
+Here is an example where a system may not have any kind of RTC at boot. Do the
+time warp to restore sanity:
+
+  % sudo tlsdate -v -V -s --timewarp;
+  XXX show example? 

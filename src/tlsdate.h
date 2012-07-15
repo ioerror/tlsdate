@@ -7,8 +7,8 @@
   * \brief The main header for our clock helper.
   **/
 
-#ifndef _TORDATE_H
-#define _TORDATE_H
+#ifndef _TLSDATE_H
+#define _TLSDATE_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -16,7 +16,7 @@
 #include <getopt.h>
 #include <time.h>
 
-/** The current version of tor-time. */
+/** The current version of tlsdate. */
 #define tlsdate_version "0.1"
 
 /** This is where we store parsed commandline options. */
