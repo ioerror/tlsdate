@@ -12,5 +12,10 @@ depcomp
 install-sh
 missing
 stamp-h1
-tlsdate-config.h
-tlsdate-config.h.in
+config/
+config/tlsdate-config.h
+config/tlsdate-config.h.in
+src/tlsdate-helper.o
+src/tlsdate-helper
+src/tlsdate.o
+src/tlsdate
