@@ -10,9 +10,7 @@ Here is a nice list of things to do to improve tlsdate:
  5)  daemonize and regularly slam the clock
  6)  skew the clock rather than slamming it
  7)  drop privs earlier
- 8)  audit the code for show stopping bugs
  9)  make this work with Tor in a proxy safe manner (no DNS mode)
-10)  pin SSL certs for racket mode
 11)  verification of remote certificate for Tor nodes
 13)  account for servers that do not send UTC (Microsoft sends local time)
 14)  port to nss, gnutls, yassl and other libraries
@@ -23,6 +21,5 @@ Here is a nice list of things to do to improve tlsdate:
 19)  override client time
        ensure we only believe the time to be the one compiled in or...
        we read the cache of the time and read that.
-20)  Add option to tell us the remote time and to also print the difference
 
 Patches welcome!
