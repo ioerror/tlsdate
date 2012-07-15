@@ -73,7 +73,7 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "tlsdate-config.h"
+#include "../config/tlsdate-config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

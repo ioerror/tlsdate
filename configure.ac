@@ -12,6 +12,15 @@ CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
 CFLAGS+=" --param ssp-buffer-size=1 "
 LDFLAGS=" -pie -z relro -z now "
 
+dnl Here we should build a small program to fetch the build system time in a portable
+dnl manner. We have no Win32 users, we can fix this if we ever find one that
+dnl cares.
+COMPILE_DATE=`date +%s`
+AC_SUBST(COMPILE_DATE)
+AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
+                   [(uint32_t) ${COMPILE_DATE}],
+                   [Time in seconds since the Disco epoch at build time])
+
 # Required headers
 AC_CHECK_HEADERS(
   stdio.h  \
@@ -33,6 +42,6 @@ AC_CHECK_HEADERS(
   openssl/evp.h 
 , , AC_MSG_ERROR([Required headers missing; compilation will not succeed]))
 
-AC_CHECK_FUNCS([setresuid])
+AC_CHECK_FUNCS([setresuid gettimeofday])
 
 AC_OUTPUT(Makefile src/Makefile)

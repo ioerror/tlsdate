@@ -73,7 +73,7 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "tlsdate-config.h"
+#include "../config/tlsdate-config.h"
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -105,9 +105,9 @@ know:
 // We measure in seconds since the epoch - eg: echo `date '+%s'`
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
-#ifndef RECENT_COMPILE_DATE
-#define RECENT_COMPILE_DATE (uint32_t) 1342323666
-#endif
+//#ifndef RECENT_COMPILE_DATE
+//#define RECENT_COMPILE_DATE (uint32_t) 1342323666
+//#endif
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
 
 // After the duration of the TLS handshake exceeds this threshold
@@ -324,6 +324,9 @@ main(int argc, char **argv)
   {
     warp_time.tv_sec = RECENT_COMPILE_DATE;
     warp_time.tv_usec = 0;
+    verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
+         (unsigned long)warp_time.tv_sec,
+         (unsigned long)warp_time.tv_usec);
   }
 
   /* We are not going to set the clock, thus no need to stay root */
