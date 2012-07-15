@@ -1,6 +1,5 @@
 # Our Debian version
 DEBIAN_VERSION := $(shell if [ -e debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi)
-
 AUTOMAKE_OPTIONS = foreign 1.7
 EXTRA_DIST = \
   AUTHORS \
@@ -11,17 +10,10 @@ EXTRA_DIST = \
   CHANGELOG \
   autogen.sh 
 
-# Our main program
-bin_PROGRAMS = tlsdate tlsdate-helper
-tlsdate_SOURCES = tlsdate.c
-tlsdate_helper_SOURCES = tlsdate-helper.c
-tlsdate_helper_LDADD = -lssl -lcrypto
-
-# We're not shipping headers
-noinst_HEADERS = tlsdate.h
+SUBDIRS = src
 
 # Our documentation
-man_MANS = tlsdate.1 tlsdate-helper.1
+man_MANS = man/tlsdate.1 man/tlsdate-helper.1
 EXTRA_DIST += $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean

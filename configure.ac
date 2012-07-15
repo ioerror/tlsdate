@@ -1,6 +1,7 @@
 AC_INIT([tlsdate], [0.0.1], [jacob at appelbaum.net])
+AC_CONFIG_AUX_DIR(config)
+AM_CONFIG_HEADER([config/tlsdate-config.h])
 AM_INIT_AUTOMAKE([tlsdate], [0.0.1])
-AM_CONFIG_HEADER([tlsdate-config.h])
 AC_CANONICAL_HOST
 AH_TOP([#define _GNU_SOURCE  1])
 
@@ -34,5 +35,4 @@ AC_CHECK_HEADERS(
 
 AC_CHECK_FUNCS([setresuid])
 
-AC_CONFIG_FILES([Makefile])
-AC_OUTPUT
+AC_OUTPUT(Makefile src/Makefile)

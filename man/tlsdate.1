@@ -5,7 +5,7 @@
 .SH NAME
 tlsdate \- secure parasitic rdate replacement
 .SH SYNOPSIS
-.B tlsdate [-hvs] [-H [hostname]] [-p [port]] [-P [sslv23|sslv3|tlsv1]]
+.B tlsdate [-hnvVs] [-H [hostname]] [-p [port]] [-P [sslv23|sslv3|tlsv1]]
 .SH DESCRIPTION
 .B tlsdate
 is a tool for setting the system clock by hand or by communication
@@ -25,12 +25,16 @@ Print the help message
 Skip certificate verification
 .IP "-H | --host [hostname|ip]"
 Set remote hostname (default: 'www.ptb.de')
+.IP "-n | --dont-set-clock"
+Do not set the system clock to the time of the remote server
 .IP "-p | --port [port]"
 Set remote port (default: '443')
 .IP "-P | --protocol [sslv23|sslv3|tlsv1]"
 Set protocol to use when communicating with server (default: 'tlsv1')
 .IP "-v | --verbose"
 Provide verbose output
+.IP "-V | --showtime"
+Show the time retrieved from the remote server
 .SH BUGS
 It's likely! Let us know by contacting jacob@appelbaum.net
 

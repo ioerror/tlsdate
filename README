@@ -6,50 +6,53 @@ tlsdate: secure parasitic rdate replacement
  enabled service, and provides some protection against adversaries that try to
  feed you malicious time information.
 
+Here is an example an unprivileged user fetching the remote time:
+
+  % tlsdate -v -V -n
+  V: tlsdate version 0.0.1
+  V: We were called with the following arguments:
+  V: validate SSL certificates host = www.ptb.de:443
+  V: time is currently 1342197117.577381
+  V: using TLSv1_client_method()
+  V: SSL certificate verification passed
+  V: server time 1342197117 (difference is about 0 s) was fetched in 705 ms
+  Fri Jul 13 18:31:57 CEST 2012
+
+
 This is an example run - starting as root and dropping to nobody:
 
-  % sudo ./tlsdate -v
-  V: tlsdate version 0.1
+  % sudo ./tlsdate -v 
+  V: tlsdate version 0.0.1
   V: We were called with the following arguments:
-  V: ca_racket = 1, verbose = 1, help = 0
-  V: host = www.torproject.org, port = 443
-  V: time is currently 1327923928.555499
-  V: Attempting to verify certificate
-  V: SSL_get_peer_certificate returned
-  V: verification OK: 0
-  V: ssl_verify_result returned 0
-  V: server_random fetched in 0 sec
-  V: server_random with ntohl is: 1327923933.0
-  V: setting time returned: 0
-  V: tlsdate: SUCCESS
+  V: validate SSL certificates host = www.ptb.de:443
+  V: time is currently 1342197222.273552
+  V: using TLSv1_client_method()
+  V: SSL certificate verification passed
+  V: server time 1342197222 (difference is about 0 s) was fetched in 520 ms
+  V: setting time succeeded
 
-Here is an example with a custom host and custom port:
+Here is an example with a custom host and custom port without verification:
 
-  % sudo tlsdate -v -p 80 -H rgnx.net
-  V: tlsdate version 0.1
+  % sudo tlsdate -v --skip-verification -p 80 -H rgnx.net
+  V: tlsdate version 0.0.1
   V: We were called with the following arguments:
-  V: ca_racket = 1, verbose = 1, help = 0
-  V: host = rgnx.net, port = 80
-  V: time is currently 1327923852.540550
-  V: Attempting to verify certificate
-  V: SSL_get_peer_certificate returned
-  E: verification error: 20
-  V: ssl_verify_result returned 20
-  V: server_random fetched in 0 sec
-  V: server_random with ntohl is: 1327923858.0
-  V: setting time returned: 0
-  V: tlsdate: SUCCESS
+  V: disable SSL certificate check host = rgnx.net:80
+  WARNING: Skipping certificate verification!
+  V: time is currently 1342197285.298607
+  V: using TLSv1_client_method()
+  V: Certificate verification skipped!
+  V: server time 1342197286 (difference is about -1 s) was fetched in 765 ms
+  V: setting time succeeded
 
 Here is an example of a false ticker that is detected and rejected:
 
   % sudo tlsdate -v -H facebook.com
-  V: tlsdate version 0.1
+  V: tlsdate version 0.0.1
   V: We were called with the following arguments:
-  V: validate SSL certificates host = www.facebook.com:443
-  V: time is currently 1329350443.903045
+  V: validate SSL certificates host = facebook.com:443
+  V: time is currently 1342197379.931852
   V: using TLSv1_client_method()
   V: SSL certificate verification passed
-  V: server time 3599738087 (difference is about 2024579652 s) was fetched in
-  1287 ms
+  V: server time 2693501503 (difference is about -1351304124 s) was fetched in 724 ms
   remote server is a false ticker from the future!
 
