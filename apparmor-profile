@@ -41,6 +41,7 @@
   /etc/passwd r,
   /etc/group r,
 
+
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
 
@@ -61,4 +62,59 @@
 
   # We'll allow tlsdate to exec tlsdate-helper
   /usr/bin/tlsdate-helper pxm,
+  /usr/bin/tlsdate pxm,
+}
+
+/usr/bin/tlsdate-helper {
+  #include <abstractions/consoles>
+  #include <abstractions/ssl_certs>
+
+  capability sys_time,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+
+  # IPv4 TCP
+  network inet stream,
+  # IPv4 UDP for DNS resolution
+  network inet dgram,
+  # IPv6 TCP
+  network inet6 stream,
+  # IPv6 UDP
+  network inet6 dgram,
+
+  # Required for gethostbyname
+  /etc/resolv.conf r,
+  /etc/nsswitch.conf r,
+  /etc/localtime r,
+  /etc/nsswitch.conf r,
+  /etc/hosts r,
+  /etc/host.conf r,
+
+  # Allow reading public certs but not private keys
+  /etc/ssl/certs/* r,
+  /usr/share/ca-certificates/*/** r,
+
+  # Required for getpwnam
+  /etc/passwd r,
+  /etc/group r,
+
+
+  # Allow reading of libs and /tmp
+  /etc/ld.so.cache r,
+
+  # Random number generation requires these two
+  /dev/random r,
+  /dev/urandom r,
+
+  # Allow mapping of shared libraries
+  /lib/* rm,
+  /lib32/* rm,
+  /lib64/* rm,
+  /usr/lib/* rm,
+  /lib/x86_64-linux-gnu/* rm,
+
+  # We'll allow tlsdate to write a new root to chroot into
+  /tmp/ r,
+  owner /tmp/tlsdate_*/ rw,
 }
