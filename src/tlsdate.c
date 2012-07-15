@@ -188,4 +188,3 @@ main(int argc, char **argv)
   perror("Failed to run tlsdate-helper");
   return 1;
 }
-

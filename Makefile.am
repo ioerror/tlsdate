@@ -13,15 +13,15 @@ EXTRA_DIST = \
 
 # Our main program
 bin_PROGRAMS = tlsdate tlsdate-helper
-tlsdate_SOURCES = tlsdate.c
-tlsdate_helper_SOURCES = tlsdate-helper.c
+tlsdate_SOURCES = src/tlsdate.c
+tlsdate_helper_SOURCES = src/tlsdate-helper.c
 tlsdate_helper_LDADD = -lssl -lcrypto
 
 # We're not shipping headers
-noinst_HEADERS = tlsdate.h
+noinst_HEADERS = src/tlsdate.h
 
 # Our documentation
-man_MANS = tlsdate.1 tlsdate-helper.1
+man_MANS = man/tlsdate.1 man/tlsdate-helper.1
 EXTRA_DIST += $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean
