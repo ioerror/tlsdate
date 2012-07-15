@@ -6,6 +6,7 @@
   Move *.1 into man/
   Update TODO list to reflect desired changes
   Update AppArmor profile to restrict {tlsdate,tlsdate-helper}
+  Update AUTHORS file to include a new email address
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
