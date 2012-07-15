@@ -423,8 +423,8 @@ main(int argc, char **argv)
 
   if (showtime)
   {
-     struct tm	ltm;
-     time_t	tim = server_time_s;
+     struct tm  ltm;
+     time_t tim = server_time_s;
      char       buf[256];
 
      localtime_r(&tim, &ltm);
@@ -450,8 +450,8 @@ main(int argc, char **argv)
       die ("remote server is a false ticker!\n");
     if (0 != settimeofday(&server_time, NULL))
       die ("setting time failed: %s (Difference from server is about %d)\n",
-	   strerror (errno),
-	   start_timeval.tv_sec - server_time_s);
+     strerror (errno),
+     start_timeval.tv_sec - server_time_s);
     verb ("V: setting time succeeded\n");
   }
   return 0;
