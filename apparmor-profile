@@ -20,9 +20,10 @@
   network inet stream,
   # IPv4 UDP for DNS resolution
   network inet dgram,
-  # No ipv6 TCP or UDP yet
-  deny network inet6 stream,
-  deny network inet6 dgram,
+  # IPv6 TCP
+  network inet6 stream,
+  # IPv6 UDP
+  network inet6 dgram,
 
   # Required for gethostbyname
   /etc/resolv.conf r,
