@@ -62,8 +62,8 @@
   owner /tmp/tlsdate_*/ rw,
 
   # We'll allow tlsdate to exec tlsdate-helper
-  /usr/bin/tlsdate-helper pxm,
-  /usr/bin/tlsdate pxm,
+  /usr/bin/tlsdate-helper ixm,
+  /usr/bin/tlsdate ixm,
 }
 
 /usr/bin/tlsdate-helper {
