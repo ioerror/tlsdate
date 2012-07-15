@@ -5,6 +5,7 @@
   Move {*.c,h} into src/
   Move *.1 into man/
   Update TODO list to reflect desired changes
+  Update AppArmor profile to restrict {tlsdate,tlsdate-helper}
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
