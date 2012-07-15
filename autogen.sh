@@ -6,7 +6,7 @@
 
 set -e
 
-exec autoreconf -ivf && \
+exec autoreconf -ivf -I src -I config && \
 aclocal && \
 autoheader && \
 autoconf && \
