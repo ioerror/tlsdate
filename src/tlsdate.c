@@ -100,7 +100,8 @@ usage(void)
           " [-C|--certdir] [dirname]\n"
           " [-v|--verbose]\n"
           " [-V|--showtime]\n"
-          " [-t|--timewarp]\n");
+          " [-t|--timewarp]\n"
+          " [-l|--leap]\n");
 }
 
 
@@ -116,6 +117,7 @@ main(int argc, char **argv)
   const char *protocol;
   const char *certdir;
   int timewarp;
+  int leap;
 
   host = DEFAULT_HOST;
   port = DEFAULT_PORT;
@@ -126,6 +128,7 @@ main(int argc, char **argv)
   showtime = 0;
   setclock = 1;
   timewarp = 0;
+  leap = 0;
 
   while (1) {
     int option_index = 0;
@@ -143,10 +146,11 @@ main(int argc, char **argv)
         {"dont-set-clock", 0, 0, 'n'},
         {"certdir", 0, 0, 'C'},
         {"timewarp", 0, 0, 't'},
+        {"leap", 0, 0, 'l'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vVshH:p:P:nC:t",
+    c = getopt_long(argc, argv, "vVshH:p:P:nC:tl",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -162,6 +166,7 @@ main(int argc, char **argv)
       case 'n': setclock = 0; break;
       case 'C': certdir = optarg; break;
       case 't': timewarp = 1; break;
+      case 'l': leap = 1; break;
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
     }
@@ -190,6 +195,7 @@ main(int argc, char **argv)
     (setclock ? "setclock" : "dont-set-clock"),
     (showtime ? "showtime" : "no-showtime"),
     (timewarp ? "timewarp" : "no-fun"),
+    (leap ? "leapaway" : "holdfast"),
     NULL);
   perror("Failed to run tlsdate-helper");
   return 1;
