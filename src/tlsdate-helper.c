@@ -108,7 +108,10 @@ know:
 #ifndef RECENT_COMPILE_DATE
 #define RECENT_COMPILE_DATE (uint32_t) 1342323666
 #endif
+
+#ifndef MAX_REASONABLE_TIME
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
+#endif
 
 // After the duration of the TLS handshake exceeds this threshold
 // (in msec), a warning is printed.
@@ -160,11 +163,13 @@ verb (const char *fmt, ...)
  * @param time_map where to store the current time
  */
 static void
-run_ssl (uint32_t *time_map)
+run_ssl (uint32_t *time_map, int time_is_an_illusion)
 {
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
+  uint32_t compiled_time = RECENT_COMPILE_DATE;
+  uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -218,8 +223,34 @@ run_ssl (uint32_t *time_map)
     long ssl_verify_result;
 
     if (NULL == SSL_get_peer_certificate(ssl))
+    {
       die ("Getting SSL certificate failed\n");
-
+    }
+    if (time_is_an_illusion)
+    {
+      // XXX TODO: If we want to trust the remote system for time,
+      // can we just read that time out of the remote system and if the
+      // cert verifies, decide that the time is reasonable?
+      // Such a process seems to indicate that a once valid cert would be
+      // forever valid - we stopgap that by ensuring it isn't less than
+      // the latest compiled_time and isn't above max_reasonable_time...
+      // XXX TODO: Solve eternal question about the Chicken and the Egg...
+      verb("V: freezing time for x509 verification\n");
+      memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
+      if (compiled_time < ntohl( * time_map)
+          &&
+          ntohl(*time_map) < max_reasonable_time)
+      {
+        verb("V: remote peer provided: %d, prefered over compile time: %d\n",
+              ntohl( *time_map), compiled_time);
+        // In theory, we instruct verify to check if it _would be valid_ if the
+        // verification happened at ((time_t) ntohl(*time_map))
+        X509_VERIFY_PARAM_set_time(ctx->param, (time_t) ntohl(*time_map));
+      } else {
+        die("V: the remote server is a false ticker! server: %d compile: %d\n",
+             ntohl(*time_map), compiled_time);
+      }
+    }
     // In theory, we verify that the cert is valid
     ssl_verify_result = SSL_get_verify_result(ssl);
     switch (ssl_verify_result)
@@ -237,7 +268,6 @@ run_ssl (uint32_t *time_map)
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
-
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
@@ -307,8 +337,9 @@ main(int argc, char **argv)
   int setclock;
   int showtime;
   int timewarp;
+  int leap;
 
-  if (argc != 10)
+  if (argc != 11)
     return 1;
   host = argv[1];
   port = argv[2];
@@ -319,6 +350,7 @@ main(int argc, char **argv)
   setclock = (0 == strcmp ("setclock", argv[7]));
   showtime = (0 == strcmp ("showtime", argv[8]));
   timewarp = (0 == strcmp ("timewarp", argv[9]));
+  leap = (0 == strcmp ("leapaway", argv[10]));
 
   if (timewarp)
   {
@@ -391,7 +423,7 @@ main(int argc, char **argv)
   if (0 == ssl_child)
   {
     become_nobody ();
-    run_ssl (time_map);
+    run_ssl (time_map, leap);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
   } 

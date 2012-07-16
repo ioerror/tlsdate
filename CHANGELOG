@@ -12,6 +12,21 @@
     encountered because of a broken RTC or the lack of a local RTC; we assume
     that tlsdate is recompiled yearly and that all certificates are otherwise
     considered valid.
+  Add '-l' and '--leap'
+    Normally, the passing of time or time yet to come ensures that SSL verify
+    functions will fail to validate certificates. Commonly,
+    X509_V_ERR_CERT_NOT_YET_VALID and X509_V_ERR_CERT_HAS_EXPIRED are painfully
+    annoying but still very important error states. When the only issue with
+    the certificates in question is the timing information, this option allows
+    one to trust the remote system's time, as long as it is after
+    RECENT_COMPILE_DATE and before MAX_REASONABLE_TIME. The connection will
+    only be trusted if X509_V_ERR_CERT_NOT_YET_VALID and/or
+    X509_V_OKX509_V_ERR_CERT_HAS_EXPIRED are the only errors encountered. The
+    SSL verify function will not return X509_V_OK if there are any other
+    issues, such as self-signed certificates or if the user pins to a CA that
+    is not used by the remote server. This is useful if your RTC is broken on
+    boot and you are unable to use DNSEC until you've at least had some kind
+    of leap of cryptographically assured data.
   Update usage documentation
   Move {*.c,h} into src/
   Move *.1 into man/
