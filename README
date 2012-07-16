@@ -57,9 +57,9 @@ Here is an example of a false ticker that is detected and rejected:
   remote server is a false ticker from the future!
 
 Here is an example where a system may not have any kind of RTC at boot. Do the
-time warp to restore sanity:
+time warp to restore sanity and do so with a leap of faith:
 
-  % sudo tlsdate -v -V -n -t;    
+  % sudo tlsdate -v -V -n -t -l
   V: tlsdate version 0.0.1
   V: We were called with the following arguments:
   V: validate SSL certificates host = www.ptb.de:443
