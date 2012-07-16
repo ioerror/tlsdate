@@ -21,5 +21,6 @@ Here is a nice list of things to do to improve tlsdate:
 19)  override client time
        Add a way to read the cache of the last updated time and read that as
        the new epoch.
+20)  Add verification of remote servers by DANE/CAA DNSSEC protected records
 
 Patches welcome!
