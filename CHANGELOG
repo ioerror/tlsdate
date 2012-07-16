@@ -25,7 +25,7 @@
     SSL verify function will not return X509_V_OK if there are any other
     issues, such as self-signed certificates or if the user pins to a CA that
     is not used by the remote server. This is useful if your RTC is broken on
-    boot and you are unable to use DNSEC until you've at least had some kind
+    boot and you are unable to use DNSSEC until you've at least had some kind
     of leap of cryptographically assured data.
   Update usage documentation
   Move {*.c,h} into src/
