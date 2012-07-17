@@ -24,5 +24,10 @@ Here is a nice list of things to do to improve tlsdate:
 20)  Add verification of remote servers by DANE/CAA DNSSEC protected records
 21)  Integrate Chrome's CRL list into tlsdate
 22)  Block revoked or bad certs such as MD5 inc. and others.
+23)  Block weak keys (number of bits < 1024)
+24)  Add OCSP check option
+25)  Block weak signature algorithms
+26)  Hard code block list of known horrible certs (extract from Chrome/FF)
 
 Patches welcome!
+
