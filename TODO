@@ -28,6 +28,9 @@ Here is a nice list of things to do to improve tlsdate:
 24)  Add OCSP check option
 25)  Block weak signature algorithms
 26)  Hard code block list of known horrible certs (extract from Chrome/FF)
+27)  Check CN and/or SAN field
+28)  Check that extended key usage is empty, or includes TLS Server Auth
+29)  extract the SubjectPublicKeyInfo from the certificates; match against
+     public keys
 
 Patches welcome!
-
