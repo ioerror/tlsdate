@@ -157,13 +157,34 @@ verb (const char *fmt, ...)
 
 
 void
-openssl_info_callback(SSL* ssl, int where, int ret) {
+openssl_time_callback(const SSL* ssl, int where, int ret)
+{
   if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
   {
+    // XXX TODO: If we want to trust the remote system for time,
+    // can we just read that time out of the remote system and if the
+    // cert verifies, decide that the time is reasonable?
+    // Such a process seems to indicate that a once valid cert would be
+    // forever valid - we stopgap that by ensuring it isn't less than
+    // the latest compiled_time and isn't above max_reasonable_time...
+    // XXX TODO: Solve eternal question about the Chicken and the Egg...
+    uint32_t compiled_time = RECENT_COMPILE_DATE;
+    uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
     uint32_t server_time;
+    verb("V: freezing time for x509 verification\n");
     memcpy(&server_time, ssl->s3->server_random, sizeof(uint32_t));
-    X509_VERIFY_PARAM_set_time(ssl->ctx->param,
-                           (time_t) ntohl(server_time));
+    if (compiled_time < ntohl(server_time)
+        &&
+        ntohl(server_time) < max_reasonable_time)
+    {
+      verb("V: remote peer provided: %d, prefered over compile time: %d\n",
+            ntohl(server_time), compiled_time);
+      verb("V: freezing time with X509_VERIFY_PARAM_set_time\n");
+      X509_VERIFY_PARAM_set_time(ssl->ctx->param, (time_t) ntohl(server_time));
+    } else {
+      die("V: the remote server is a false ticker! server: %d compile: %d\n",
+           ntohl(server_time), compiled_time);
+    }
   }
 }
 
@@ -179,8 +200,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
-  uint32_t compiled_time = RECENT_COMPILE_DATE;
-  uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -215,6 +234,12 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   BIO_get_ssl(s_bio, &ssl);
   if (NULL == ssl)
     die ("SSL setup failed\n");
+
+  if (time_is_an_illusion)
+  {
+    SSL_set_info_callback(ssl, openssl_time_callback);
+  }
+
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
   if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
        (1 != BIO_set_conn_port(s_bio, port)) )
@@ -237,6 +262,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
     {
       die ("Getting SSL certificate failed\n");
     }
+/*
     if (time_is_an_illusion)
     {
       // XXX TODO: If we want to trust the remote system for time,
@@ -262,6 +288,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
              ntohl(*time_map), compiled_time);
       }
     }
+*/
     // In theory, we verify that the cert is valid
     ssl_verify_result = SSL_get_verify_result(ssl);
     switch (ssl_verify_result)
