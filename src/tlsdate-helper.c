@@ -262,33 +262,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
     {
       die ("Getting SSL certificate failed\n");
     }
-/*
-    if (time_is_an_illusion)
-    {
-      // XXX TODO: If we want to trust the remote system for time,
-      // can we just read that time out of the remote system and if the
-      // cert verifies, decide that the time is reasonable?
-      // Such a process seems to indicate that a once valid cert would be
-      // forever valid - we stopgap that by ensuring it isn't less than
-      // the latest compiled_time and isn't above max_reasonable_time...
-      // XXX TODO: Solve eternal question about the Chicken and the Egg...
-      verb("V: freezing time for x509 verification\n");
-      memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
-      if (compiled_time < ntohl( * time_map)
-          &&
-          ntohl(*time_map) < max_reasonable_time)
-      {
-        verb("V: remote peer provided: %d, prefered over compile time: %d\n",
-              ntohl( *time_map), compiled_time);
-        // In theory, we instruct verify to check if it _would be valid_ if the
-        // verification happened at ((time_t) ntohl(*time_map))
-        X509_VERIFY_PARAM_set_time(ctx->param, (time_t) ntohl(*time_map));
-      } else {
-        die("V: the remote server is a false ticker! server: %d compile: %d\n",
-             ntohl(*time_map), compiled_time);
-      }
-    }
-*/
     // In theory, we verify that the cert is valid
     ssl_verify_result = SSL_get_verify_result(ssl);
     switch (ssl_verify_result)
