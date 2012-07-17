@@ -156,6 +156,17 @@ verb (const char *fmt, ...)
 }
 
 
+void
+openssl_info_callback(SSL* ssl, int where, int ret) {
+  if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
+  {
+    uint32_t server_time;
+    memcpy(&server_time, ssl->s3->server_random, sizeof(uint32_t));
+    X509_VERIFY_PARAM_set_time(ssl->ctx->param,
+                           (time_t) ntohl(server_time));
+  }
+}
+
 /**
  * Run SSL handshake and store the resulting time value in the
  * 'time_map'.
