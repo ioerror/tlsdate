@@ -63,14 +63,15 @@ time warp to restore sanity and do so with a leap of faith:
   V: tlsdate version 0.0.1
   V: We were called with the following arguments:
   V: validate SSL certificates host = www.ptb.de:443
-  V: RECENT_COMPILE_DATE is 1342387410.000000
-  V: time is currently 1342404491.536366
+  V: RECENT_COMPILE_DATE is 1342407042.000000
+  V: time is currently 1342488229.659967
   V: time is greater than RECENT_COMPILE_DATE
   V: using TLSv1_client_method()
   V: freezing time for x509 verification
-  V: remote peer provided: 1342404491, prefered over compile time: 1342387410
+  V: remote peer provided: 1342488230, prefered over compile time: 1342407042
+  V: freezing time with X509_VERIFY_PARAM_set_time
   V: SSL certificate verification passed
-  V: server time 1342404491 (difference is about 0 s) was fetched in 525 ms
-  Sun Jul 15 22:08:11 EDT 2012
+  V: server time 1342488230 (difference is about -1 s) was fetched in 791 ms
+  Mon Jul 16 18:23:50 PDT 2012
   V: setting time succeeded
 
