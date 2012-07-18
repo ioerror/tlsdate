@@ -241,7 +241,7 @@ openssl_check_against_host_and_verify (SSL *ssl)
           {
             nval = sk_CONF_VALUE_value(val, j);
             if (!strcasecmp(nval->name, "DNS") &&
-	        !strcasecmp(nval->value, host))
+                !strcasecmp(nval->value, host))
             {
               verb ("V: SSL host verification passed\n");
               ok = 1;
