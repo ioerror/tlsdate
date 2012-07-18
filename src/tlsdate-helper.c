@@ -197,7 +197,7 @@ openssl_check_against_host_and_verify (SSL *ssl)
   char data[512];
   int extcount, ok = 0;
 
-  /* What an OpenSSL mess ... */
+  /* What a mess in OpenSSL ... */
   if (NULL == (cert = SSL_get_peer_certificate(ssl)))
   {
     die ("Getting SSL certificate failed\n");
@@ -208,7 +208,7 @@ openssl_check_against_host_and_verify (SSL *ssl)
     int i;
     for (i = 0; i < extcount; ++i)
     {
-      char *extstr;
+      const char *extstr;
       X509_EXTENSION *ext;
 
       ext = X509_get_ext(cert, i);
@@ -217,8 +217,8 @@ openssl_check_against_host_and_verify (SSL *ssl)
       if (!strcmp(extstr, "subjectAltName"))
       {
         int j;
-        char *extvalstr;
-        unsigned char *tmp = NULL;
+        void *extvalstr;
+        const unsigned char *tmp;
         STACK_OF(CONF_VALUE) *val;
         CONF_VALUE *nval;
         X509V3_EXT_METHOD *method;
