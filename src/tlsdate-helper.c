@@ -92,6 +92,7 @@ know:
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/x509.h>
 
 /** Name of user that we feel safe to run SSL handshake with. */
 #ifndef UNPRIV_USER
@@ -111,6 +112,10 @@ know:
 
 #ifndef MAX_REASONABLE_TIME
 #define MAX_REASONABLE_TIME (uint32_t) 1999991337
+#endif
+
+#ifndef MIN_PUB_KEY_LEN
+#define MIN_PUB_KEY_LEN (uint32_t) 1023
 #endif
 
 // After the duration of the TLS handshake exceeds this threshold
@@ -188,6 +193,74 @@ openssl_time_callback(const SSL* ssl, int where, int ret)
   }
 }
 
+uint32_t
+get_certificate_keybits(EVP_PKEY *public_key)
+{
+  /*
+    In theory, we could use check_bitlen_dsa() and check_bitlen_rsa()
+   */
+  uint32_t key_bits;
+  switch (public_key->type)
+  {
+    case EVP_PKEY_RSA:
+      verb("V: key type: EVP_PKEY_RSA\n");
+      key_bits = BN_num_bits(public_key->pkey.rsa->n);
+      break;
+    case EVP_PKEY_RSA2:
+      verb("V: key type: EVP_PKEY_RSA2\n");
+      key_bits = BN_num_bits(public_key->pkey.rsa->n);
+      break;
+    case EVP_PKEY_DSA:
+      verb("V: key type: EVP_PKEY_DSA\n");
+      key_bits = BN_num_bits(public_key->pkey.dsa->p);
+      break;
+    case EVP_PKEY_DSA1:
+      verb("V: key type: EVP_PKEY_DSA1\n");
+      key_bits = BN_num_bits(public_key->pkey.dsa->p);
+      break;
+    case EVP_PKEY_DSA2:
+      verb("V: key type: EVP_PKEY_DSA2\n");
+      key_bits = BN_num_bits(public_key->pkey.dsa->p);
+      break;
+    case EVP_PKEY_DSA3:
+      verb("V: key type: EVP_PKEY_DSA3\n");
+      key_bits = BN_num_bits(public_key->pkey.dsa->p);
+      break;
+    case EVP_PKEY_DSA4:
+      verb("V: key type: EVP_PKEY_DSA4\n");
+      key_bits = BN_num_bits(public_key->pkey.dsa->p);
+      break;
+    case EVP_PKEY_DH:
+      verb("V: key type: EVP_PKEY_DH\n");
+      key_bits = BN_num_bits(public_key->pkey.dh->pub_key);
+      break;
+    case EVP_PKEY_EC:
+      verb("V: key type: EVP_PKEY_EC\n");
+      key_bits = EVP_PKEY_bits(public_key);
+      break;
+    // Should we also care about EVP_PKEY_HMAC and EVP_PKEY_CMAC?
+    default:
+      key_bits = 0;
+      die ("unknown public key type\n");
+      break;
+  }
+
+  verb ("V: keybits: %d\n", key_bits);
+  return key_bits;
+}
+
+void
+inspect_key(EVP_PKEY *public_key)
+{
+   uint32_t key_bits = get_certificate_keybits(public_key);
+   if (MIN_PUB_KEY_LEN >= key_bits) 
+   {
+     die ("Unsafe public key size: %d bits\n", key_bits);
+   } else {
+     verb ("V: key length appears safe\n");
+   }
+}
+
 /**
  * Run SSL handshake and store the resulting time value in the
  * 'time_map'.
@@ -200,6 +273,8 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
+  X509 *certificate;
+  EVP_PKEY *public_key;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -258,7 +333,9 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   if (ca_racket) {
     long ssl_verify_result;
 
-    if (NULL == SSL_get_peer_certificate(ssl))
+    certificate = SSL_get_peer_certificate(ssl);
+
+    if (NULL == certificate)
     {
       die ("Getting SSL certificate failed\n");
     }
@@ -276,6 +353,16 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
       die ("SSL certification verification error: %ld\n",
      ssl_verify_result);
     }
+
+    public_key = X509_get_pubkey(certificate);
+    if (NULL == public_key)
+    {
+      die ("public key extraction failure\n");
+    } else {
+      verb ("V: public key is ready for inspection\n");
+    }
+    inspect_key(public_key);
+    EVP_PKEY_free(public_key);
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
