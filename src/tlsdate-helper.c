@@ -118,6 +118,13 @@ know:
 #define MIN_PUB_KEY_LEN (uint32_t) 1023
 #endif
 
+#ifndef MIN_ECC_PUB_KEY_LEN
+#define MIN_ECC_PUB_KEY_LEN (uint32_t) 160
+#endif
+
+#ifndef MAX_ECC_PUB_KEY_LEN
+#define MAX_ECC_PUB_KEY_LEN (uint32_t) 521
+#endif
 // After the duration of the TLS handshake exceeds this threshold
 // (in msec), a warning is printed.
 #define TLS_RTT_THRESHOLD      2000
@@ -253,12 +260,21 @@ void
 inspect_key(EVP_PKEY *public_key)
 {
    uint32_t key_bits = get_certificate_keybits(public_key);
-   if (MIN_PUB_KEY_LEN >= key_bits)
+   if (MIN_PUB_KEY_LEN >= key_bits && public_key->type != EVP_PKEY_EC)
    {
      die ("Unsafe public key size: %d bits\n", key_bits);
    } else {
-     verb ("V: key length appears safe\n");
-   }
+      if (public_key->type == EVP_PKEY_EC)
+        if(key_bits >= MIN_ECC_PUB_KEY_LEN
+           && key_bits <= MAX_ECC_PUB_KEY_LEN)
+        {
+          verb ("V: ECC key length appears safe\n");
+        } else {
+          die ("Unsafe ECC key size: %d bits\n", key_bits);
+      } else {
+        verb ("V: key length appears safe\n");
+      }
+  }
 }
 
 /**
