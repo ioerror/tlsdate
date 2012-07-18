@@ -243,7 +243,6 @@ openssl_check_against_host_and_verify (SSL *ssl)
             if (!strcasecmp(nval->name, "DNS") &&
                 !strcasecmp(nval->value, host))
             {
-              verb ("V: SSL host verification passed\n");
               ok = 1;
               break;
             }
@@ -259,11 +258,14 @@ openssl_check_against_host_and_verify (SSL *ssl)
       X509_NAME_get_text_by_NID(subj, NID_commonName, data, sizeof(data)) > 0)
   {
     data[sizeof(data) - 1] = 0;
-    if (strcasecmp(data, host) != 0)
-      die ("OpenSSL host verification failed (%s != %s)!\n", data, host);
-    else
-      verb ("V: SSL host verification passed\n");
+    if (!strcasecmp(data, host))
+      ok = 1;
   }
+
+  if (ok)
+    verb ("V: SSL host verification passed\n");
+  else
+    die ("OpenSSL host verification failed for host %s!\n", host);
 
   X509_free(cert);
   return SSL_get_verify_result(ssl);
