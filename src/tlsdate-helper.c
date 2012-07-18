@@ -226,10 +226,10 @@ openssl_check_against_host_and_verify (SSL *ssl)
         if (!(method = X509V3_EXT_get(ext)))
           break;
         tmp = ext->value->data;
-	if (method->it)
+        if (method->it)
            extvalstr = ASN1_item_d2i(NULL, &tmp, ext->value->length,
                                      ASN1_ITEM_ptr(method->it));
-	else
+        else
            extvalstr = method->d2i(NULL, &tmp, ext->value->length);
         if (!extvalstr)
            break;
