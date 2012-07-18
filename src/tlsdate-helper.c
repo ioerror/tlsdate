@@ -360,6 +360,8 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
 
+  // should we also care about the SSL session? probably not ...
+  SSL_free(ssl);
   SSL_CTX_free(ctx);
 }
 
