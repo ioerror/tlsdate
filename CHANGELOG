@@ -36,6 +36,7 @@
   Update CHANGELOG
     Added proper date for the 0.0.1 release
     (Added all of the above items, obviously)
+  Print key bit length and key type information
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
