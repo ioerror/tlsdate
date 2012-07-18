@@ -253,7 +253,7 @@ void
 inspect_key(EVP_PKEY *public_key)
 {
    uint32_t key_bits = get_certificate_keybits(public_key);
-   if (MIN_PUB_KEY_LEN >= key_bits) 
+   if (MIN_PUB_KEY_LEN >= key_bits)
    {
      die ("Unsafe public key size: %d bits\n", key_bits);
    } else {
