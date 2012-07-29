@@ -1,5 +1,6 @@
 /* Copyright (c) 2012, Jacob Appelbaum.
- * Copyright (c) 2012, The Tor Project, Inc. */
+ * Copyright (c) 2012, The Tor Project, Inc.
+ * Copyright (c) 2012, Christian Grothoff. */
 /* See LICENSE for licensing information */
 /*
                     This file contains the license for tlsdate,
