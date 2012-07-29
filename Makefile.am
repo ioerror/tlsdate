@@ -32,4 +32,4 @@ git-push:
 	git push
 
 deb: debian_orig
-	debuild -rfakeroot -uc -us
+	debuild -rfakeroot -uc -us -d

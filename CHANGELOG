@@ -38,6 +38,8 @@
     (Added all of the above items, obviously)
   Print key bit length and key type information
   Update Copyright headers to include the Great Christian Grothoff
+  Ensure key bit length and key type values are reasonable
+  Add CommonName and SAN checking
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release

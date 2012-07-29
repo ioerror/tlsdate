@@ -144,7 +144,7 @@ static const char *certdir;
 
 /** helper function to print message and die */
 static void
-die(const char *fmt, ...)
+die (const char *fmt, ...)
 {
   va_list ap;
 
@@ -170,7 +170,7 @@ verb (const char *fmt, ...)
 
 
 void
-openssl_time_callback(const SSL* ssl, int where, int ret)
+openssl_time_callback (const SSL* ssl, int where, int ret)
 {
   if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
   {
@@ -202,7 +202,7 @@ openssl_time_callback(const SSL* ssl, int where, int ret)
 }
 
 uint32_t
-get_certificate_keybits(EVP_PKEY *public_key)
+get_certificate_keybits (EVP_PKEY *public_key)
 {
   /*
     In theory, we could use check_bitlen_dsa() and check_bitlen_rsa()
@@ -252,30 +252,157 @@ get_certificate_keybits(EVP_PKEY *public_key)
       die ("unknown public key type\n");
       break;
   }
-
   verb ("V: keybits: %d\n", key_bits);
   return key_bits;
 }
 
-void
-inspect_key(EVP_PKEY *public_key)
+/**
+ This extracts the first commonName and checks it against hostname.
+*/
+uint32_t
+check_cn (SSL *ssl, const char *hostname)
 {
-   uint32_t key_bits = get_certificate_keybits(public_key);
-   if (MIN_PUB_KEY_LEN >= key_bits && public_key->type != EVP_PKEY_EC)
-   {
-     die ("Unsafe public key size: %d bits\n", key_bits);
-   } else {
-      if (public_key->type == EVP_PKEY_EC)
-        if(key_bits >= MIN_ECC_PUB_KEY_LEN
-           && key_bits <= MAX_ECC_PUB_KEY_LEN)
-        {
-          verb ("V: ECC key length appears safe\n");
-        } else {
-          die ("Unsafe ECC key size: %d bits\n", key_bits);
-      } else {
-        verb ("V: key length appears safe\n");
-      }
+  uint32_t ret;
+  char *cn_buf;
+  X509 *certificate;
+  cn_buf = malloc(strlen(hostname) + 1);
+  if (NULL == cn_buf)
+  {
+    die ("Unable to allocate memory for cn_buf\n");
   }
+  certificate = SSL_get_peer_certificate(ssl);
+
+  memset(cn_buf, '\0', (strlen(hostname) + 1));
+  ret = X509_NAME_get_text_by_NID(X509_get_subject_name(certificate),
+                            NID_commonName, cn_buf, (strlen(hostname) + 1));
+
+  if (-1 == ret && ret != strlen(hostname))
+  {
+    die ("Unable to extract commonName\n");
+  }
+  if (strcasecmp(cn_buf, hostname))
+  {
+    die ("commonName mismatch! Expected: %s - received: %s\n",
+         hostname, cn_buf);
+  } else {
+    verb ("V: commonName match\n");
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ Search for a hostname match in the SubjectAlternativeNames.
+*/
+uint32_t
+check_san (SSL *ssl, const char *hostname)
+{
+  uint32_t ret;
+  char *cn_buf;
+  X509 *certificate;
+  cn_buf = malloc(strlen(hostname) + 1);
+  if (NULL == cn_buf)
+  {
+    die ("Unable to allocate memory for cn_buf\n");
+  }
+  certificate = SSL_get_peer_certificate(ssl);
+
+  memset(cn_buf, '\0', (strlen(hostname) + 1));
+  ret = X509_NAME_get_text_by_NID(X509_get_subject_name(certificate),
+                            NID_commonName, cn_buf, (strlen(hostname) + 1));
+
+  if (-1 == ret && ret != strlen(hostname))
+  {
+    die ("Unable to extract commonName\n");
+  }
+  if (strcasecmp(cn_buf, hostname))
+  {
+    die ("commonName mismatch! Expected: %s - received: %s\n",
+         hostname, cn_buf);
+  } else {
+    verb ("V: commonName match\n");
+    return 1;
+  }
+  return 0;
+}
+
+uint32_t
+check_name (SSL *ssl, const char *hostname)
+{
+  uint32_t ret;
+  ret = check_cn(ssl, hostname);
+  ret += check_san(ssl, hostname);
+  return ret;
+}
+
+uint32_t
+verify_signature (SSL *ssl, const char *hostname)
+{
+  long ssl_verify_result;
+  X509 *certificate;
+
+  certificate = SSL_get_peer_certificate(ssl);
+  if (NULL == certificate)
+  {
+    die ("Getting SSL certificate failed\n");
+  }
+  // In theory, we verify that the cert is valid
+  ssl_verify_result = SSL_get_verify_result(ssl);
+  switch (ssl_verify_result)
+  {
+  case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
+  case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+    die ("SSL certificate is self signed\n");
+  case X509_V_OK:
+    verb ("V: SSL certificate verification passed\n");
+    break;
+  default:
+    die ("SSL certification verification error: %ld\n",
+         ssl_verify_result);
+  }
+ return 0;
+}
+
+void
+check_key_length (SSL *ssl)
+{
+  uint32_t key_bits;
+  X509 *certificate;
+  EVP_PKEY *public_key;
+  certificate = SSL_get_peer_certificate (ssl);
+  public_key = X509_get_pubkey (certificate);
+  if (NULL == public_key)
+  {
+    die ("public key extraction failure\n");
+  } else {
+    verb ("V: public key is ready for inspection\n");
+  }
+
+  key_bits = get_certificate_keybits (public_key);
+  if (MIN_PUB_KEY_LEN >= key_bits && public_key->type != EVP_PKEY_EC)
+  {
+    die ("Unsafe public key size: %d bits\n", key_bits);
+  } else {
+     if (public_key->type == EVP_PKEY_EC)
+       if(key_bits >= MIN_ECC_PUB_KEY_LEN
+          && key_bits <= MAX_ECC_PUB_KEY_LEN)
+       {
+         verb ("V: ECC key length appears safe\n");
+       } else {
+         die ("Unsafe ECC key size: %d bits\n", key_bits);
+     } else {
+       verb ("V: key length appears safe\n");
+     }
+  }
+  EVP_PKEY_free (public_key);
+}
+
+void
+inspect_key (SSL *ssl, const char *hostname)
+{
+
+    verify_signature (ssl, hostname);
+    check_name (ssl, hostname);
 }
 
 /**
@@ -290,8 +417,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
-  X509 *certificate;
-  EVP_PKEY *public_key;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -346,52 +471,22 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
     die ("SSL connection failed\n");
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
+
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
-    long ssl_verify_result;
-
-    certificate = SSL_get_peer_certificate(ssl);
-
-    if (NULL == certificate)
-    {
-      die ("Getting SSL certificate failed\n");
-    }
-    // In theory, we verify that the cert is valid
-    ssl_verify_result = SSL_get_verify_result(ssl);
-    switch (ssl_verify_result)
-    {
-    case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
-    case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-      die ("SSL certificate is self signed\n");
-    case X509_V_OK:
-      verb ("V: SSL certificate verification passed\n");
-      break;
-    default:
-      die ("SSL certification verification error: %ld\n",
-     ssl_verify_result);
-    }
-
-    public_key = X509_get_pubkey(certificate);
-    if (NULL == public_key)
-    {
-      die ("public key extraction failure\n");
-    } else {
-      verb ("V: public key is ready for inspection\n");
-    }
-    inspect_key(public_key);
-    EVP_PKEY_free(public_key);
+    inspect_key (ssl, host);
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
+  check_key_length(ssl);
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
 }
 
-
 /** drop root rights and become 'nobody' */
 static void
-become_nobody ()
+become_nobody (void)
 {
   uid_t uid;
   gid_t gid;
