@@ -2,7 +2,7 @@ Source: tlsdate
 Section: net
 Priority: extra
 Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
-Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libssl-dev, dh-apparmor
+Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libssl-dev, dh-apparmor, hardening-includes
 Standards-Version: 3.9.3
 Homepage: https://www.github.com/ioerror/tlsdate/
 Vcs-Git: git://github.com/ioerror/tlsdate.git
