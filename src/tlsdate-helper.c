@@ -297,32 +297,7 @@ check_cn (SSL *ssl, const char *hostname)
 uint32_t
 check_san (SSL *ssl, const char *hostname)
 {
-  uint32_t ret;
-  char *cn_buf;
-  X509 *certificate;
-  cn_buf = malloc(strlen(hostname) + 1);
-  if (NULL == cn_buf)
-  {
-    die ("Unable to allocate memory for cn_buf\n");
-  }
-  certificate = SSL_get_peer_certificate(ssl);
-
-  memset(cn_buf, '\0', (strlen(hostname) + 1));
-  ret = X509_NAME_get_text_by_NID(X509_get_subject_name(certificate),
-                            NID_commonName, cn_buf, (strlen(hostname) + 1));
-
-  if (-1 == ret && ret != strlen(hostname))
-  {
-    die ("Unable to extract commonName\n");
-  }
-  if (strcasecmp(cn_buf, hostname))
-  {
-    die ("commonName mismatch! Expected: %s - received: %s\n",
-         hostname, cn_buf);
-  } else {
-    verb ("V: commonName match\n");
-    return 1;
-  }
+// Actually implement this!
   return 0;
 }
 
