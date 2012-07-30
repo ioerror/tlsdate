@@ -105,6 +105,34 @@ verb (const char *fmt, ...)
 }
 
 
+/** helper function for 'malloc' */
+static void *
+xmalloc (size_t size)
+{
+  void *ptr;
+
+  if (0 == size)
+    die("xmalloc: zero size\n");
+
+  ptr = malloc(size);
+  if (NULL == ptr)
+    die("xmalloc: out of memory (allocating %zu bytes)\n", size);
+
+  return ptr;
+}
+
+
+/** helper function for 'free' */
+static void
+xfree (void *ptr)
+{
+  if (ptr == NULL)
+    die("xfree: NULL pointer given as argument\n");
+
+  free(ptr);
+}
+
+
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
@@ -198,14 +226,12 @@ get_certificate_keybits (EVP_PKEY *public_key)
 uint32_t
 check_cn (SSL *ssl, const char *hostname)
 {
+  int ok = 0;
   uint32_t ret;
   char *cn_buf;
   X509 *certificate;
-  cn_buf = malloc(MAX_CN_NAME_LENGTH + 1);
-  if (NULL == cn_buf)
-  {
-    die ("Unable to allocate memory for cn_buf\n");
-  }
+
+  cn_buf = xmalloc(MAX_CN_NAME_LENGTH + 1);
   certificate = SSL_get_peer_certificate(ssl);
 
   memset(cn_buf, '\0', (strlen(hostname) + 1));
@@ -220,12 +246,13 @@ check_cn (SSL *ssl, const char *hostname)
   {
     verb ("V: commonName mismatch! Expected: %s - received: %s\n",
          hostname, cn_buf);
-    return 0;
   } else {
     verb ("V: commonName matched: %s\n", cn_buf); // We matched this; so it's safe to print
-    return 1;
+    ok = 1;
   }
-  return 0;
+
+  xfree(cn_buf);
+  return ok;
 }
 
 /**
