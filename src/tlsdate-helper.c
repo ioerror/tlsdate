@@ -222,7 +222,7 @@ check_cn (SSL *ssl, const char *hostname)
          hostname, cn_buf);
     return 0;
   } else {
-    verb ("V: commonName match\n");
+    verb ("V: commonName matched: %s\n", cn_buf); // We matched this; so it's safe to print
     return 1;
   }
   return 0;
@@ -291,16 +291,23 @@ check_san (SSL *ssl, const char *hostname)
             if (!strcasecmp(nval->name, "DNS") &&
                 !strcasecmp(nval->value, host))
             {
-              verb ("V: subjectAltName matched\n");
+              verb ("V: subjectAltName matched: %s\n", nval->value); // We matched this; so it's safe to print
               ok = 1;
               break;
             }
+              verb ("V: subjectAltName found but not matched: %s\n", nval->value); // XXX: Clean this string!
           }
         }
+      } else {
+        verb ("V: found non subjectAltName extension\n");
       }
       if (ok)
+      {
         break;
+      }
     }
+  } else {
+    verb ("V: no X509_EXTENSION field(s) found\n");
   }
   X509_free(cert);
   return ok;
@@ -310,13 +317,14 @@ uint32_t
 check_name (SSL *ssl, const char *hostname)
 {
   uint32_t ret;
+  ret = 0;
   ret = check_cn(ssl, hostname);
   ret += check_san(ssl, hostname);
-  if (0 != ret)
+  if (0 != ret && 0 < ret)
   {
-    verb ("V: subjectAltName host verification passed\n");
+    verb ("V: hostname verification passed\n");
   } else {
-    die ("subjectAltName host verification failed for host %s!\n", host);
+    die ("hostname verification failed for host %s!\n", host);
   }
   return ret;
 }
