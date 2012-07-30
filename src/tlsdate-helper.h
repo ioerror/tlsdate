@@ -66,6 +66,10 @@
 // (in msec), a warning is printed.
 #define TLS_RTT_THRESHOLD      2000
 
+// RFC 5280 says...
+// ub-common-name-length INTEGER ::= 64
+#define MAX_CN_NAME_LENGTH 64
+
 static int verbose;
 
 static int ca_racket;

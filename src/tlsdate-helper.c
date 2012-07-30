@@ -201,7 +201,7 @@ check_cn (SSL *ssl, const char *hostname)
   uint32_t ret;
   char *cn_buf;
   X509 *certificate;
-  cn_buf = malloc(strlen(hostname) + 1);
+  cn_buf = malloc(MAX_CN_NAME_LENGTH);
   if (NULL == cn_buf)
   {
     die ("Unable to allocate memory for cn_buf\n");
@@ -218,7 +218,7 @@ check_cn (SSL *ssl, const char *hostname)
   }
   if (strcasecmp(cn_buf, hostname))
   {
-    verb ("commonName mismatch! Expected: %s - received: %s\n",
+    verb ("V: commonName mismatch! Expected: %s - received: %s\n",
          hostname, cn_buf);
     return 0;
   } else {
