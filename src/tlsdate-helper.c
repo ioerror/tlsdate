@@ -126,7 +126,7 @@ xmalloc (size_t size)
 static void
 xfree (void *ptr)
 {
-  if (ptr == NULL)
+  if (NULL == ptr)
     die("xfree: NULL pointer given as argument\n");
 
   free(ptr);
