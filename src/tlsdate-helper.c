@@ -288,14 +288,16 @@ check_san (SSL *ssl, const char *hostname)
           for (j = 0; j < sk_CONF_VALUE_num(val); ++j)
           {
             nval = sk_CONF_VALUE_value(val, j);
-            if (!strcasecmp(nval->name, "DNS") &&
-                !strcasecmp(nval->value, host))
+            if ((!strcasecmp(nval->name, "DNS") &&
+                !strcasecmp(nval->value, host) ) ||
+                (!strcasecmp(nval->name, "iPAddress") &&
+                !strcasecmp(nval->value, host)))
             {
-              verb ("V: subjectAltName matched: %s\n", nval->value); // We matched this; so it's safe to print
+              verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); // We matched this; so it's safe to print
               ok = 1;
               break;
             }
-              verb ("V: subjectAltName found but not matched: %s\n", nval->value); // XXX: Clean this string!
+              verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
