@@ -201,7 +201,7 @@ check_cn (SSL *ssl, const char *hostname)
   uint32_t ret;
   char *cn_buf;
   X509 *certificate;
-  cn_buf = malloc(MAX_CN_NAME_LENGTH);
+  cn_buf = malloc(MAX_CN_NAME_LENGTH + 1);
   if (NULL == cn_buf)
   {
     die ("Unable to allocate memory for cn_buf\n");
@@ -210,7 +210,7 @@ check_cn (SSL *ssl, const char *hostname)
 
   memset(cn_buf, '\0', (strlen(hostname) + 1));
   ret = X509_NAME_get_text_by_NID(X509_get_subject_name(certificate),
-                            NID_commonName, cn_buf, (strlen(hostname) + 1));
+                            NID_commonName, cn_buf, MAX_CN_NAME_LENGTH);
 
   if (-1 == ret && ret != strlen(hostname))
   {
