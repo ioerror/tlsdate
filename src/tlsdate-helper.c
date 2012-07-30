@@ -218,8 +218,9 @@ check_cn (SSL *ssl, const char *hostname)
   }
   if (strcasecmp(cn_buf, hostname))
   {
-    die ("commonName mismatch! Expected: %s - received: %s\n",
+    verb ("commonName mismatch! Expected: %s - received: %s\n",
          hostname, cn_buf);
+    return 0;
   } else {
     verb ("V: commonName match\n");
     return 1;
