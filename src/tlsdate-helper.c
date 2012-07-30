@@ -75,72 +75,8 @@ know:
  */
 
 #include "../config/tlsdate-config.h"
+#include "tlsdate-helper.h"
 
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/mman.h>
-#include <time.h>
-#include <pwd.h>
-#include <grp.h>
-#include <arpa/inet.h>
-
-#include <openssl/bio.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/x509.h>
-
-/** Name of user that we feel safe to run SSL handshake with. */
-#ifndef UNPRIV_USER
-#define UNPRIV_USER "nobody"
-#endif
-#ifndef UNPRIV_GROUP
-#define UNPRIV_GROUP "nogroup"
-#endif
-
-// We should never accept a time before we were compiled
-// We measure in seconds since the epoch - eg: echo `date '+%s'`
-// We set this manually to ensure others can reproduce a build;
-// automation of this will make every build different!
-#ifndef RECENT_COMPILE_DATE
-#define RECENT_COMPILE_DATE (uint32_t) 1342323666
-#endif
-
-#ifndef MAX_REASONABLE_TIME
-#define MAX_REASONABLE_TIME (uint32_t) 1999991337
-#endif
-
-#ifndef MIN_PUB_KEY_LEN
-#define MIN_PUB_KEY_LEN (uint32_t) 1023
-#endif
-
-#ifndef MIN_ECC_PUB_KEY_LEN
-#define MIN_ECC_PUB_KEY_LEN (uint32_t) 160
-#endif
-
-#ifndef MAX_ECC_PUB_KEY_LEN
-#define MAX_ECC_PUB_KEY_LEN (uint32_t) 521
-#endif
-// After the duration of the TLS handshake exceeds this threshold
-// (in msec), a warning is printed.
-#define TLS_RTT_THRESHOLD      2000
-
-static int verbose;
-
-static int ca_racket;
-
-static const char *host;
-
-static const char *port;
-
-static const char *protocol;
-
-static const char *certdir;
 
 /** helper function to print message and die */
 static void
@@ -457,6 +393,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
+  SSL_free(ssl);
   SSL_CTX_free(ctx);
 }
 
