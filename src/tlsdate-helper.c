@@ -234,8 +234,6 @@ uint32_t
 check_san (SSL *ssl, const char *hostname)
 {
   X509 *cert;
-  X509_NAME *subj;
-  char data[512];
   int extcount, ok = 0;
   /* What an OpenSSL mess ... */
   if (NULL == (cert = SSL_get_peer_certificate(ssl)))
@@ -296,13 +294,6 @@ check_san (SSL *ssl, const char *hostname)
     }
   }
 
-  if (!ok && (subj = X509_get_subject_name(cert)) &&
-      X509_NAME_get_text_by_NID(subj, NID_commonName, data, sizeof(data)) > 0)
-  {
-    data[sizeof(data) - 1] = 0;
-    if (!strcasecmp(data, host))
-    ok = 1;
-  }
 
   if (ok)
     verb ("V: SSL host verification passed\n");
