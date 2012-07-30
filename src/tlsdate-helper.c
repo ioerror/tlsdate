@@ -238,7 +238,7 @@ check_san (SSL *ssl, const char *hostname)
   /* What an OpenSSL mess ... */
   if (NULL == (cert = SSL_get_peer_certificate(ssl)))
   {
-    die ("Getting SSL certificate failed\n");
+    die ("Getting certificate failed\n");
   }
 
   if ((extcount = X509_get_ext_count(cert)) > 0)
@@ -263,15 +263,23 @@ check_san (SSL *ssl, const char *hostname)
         X509V3_EXT_METHOD *method;
 
         if (!(method = X509V3_EXT_get(ext)))
+        {
           break;
+        }
+
         tmp = ext->value->data;
-  if (method->it)
-           extvalstr = ASN1_item_d2i(NULL, &tmp, ext->value->length,
-                                     ASN1_ITEM_ptr(method->it));
-  else
-           extvalstr = method->d2i(NULL, &tmp, ext->value->length);
+        if (method->it)
+        {
+          extvalstr = ASN1_item_d2i(NULL, &tmp, ext->value->length,
+                                    ASN1_ITEM_ptr(method->it));
+        } else {
+          extvalstr = method->d2i(NULL, &tmp, ext->value->length);
+        }
+
         if (!extvalstr)
-           break;
+        {
+          break;
+        }
 
         if (method->i2v)
         {
@@ -280,9 +288,9 @@ check_san (SSL *ssl, const char *hostname)
           {
             nval = sk_CONF_VALUE_value(val, j);
             if (!strcasecmp(nval->name, "DNS") &&
-          !strcasecmp(nval->value, host))
+                !strcasecmp(nval->value, host))
             {
-              verb ("V: SSL host verification passed\n");
+              verb ("V: subjectAltName matched\n");
               ok = 1;
               break;
             }
@@ -293,15 +301,8 @@ check_san (SSL *ssl, const char *hostname)
         break;
     }
   }
-
-
-  if (ok)
-    verb ("V: SSL host verification passed\n");
-  else
-    die ("OpenSSL host verification failed for host %s!\n", host);
-
   X509_free(cert);
-  return SSL_get_verify_result(ssl);
+  return ok;
 }
 
 uint32_t
@@ -310,6 +311,12 @@ check_name (SSL *ssl, const char *hostname)
   uint32_t ret;
   ret = check_cn(ssl, hostname);
   ret += check_san(ssl, hostname);
+  if (0 != ret)
+  {
+    verb ("V: subjectAltName host verification passed\n");
+  } else {
+    die ("subjectAltName host verification failed for host %s!\n", host);
+  }
   return ret;
 }
 
@@ -322,7 +329,7 @@ verify_signature (SSL *ssl, const char *hostname)
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
   {
-    die ("Getting SSL certificate failed\n");
+    die ("Getting certificate failed\n");
   }
   // In theory, we verify that the cert is valid
   ssl_verify_result = SSL_get_verify_result(ssl);
@@ -330,12 +337,12 @@ verify_signature (SSL *ssl, const char *hostname)
   {
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
   case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-    die ("SSL certificate is self signed\n");
+    die ("certificate is self signed\n");
   case X509_V_OK:
-    verb ("V: SSL certificate verification passed\n");
+    verb ("V: certificate verification passed\n");
     break;
   default:
-    die ("SSL certification verification error: %ld\n",
+    die ("certification verification error: %ld\n",
          ssl_verify_result);
   }
  return 0;
