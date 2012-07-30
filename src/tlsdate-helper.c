@@ -457,6 +457,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
+  SSL_CTX_free(ctx);
 }
 
 /** drop root rights and become 'nobody' */
