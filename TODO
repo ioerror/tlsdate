@@ -32,5 +32,6 @@ Here is a nice list of things to do to improve tlsdate:
      public keys
 30)  Check CN and/or SAN field to match against wild card certs
 31)  Fetch HTTP over TLS to parse date field and confirm sync with the tls date
+32)  Implement iPAddress check in SAN check for an IP address (RFC 2818)
 
 Patches welcome!
