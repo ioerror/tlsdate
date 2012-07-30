@@ -233,8 +233,84 @@ check_cn (SSL *ssl, const char *hostname)
 uint32_t
 check_san (SSL *ssl, const char *hostname)
 {
-// Actually implement this!
-  return 0;
+  X509 *cert;
+  X509_NAME *subj;
+  char data[512];
+  int extcount, ok = 0;
+  /* What an OpenSSL mess ... */
+  if (NULL == (cert = SSL_get_peer_certificate(ssl)))
+  {
+    die ("Getting SSL certificate failed\n");
+  }
+
+  if ((extcount = X509_get_ext_count(cert)) > 0)
+  {
+    int i;
+    for (i = 0; i < extcount; ++i)
+    {
+      const char *extstr;
+      X509_EXTENSION *ext;
+      ext = X509_get_ext(cert, i);
+      extstr = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+
+      if (!strcmp(extstr, "subjectAltName"))
+      {
+
+        int j;
+        void *extvalstr;
+        const unsigned char *tmp;
+
+        STACK_OF(CONF_VALUE) *val;
+        CONF_VALUE *nval;
+        X509V3_EXT_METHOD *method;
+
+        if (!(method = X509V3_EXT_get(ext)))
+          break;
+        tmp = ext->value->data;
+  if (method->it)
+           extvalstr = ASN1_item_d2i(NULL, &tmp, ext->value->length,
+                                     ASN1_ITEM_ptr(method->it));
+  else
+           extvalstr = method->d2i(NULL, &tmp, ext->value->length);
+        if (!extvalstr)
+           break;
+
+        if (method->i2v)
+        {
+          val = method->i2v(method, extvalstr, NULL);
+          for (j = 0; j < sk_CONF_VALUE_num(val); ++j)
+          {
+            nval = sk_CONF_VALUE_value(val, j);
+            if (!strcasecmp(nval->name, "DNS") &&
+          !strcasecmp(nval->value, host))
+            {
+              verb ("V: SSL host verification passed\n");
+              ok = 1;
+              break;
+            }
+          }
+        }
+      }
+      if (ok)
+        break;
+    }
+  }
+
+  if (!ok && (subj = X509_get_subject_name(cert)) &&
+      X509_NAME_get_text_by_NID(subj, NID_commonName, data, sizeof(data)) > 0)
+  {
+    data[sizeof(data) - 1] = 0;
+    if (!strcasecmp(data, host))
+    ok = 1;
+  }
+
+  if (ok)
+    verb ("V: SSL host verification passed\n");
+  else
+    die ("OpenSSL host verification failed for host %s!\n", host);
+
+  X509_free(cert);
+  return SSL_get_verify_result(ssl);
 }
 
 uint32_t
