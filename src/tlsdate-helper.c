@@ -572,10 +572,11 @@ main(int argc, char **argv)
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
 
+  warp_time.tv_sec = RECENT_COMPILE_DATE;
+  warp_time.tv_usec = 0;
+
   if (timewarp)
   {
-    warp_time.tv_sec = RECENT_COMPILE_DATE;
-    warp_time.tv_usec = 0;
     verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
          (unsigned long)warp_time.tv_sec,
          (unsigned long)warp_time.tv_usec);

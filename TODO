@@ -32,10 +32,5 @@ Here is a nice list of things to do to improve tlsdate:
      public keys
 30)  Check CN and/or SAN field to match against wild card certs
 31)  Fetch HTTP over TLS to parse date field and confirm sync with the tls date
-32)  Address the following valgrind issues:
-
-  ==11976== Conditional jump or move depends on uninitialised value(s)
-  ==11976==    at 0x10A952: main (tlsdate-helper.c:597)
-  ==11976== 
 
 Patches welcome!
