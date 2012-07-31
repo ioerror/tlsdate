@@ -38,12 +38,4 @@ Here is a nice list of things to do to improve tlsdate:
   ==11976==    at 0x10A952: main (tlsdate-helper.c:597)
   ==11976== 
 
-  ==13298== 
-  ==13298== 256 bytes in 1 blocks are definitely lost in loss record 220 of 277
-  ==13298==    at 0x4C28FAC: malloc (vg_replace_malloc.c:236)
-  ==13298==    by 0x10A190: check_cn (tlsdate-helper.c:204)
-  ==13298==    by 0x10A57F: check_name (tlsdate-helper.c:333)
-  ==13298==    by 0x10A7AC: inspect_key (tlsdate-helper.c:411)
-  ==13298==    by 0x10ADE4: main (tlsdate-helper.c:483)
-
 Patches welcome!
