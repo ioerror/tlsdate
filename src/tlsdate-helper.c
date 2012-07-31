@@ -200,16 +200,24 @@ check_cn (SSL *ssl, const char *hostname)
   uint32_t ret;
   char *cn_buf;
   X509 *certificate;
+  X509_NAME *xname;
   cn_buf = malloc(HOST_NAME_MAX + 1);
+
   if (NULL == cn_buf)
   {
     die ("Unable to allocate memory for cn_buf\n");
   }
-  certificate = SSL_get_peer_certificate(ssl);
 
-  memset(cn_buf, '\0', (strlen(hostname) + 1));
-  ret = X509_NAME_get_text_by_NID(X509_get_subject_name(certificate),
-                            NID_commonName, cn_buf, HOST_NAME_MAX);
+  certificate = SSL_get_peer_certificate(ssl);
+  if (NULL == certificate)
+  {
+    die ("Unable to extract certificate\n");
+  }
+
+  memset(cn_buf, '\0', (HOST_NAME_MAX + 1));
+  xname = X509_get_subject_name(certificate);
+  ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
+                                  cn_buf, HOST_NAME_MAX);
 
   if (-1 == ret && ret != strlen(hostname))
   {
@@ -218,12 +226,14 @@ check_cn (SSL *ssl, const char *hostname)
   if (strcasecmp(cn_buf, hostname))
   {
     verb ("V: commonName mismatch! Expected: %s - received: %s\n",
-         hostname, cn_buf);
-    return 0;
+          hostname, cn_buf);
   } else {
-    verb ("V: commonName matched: %s\n", cn_buf); // We matched this; so it's safe to print
+    verb ("V: commonName matched: %s\n", cn_buf);
     return 1;
   }
+  X509_NAME_free(xname);
+  X509_free(certificate);
+  free(cn_buf);
   return 0;
 }
 
