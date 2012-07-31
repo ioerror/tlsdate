@@ -48,7 +48,7 @@ Over quick, hard to read and potentilly incorrect:
     bar();
 
 Please provide relevant CHANGELOG entries for all changes.
-Please provide unittest cases. 
+Please provide unittest cases.
 
 When submitting patches via email, please use `git format-patch` to format
 patches:
