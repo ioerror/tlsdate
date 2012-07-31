@@ -7,8 +7,8 @@
   * \brief The main header for our clock helper.
   **/
 
-#ifndef _TLSDATE_H
-#define _TLSDATE_H
+#ifndef TLSDATE_H
+#define TLSDATE_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -32,4 +32,5 @@ typedef struct {
   char *protocol;
 } tlsdate_options_t;
 
-#endif
+#endif /* TLSDATE_H */
+
