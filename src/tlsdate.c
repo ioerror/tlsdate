@@ -1,5 +1,6 @@
 /* Copyright (c) 2012, Jacob Appelbaum.
- * Copyright (c) 2012, The Tor Project, Inc. */
+ * Copyright (c) 2012, The Tor Project, Inc.
+ * Copyright (c) 2012, Christian Grothoff. */
 /* See LICENSE for licensing information */
 /*
                     This file contains the license for tlsdate,
@@ -74,17 +75,8 @@ know:
  */
 
 #include "../config/tlsdate-config.h"
+#include "tlsdate.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <unistd.h>
-
-#define UNPRIV_USER "nobody"
-#define DEFAULT_HOST "www.ptb.de"
-#define DEFAULT_PORT "443"
-#define DEFAULT_PROTOCOL "tlsv1"
-#define DEFAULT_CERTDIR "/etc/ssl/certs"
 
 /** Return the proper commandline switches when the user needs information. */
 static void

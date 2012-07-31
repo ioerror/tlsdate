@@ -1,0 +1,104 @@
+/* Copyright (c) 2012, Jacob Appelbaum
+ * Copyright (c) 2012, The Tor Project, Inc. */
+/* See LICENSE for licensing information */
+
+/**
+  * \file tlsdate-helper.h
+  * \brief The secondary header for our clock helper.
+  **/
+
+#ifndef TLSDATEHELPER_H
+#define TLSDATEHELPER_H
+
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <time.h>
+#include <pwd.h>
+#include <grp.h>
+#include <arpa/inet.h>
+
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/x509.h>
+#include <openssl/conf.h>
+#include <openssl/x509v3.h>
+
+/** Name of user that we feel safe to run SSL handshake with. */
+#ifndef UNPRIV_USER
+#define UNPRIV_USER "nobody"
+#endif
+#ifndef UNPRIV_GROUP
+#define UNPRIV_GROUP "nogroup"
+#endif
+
+// We should never accept a time before we were compiled
+// We measure in seconds since the epoch - eg: echo `date '+%s'`
+// We set this manually to ensure others can reproduce a build;
+// automation of this will make every build different!
+#ifndef RECENT_COMPILE_DATE
+#define RECENT_COMPILE_DATE (uint32_t) 1342323666
+#endif
+
+#ifndef MAX_REASONABLE_TIME
+#define MAX_REASONABLE_TIME (uint32_t) 1999991337
+#endif
+
+#ifndef MIN_PUB_KEY_LEN
+#define MIN_PUB_KEY_LEN (uint32_t) 1023
+#endif
+
+#ifndef MIN_ECC_PUB_KEY_LEN
+#define MIN_ECC_PUB_KEY_LEN (uint32_t) 160
+#endif
+
+#ifndef MAX_ECC_PUB_KEY_LEN
+#define MAX_ECC_PUB_KEY_LEN (uint32_t) 521
+#endif
+// After the duration of the TLS handshake exceeds this threshold
+// (in msec), a warning is printed.
+#define TLS_RTT_THRESHOLD      2000
+
+// RFC 5280 says...
+// ub-common-name-length INTEGER ::= 64
+#define MAX_CN_NAME_LENGTH 64
+
+// RFC 1034 and posix say...
+#define HOST_NAME_MAX 255
+
+static int verbose;
+
+static int ca_racket;
+
+static const char *host;
+
+static const char *port;
+
+static const char *protocol;
+
+static const char *certdir;
+static void die (const char *fmt, ...);
+static void verb (const char *fmt, ...);
+void openssl_time_callback (const SSL* ssl, int where, int ret);
+uint32_t get_certificate_keybits (EVP_PKEY *public_key);
+uint32_t check_cn (SSL *ssl, const char *hostname);
+uint32_t check_san (SSL *ssl, const char *hostname);
+long openssl_check_against_host_and_verify (SSL *ssl);
+uint32_t check_name (SSL *ssl, const char *hostname);
+uint32_t verify_signature (SSL *ssl, const char *hostname);
+void check_key_length (SSL *ssl);
+void inspect_key (SSL *ssl, const char *hostname);
+static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
+static void become_nobody (void);
+void check_key_length (SSL *ssl);
+void inspect_key (SSL *ssl, const char *hostname);
+static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
+
+#endif
