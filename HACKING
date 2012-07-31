@@ -30,6 +30,12 @@ Ensuring Correctness:
 
   Test your improved copy of tlsdate extensively
 
+Security:
+
+  tlsdate is security sensitive - please consider where you add code and in
+  what context it will run. When possible, run with the least privilege as is
+  possible.
+
 Proactively find bugs:
 
  Run your copy of tlsdate under valgrind
@@ -47,7 +53,26 @@ Over quick, hard to read and potentilly incorrect:
   if (foo(void)==NULL))
     bar();
 
+Define magic numbers and explain their origin:
+
+  // As taken from RFC 3.14
+  #define MAGIC_NUMBER 23 // This goes in foo.h
+  ptr = malloc (MAGIC_NUMBER);
+
+Rather than just throwing them about in code:
+
+  ptr = malloc (23);
+
+It is almost always prefered to use dynamically allocated memory:
+
+  widget_ptr = malloc (WIDGET_SIZE);
+
+Try to avoid static allocations like the following:
+
+  char widget[WIDGET_SIZE];
+
 Please provide relevant CHANGELOG entries for all changes.
+Please remove items from the TODO file as they are completed.
 Please provide unittest cases.
 
 When submitting patches via email, please use `git format-patch` to format
