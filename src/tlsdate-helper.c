@@ -99,7 +99,6 @@ verb (const char *fmt, ...)
 
   if (! verbose) return;
   va_start(ap, fmt);
-  // FIXME: stdout or stderr for verbose messages?
   vfprintf(stderr, fmt, ap);
   va_end(ap);
 }
