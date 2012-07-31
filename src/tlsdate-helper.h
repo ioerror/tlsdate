@@ -70,6 +70,9 @@
 // ub-common-name-length INTEGER ::= 64
 #define MAX_CN_NAME_LENGTH 64
 
+// RFC 1034 and posix say...
+#define HOST_NAME_MAX 255
+
 static int verbose;
 
 static int ca_racket;
