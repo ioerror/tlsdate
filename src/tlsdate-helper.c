@@ -229,6 +229,9 @@ check_cn (SSL *ssl, const char *hostname)
           hostname, cn_buf);
   } else {
     verb ("V: commonName matched: %s\n", cn_buf);
+    X509_NAME_free(xname);
+    X509_free(certificate);
+    free(cn_buf);
     return 1;
   }
   X509_NAME_free(xname);
