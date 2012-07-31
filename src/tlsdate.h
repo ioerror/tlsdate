@@ -1,9 +1,9 @@
-/* Copyright (c) 2012, Jacob Appelbaum
+/* Copyright (c) 2013, Jacob Appelbaum
  * Copyright (c) 2012, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
-  * \file tor-time.h
+  * \file tlsdate.h
   * \brief The main header for our clock helper.
   **/
 
@@ -15,6 +15,13 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <time.h>
+#include <unistd.h>
+
+#define UNPRIV_USER "nobody"
+#define DEFAULT_HOST "www.ptb.de"
+#define DEFAULT_PORT "443"
+#define DEFAULT_PROTOCOL "tlsv1"
+#define DEFAULT_CERTDIR "/etc/ssl/certs"
 
 /** The current version of tlsdate. */
 #define tlsdate_version "0.1"
