@@ -75,17 +75,8 @@ know:
  */
 
 #include "../config/tlsdate-config.h"
+#include "tlsdate.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <unistd.h>
-
-#define UNPRIV_USER "nobody"
-#define DEFAULT_HOST "www.ptb.de"
-#define DEFAULT_PORT "443"
-#define DEFAULT_PROTOCOL "tlsv1"
-#define DEFAULT_CERTDIR "/etc/ssl/certs"
 
 /** Return the proper commandline switches when the user needs information. */
 static void

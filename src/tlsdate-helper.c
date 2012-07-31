@@ -99,7 +99,6 @@ verb (const char *fmt, ...)
 
   if (! verbose) return;
   va_start(ap, fmt);
-  // FIXME: stdout or stderr for verbose messages?
   vfprintf(stderr, fmt, ap);
   va_end(ap);
 }
@@ -231,12 +230,12 @@ check_cn (SSL *ssl, const char *hostname)
   char *cn_buf;
   X509 *certificate;
 
-  cn_buf = xmalloc(MAX_CN_NAME_LENGTH + 1);
+  cn_buf = xmalloc(HOST_NAME_MAX + 1);
   certificate = SSL_get_peer_certificate(ssl);
 
   memset(cn_buf, '\0', (strlen(hostname) + 1));
   ret = X509_NAME_get_text_by_NID(X509_get_subject_name(certificate),
-                            NID_commonName, cn_buf, MAX_CN_NAME_LENGTH);
+                            NID_commonName, cn_buf, HOST_NAME_MAX);
 
   if (-1 == ret && ret != strlen(hostname))
   {
@@ -315,14 +314,16 @@ check_san (SSL *ssl, const char *hostname)
           for (j = 0; j < sk_CONF_VALUE_num(val); ++j)
           {
             nval = sk_CONF_VALUE_value(val, j);
-            if (!strcasecmp(nval->name, "DNS") &&
-                !strcasecmp(nval->value, host))
+            if ((!strcasecmp(nval->name, "DNS") &&
+                !strcasecmp(nval->value, host) ) ||
+                (!strcasecmp(nval->name, "iPAddress") &&
+                !strcasecmp(nval->value, host)))
             {
-              verb ("V: subjectAltName matched: %s\n", nval->value); // We matched this; so it's safe to print
+              verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); // We matched this; so it's safe to print
               ok = 1;
               break;
             }
-              verb ("V: subjectAltName found but not matched: %s\n", nval->value); // XXX: Clean this string!
+              verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
