@@ -43,6 +43,7 @@
   Add enumeration and printing of other x.509 extensions in SAN checking
   Add SAN checking for iPAddress field per RFC2818
   Various small bug fixes
+  Fixed various tiny memory leaks
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
