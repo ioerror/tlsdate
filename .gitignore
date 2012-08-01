@@ -1,4 +1,5 @@
 .deps/
+.libs/
 autom4te.cache/
 Makefile
 Makefile.in
@@ -10,6 +11,7 @@ config.sub
 configure
 depcomp
 install-sh
+libtool
 missing
 stamp-h1
 config/
