@@ -7,7 +7,7 @@ bin_PROGRAMS = tlsdate tlsdate-helper
 tlsdate_SOURCES = tlsdate.c
 tlsdate_helper_SOURCES = tlsdate-helper.c
 tlsdate_helper_LDADD = -lssl -lcrypto -lrt \
-                       $(top_builddir)/src/compat/libcompat.la
+                       $(top_builddir)/src/compat/libtlsdate_compat.la
 
 # We're not shipping headers
 noinst_HEADERS = tlsdate.h

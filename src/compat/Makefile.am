@@ -1,5 +1,5 @@
 AM_CPPFLAGS =
 
-lib_LTLIBRARIES = libcompat.la
+lib_LTLIBRARIES = libtlsdate_compat.la
 
-libcompat_la_SOURCES = clock-linux.c clock.h
+libtlsdatecompat_la_SOURCES = clock-linux.c clock.h
