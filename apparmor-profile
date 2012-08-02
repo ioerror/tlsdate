@@ -113,6 +113,7 @@
   /lib32/* rm,
   /lib64/* rm,
   /usr/lib/* rm,
+  /usr/local/lib/* rm,
   /lib/x86_64-linux-gnu/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
