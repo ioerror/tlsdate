@@ -44,6 +44,8 @@
   Add SAN checking for iPAddress field per RFC2818
   Various small bug fixes
   Fixed various tiny memory leaks
+  Added compat layer library for future multi-platform support by David Goulet
+  Compile output is now largely silent by default
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release

@@ -4,6 +4,9 @@ AM_CONFIG_HEADER([config/tlsdate-config.h])
 AM_INIT_AUTOMAKE([tlsdate], [0.0.1])
 AC_CANONICAL_HOST
 AH_TOP([#define _GNU_SOURCE  1])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
+LT_INIT
 
 # Debug and hardening flags all in one shot
 CFLAGS=" -g -O1 -Wall -fno-strict-aliasing "
@@ -44,4 +47,4 @@ AC_CHECK_HEADERS(
 
 AC_CHECK_FUNCS([setresuid gettimeofday])
 
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile src/Makefile src/compat/Makefile)

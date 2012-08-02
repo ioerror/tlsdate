@@ -77,6 +77,7 @@ know:
 #include "../config/tlsdate-config.h"
 #include "tlsdate-helper.h"
 
+#include "compat/clock.h"
 
 /** helper function to print message and die */
 static void
@@ -547,9 +548,7 @@ int
 main(int argc, char **argv)
 {
   uint32_t *time_map;
-  struct timeval start_timeval;
-  struct timeval end_timeval;
-  struct timeval warp_time;
+  struct tlsdate_time start_time, end_time, warp_time;
   int status;
   pid_t ssl_child;
   long long rt_time_ms;
@@ -572,14 +571,13 @@ main(int argc, char **argv)
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
 
-  warp_time.tv_sec = RECENT_COMPILE_DATE;
-  warp_time.tv_usec = 0;
+  clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
   if (timewarp)
   {
     verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
-         (unsigned long)warp_time.tv_sec,
-         (unsigned long)warp_time.tv_usec);
+         (unsigned long) CLOCK_SEC(&warp_time),
+         (unsigned long) CLOCK_USEC(&warp_time));
   }
 
   /* We are not going to set the clock, thus no need to stay root */
@@ -599,35 +597,35 @@ main(int argc, char **argv)
   }
 
   /* Get the current time from the system clock. */
-  if (0 != gettimeofday(&start_timeval, NULL))
+  if (0 != clock_get_real_time(&start_time))
   {
     die ("Failed to read current time of day: %s\n", strerror (errno));
   }
 
   verb ("V: time is currently %lu.%06lu\n",
-       (unsigned long)start_timeval.tv_sec,
-       (unsigned long)start_timeval.tv_usec);
+       (unsigned long) CLOCK_SEC(&start_time),
+       (unsigned long) CLOCK_NSEC(&start_time));
 
-  if (((unsigned long)start_timeval.tv_sec) < ((unsigned long)warp_time.tv_sec))
+  if (((unsigned long) CLOCK_SEC(&start_time)) < ((unsigned long) CLOCK_SEC(&warp_time)))
   {
     verb ("V: local clock time is less than RECENT_COMPILE_DATE\n");
     if (timewarp)
     {
       verb ("V: Attempting to warp local clock into the future\n");
-      if (0 != settimeofday(&warp_time, NULL))
+      if (0 != clock_set_real_time(&warp_time))
       {
         die ("setting time failed: %s (Attempted to set clock to %lu.%06lu)\n",
         strerror (errno),
-        (unsigned long)warp_time.tv_sec,
-        (unsigned long)warp_time.tv_usec);
+        (unsigned long) CLOCK_SEC(&warp_time),
+        (unsigned long) CLOCK_SEC(&warp_time));
       }
-      if (0 != gettimeofday(&start_timeval, NULL))
+      if (0 != clock_get_real_time(&start_time))
       {
         die ("Failed to read current time of day: %s\n", strerror (errno));
       }
       verb ("V: time is currently %lu.%06lu\n",
-           (unsigned long)start_timeval.tv_sec,
-           (unsigned long)start_timeval.tv_usec);
+           (unsigned long) CLOCK_SEC(&start_time),
+           (unsigned long) CLOCK_NSEC(&start_time));
       verb ("V: It's just a step to the left...\n");
     }
   } else {
@@ -653,11 +651,11 @@ main(int argc, char **argv)
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
     die ("child process failed in SSL handshake\n");
 
-  if (0 != gettimeofday(&end_timeval, NULL))
+  if (0 != clock_get_real_time(&end_time))
     die ("Failed to read current time of day: %s\n", strerror (errno));
   
   /* calculate RTT */
-  rt_time_ms = (end_timeval.tv_sec - start_timeval.tv_sec) * 1000 + (end_timeval.tv_usec - start_timeval.tv_usec) / 1000;
+  rt_time_ms = (CLOCK_SEC(&end_time) - CLOCK_SEC(&start_time)) * 1000 + (CLOCK_USEC(&end_time) - CLOCK_USEC(&start_time)) / 1000;
   if (rt_time_ms < 0)
     rt_time_ms = 0; /* non-linear time... */
   server_time_s = ntohl (*time_map);
@@ -665,7 +663,7 @@ main(int argc, char **argv)
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
   (unsigned int) server_time_s,
-  start_timeval.tv_sec - server_time_s,
+  CLOCK_SEC(&start_time) - server_time_s,
   rt_time_ms);
 
   /* warning if the handshake took too long */
@@ -688,23 +686,22 @@ main(int argc, char **argv)
   /* finally, actually set the time */
   if (setclock)
   {
-    struct timeval server_time;
+    struct tlsdate_time server_time;
 
-    /* correct server time by half of RTT */
-    server_time.tv_sec = server_time_s + (rt_time_ms / 2 / 1000);
-    server_time.tv_usec = (rt_time_ms / 2) % 1000;
+    clock_init_time(&server_time,  server_time_s + (rt_time_ms / 2 / 1000),
+                   (rt_time_ms / 2) % 1000);
 
     // We should never receive a time that is before the time we were last
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
-    if (server_time.tv_sec >= MAX_REASONABLE_TIME)
+    if (CLOCK_SEC(&server_time) >= MAX_REASONABLE_TIME)
       die("remote server is a false ticker from the future!\n");
-    if (server_time.tv_sec <= RECENT_COMPILE_DATE)
+    if (CLOCK_SEC(&server_time) <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!\n");
-    if (0 != settimeofday(&server_time, NULL))
+    if (0 != clock_set_real_time(&server_time))
       die ("setting time failed: %s (Difference from server is about %d)\n",
      strerror (errno),
-     start_timeval.tv_sec - server_time_s);
+     CLOCK_SEC(&start_time) - server_time_s);
     verb ("V: setting time succeeded\n");
   }
   return 0;
