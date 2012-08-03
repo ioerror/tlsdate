@@ -33,5 +33,7 @@ Here is a nice list of things to do to improve tlsdate:
 30)  Check CN and/or SAN field to match against wild card certs
 31)  Fetch HTTP over TLS to parse date field and confirm sync with the tls date
 32)  Integrate tack support https://github.com/tack/tackc
+33)  Implement checking of RFC 2818 style wildcards:
+       http://wiki.cacert.org/WildcardCertificates
 
 Patches welcome!
