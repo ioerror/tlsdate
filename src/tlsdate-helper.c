@@ -274,7 +274,7 @@ check_san (SSL *ssl, const char *hostname)
 
         STACK_OF(CONF_VALUE) *val;
         CONF_VALUE *nval;
-        X509V3_EXT_METHOD *method;
+        const X509V3_EXT_METHOD *method;
 
         if (!(method = X509V3_EXT_get(ext)))
         {
