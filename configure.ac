@@ -47,4 +47,4 @@ AC_CHECK_HEADERS(
 
 AC_CHECK_FUNCS([setresuid gettimeofday])
 
-AC_OUTPUT(Makefile src/Makefile src/compat/Makefile)
+AC_OUTPUT(Makefile)
