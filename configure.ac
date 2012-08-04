@@ -12,7 +12,7 @@ LT_INIT
 CFLAGS=" -g -O1 -Wall -fno-strict-aliasing "
 CFLAGS+=" -D_FORTIFY_SOURCE=2 -fstack-protector-all "
 CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
-CFLAGS+=" --param ssp-buffer-size=1 "
+CFLAGS+=" --param ssp-buffer-size=1 -Wcast-align -Wall -Wextra"
 LDFLAGS=" -pie -z relro -z now "
 
 dnl Here we should build a small program to fetch the build system time in a portable
