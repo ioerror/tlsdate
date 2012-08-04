@@ -250,7 +250,8 @@ uint32_t
 check_san (SSL *ssl, const char *hostname)
 {
   X509 *cert;
-  int extcount, ok = 0;
+  int extcount;
+  uint32_t ok = 0;
   /* What an OpenSSL mess ... */
   if (NULL == (cert = SSL_get_peer_certificate(ssl)))
   {
