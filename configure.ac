@@ -15,6 +15,7 @@ CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
 CFLAGS+=" --param ssp-buffer-size=1 -Wcast-align -Wall -Wextra"
 CFLAGS+=" -Wformat -pedantic -Wformat-security -Wformat=2"
 CFLAGS+=" -Winit-self -Wuninitialized -Wswitch-enum -std=gnu99"
+CFLAGS+=" -Wshadow -Wcast-qual -Wwrite-strings -Wconversion"
 LDFLAGS=" -pie -z relro -z now "
 
 dnl Here we should build a small program to fetch the build system time in a portable
