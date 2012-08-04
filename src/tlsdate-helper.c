@@ -108,6 +108,8 @@ verb (const char *fmt, ...)
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
+  (void)ret;
+
   if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
   {
     // XXX TODO: If we want to trust the remote system for time,
