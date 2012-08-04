@@ -1,0 +1,10 @@
+include src/compat/include.am
+
+# Our main program
+bin_PROGRAMS = src/tlsdate src/tlsdate-helper
+src_tlsdate_SOURCES = src/tlsdate.c
+src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
+src_tlsdate_helper_LDADD = $(top_builddir)/src/compat/libtlsdate_compat.la \
+				-lssl -lcrypto -lrt
+# We're not shipping headers
+noinst_HEADERS = src/tlsdate.h

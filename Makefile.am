@@ -10,7 +10,7 @@ EXTRA_DIST = \
   CHANGELOG \
   autogen.sh 
 
-SUBDIRS = src
+include src/include.am
 
 # Our documentation
 man_MANS = man/tlsdate.1 man/tlsdate-helper.1
