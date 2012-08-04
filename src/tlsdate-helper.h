@@ -77,9 +77,9 @@ static int verbose;
 
 static int ca_racket;
 
-static const char *host;
+static char *host;
 
-static const char *port;
+static char *port;
 
 static const char *protocol;
 

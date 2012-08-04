@@ -562,8 +562,8 @@ main(int argc, char **argv)
 
   if (argc != 11)
     return 1;
-  host = argv[1];
-  port = argv[2];
+  host = strdup(argv[1]);
+  port = strdup(argv[2]);
   protocol = argv[3];
   certdir = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
@@ -572,6 +572,9 @@ main(int argc, char **argv)
   showtime = (0 == strcmp ("showtime", argv[8]));
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
+
+  if (!host || !port)
+    die("Failed to allocate memory for host and/or port");
 
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
@@ -706,5 +709,9 @@ main(int argc, char **argv)
      CLOCK_SEC(&start_time) - server_time_s);
     verb ("V: setting time succeeded\n");
   }
+
+  free(host);
+  free(port);
+
   return 0;
 }
