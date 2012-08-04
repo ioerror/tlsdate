@@ -6,8 +6,7 @@ AUTOMAKE_OPTIONS = foreign 1.7
 bin_PROGRAMS = tlsdate tlsdate-helper
 tlsdate_SOURCES = tlsdate.c
 tlsdate_helper_SOURCES = tlsdate-helper.c
-tlsdate_helper_LDADD = -lssl -lcrypto -lrt \
-                       $(top_builddir)/src/compat/libtlsdate_compat.la
-
+tlsdate_helper_LDADD = $(top_builddir)/src/compat/libtlsdate_compat.la \
+			-lssl -lcrypto -lrt
 # We're not shipping headers
 noinst_HEADERS = tlsdate.h
