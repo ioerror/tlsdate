@@ -145,7 +145,7 @@ get_certificate_keybits (EVP_PKEY *public_key)
   /*
     In theory, we could use check_bitlen_dsa() and check_bitlen_rsa()
    */
-  uint32_t key_bits;
+  int key_bits;
   switch (public_key->type)
   {
     case EVP_PKEY_RSA:
@@ -191,7 +191,7 @@ get_certificate_keybits (EVP_PKEY *public_key)
       break;
   }
   verb ("V: keybits: %d\n", key_bits);
-  return key_bits;
+  return (uint32_t)key_bits; /* explicit cast away sign, should be safe */
 }
 
 /**
