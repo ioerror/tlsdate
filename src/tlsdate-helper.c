@@ -200,7 +200,7 @@ get_certificate_keybits (EVP_PKEY *public_key)
 uint32_t
 check_cn (SSL *ssl, const char *hostname)
 {
-  uint32_t ret;
+  int ret;
   char *cn_buf;
   X509 *certificate;
   X509_NAME *xname;
@@ -222,7 +222,7 @@ check_cn (SSL *ssl, const char *hostname)
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
                                   cn_buf, HOST_NAME_MAX);
 
-  if (-1 == ret && ret != strlen(hostname))
+  if (-1 == ret && (size_t)ret != strlen(hostname))
   {
     die ("Unable to extract commonName\n");
   }
