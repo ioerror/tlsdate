@@ -7,4 +7,4 @@ src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
 src_tlsdate_helper_LDADD = $(top_builddir)/src/compat/libtlsdate_compat.la \
 				-lssl -lcrypto -lrt
 # We're not shipping headers
-noinst_HEADERS = src/tlsdate.h
+noinst_HEADERS = src/tlsdate.h src/tlsdate-helper.h
