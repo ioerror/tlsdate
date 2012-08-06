@@ -40,4 +40,3 @@ typedef struct {
 } tlsdate_options_t;
 
 #endif /* TLSDATE_H */
-
