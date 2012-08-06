@@ -35,4 +35,4 @@ deb: debian_orig
 	debuild -rfakeroot -uc -us -d
 
 valgrind_test:
-	PATH=src/:$PATH libtool --mode=execute valgrind  --trace-children=yes --leak-check=full ./src/tlsdate -v -V -n -H encrypted.google.com
+	PATH=src/:$(PATH) libtool --mode=execute valgrind  --trace-children=yes --leak-check=full ./src/tlsdate -v -V -n -H encrypted.google.com
