@@ -77,6 +77,7 @@ know:
 #include "../config/tlsdate-config.h"
 #include "tlsdate-helper.h"
 
+#include "compat/clock.h"
 
 /** helper function to print message and die */
 static void
@@ -219,6 +220,151 @@ get_certificate_keybits (EVP_PKEY *public_key)
   return key_bits;
 }
 
+uint32_t
+dns_label_count(char *label, char *delim)
+{
+  char *label_tmp;
+  char *saveptr;
+  char *saveptr_tmp;
+  uint32_t label_count;
+
+  label_tmp = strdup(label);
+  label_count = 0;
+  saveptr = NULL;
+  saveptr_tmp = NULL;
+  saveptr = strtok_r(label_tmp, delim, &saveptr);
+  if (NULL != saveptr)
+  {
+    // Did we find our first label?
+    if (saveptr[0] != delim[0])
+    {
+      label_count++;
+      verb ("V: label found; total label count: %d\n", label_count);
+    }
+    do
+    {
+      // Find all subsequent labels
+      label_count++;
+      saveptr_tmp = strtok_r(NULL, delim, &saveptr);
+      verb ("V: label found; total label count: %d\n", label_count);
+    } while (NULL != saveptr_tmp);
+  }
+  free(label_tmp);
+  return label_count;
+}
+
+// first we split strings on '.'
+// then we call each split string a 'label'
+// Do not allow '*' for the top level domain label; eg never allow *.*.com
+// Do not allow '*' for subsequent subdomains; eg never allow *.foo.example.com
+// Do allow *.example.com
+uint32_t
+check_wildcard_match_rfc2595 (const char *orig_hostname,
+                      const char *orig_cert_wild_card)
+{
+  char *hostname;
+  char *hostname_to_free;
+  char *cert_wild_card;
+  char *cert_wild_card_to_free;
+  char *expected_label;
+  char *wildcard_label;
+  char *delim;
+  char *wildchar;
+  uint32_t ok;
+  uint32_t wildcard_encountered;
+  uint32_t label_count;
+
+  // First we copy the original strings
+  hostname = strndup(orig_hostname, strlen(orig_hostname));
+  cert_wild_card = strndup(orig_cert_wild_card, strlen(orig_cert_wild_card));
+  hostname_to_free = hostname;
+  cert_wild_card_to_free = cert_wild_card;
+  delim = strdup(".");
+  wildchar = strdup("*");
+
+  verb ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
+         hostname, cert_wild_card);
+
+  // By default we have not processed any labels
+  label_count = dns_label_count(cert_wild_card, delim);
+
+  // By default we have no match
+  ok = 0;
+  wildcard_encountered = 0;
+  // First - do we have labels? If not, we refuse to even try to match
+  if ((NULL != strpbrk(cert_wild_card, delim)) &&
+      (NULL != strpbrk(hostname, delim)) &&
+      (label_count <= ((uint32_t)RFC2595_MIN_LABEL_COUNT)))
+  {
+    if (wildchar[0] == cert_wild_card[0])
+    {
+      verb ("V: Found wildcard in at start of provided certificate name\n");
+      do
+      {
+        // Skip over the bytes between the first char and until the next label
+        wildcard_label = strsep(&cert_wild_card, delim);
+        expected_label = strsep(&hostname, delim);
+        if (NULL != wildcard_label &&
+            NULL != expected_label &&
+            NULL != hostname &&
+            NULL != cert_wild_card)
+        {
+          // Now we only consider this wildcard valid if the rest of the
+          // hostnames match verbatim
+          verb ("V: Attempting match of '%s' against '%s'\n",
+                 expected_label, wildcard_label);
+          // This is the case where we have a label that begins with wildcard
+          // Furthermore, we only allow this for the first label
+          if (wildcard_label[0] == wildchar[0] &&
+              0 == wildcard_encountered && 0 == ok)
+          {
+            verb ("V: Forced match of '%s' against '%s'\n", expected_label, wildcard_label);
+            wildcard_encountered = 1;
+          } else {
+            verb ("V: Attempting match of '%s' against '%s'\n",
+                   hostname, cert_wild_card);
+            if (0 == strcasecmp (expected_label, wildcard_label) &&
+                label_count >= ((uint32_t)RFC2595_MIN_LABEL_COUNT))
+            {
+              ok = 1;
+              verb ("V: remaining labels match!\n");
+              break;
+            } else {
+              ok = 0;
+              verb ("V: remaining labels do not match!\n");
+              break;
+            }
+          }
+        } else {
+          // We hit this case when we have a mismatched number of labels
+          verb("V: NULL label; no wildcard here\n");
+          break;
+        }
+      } while (0 != wildcard_encountered && label_count <= RFC2595_MIN_LABEL_COUNT);
+    } else {
+      verb ("V: Not a RFC 2595 wildcard\n");
+    }
+  } else {
+    verb ("V: Not a valid wildcard certificate\n");
+    ok = 0;
+  }
+  // Free our copies
+  free(wildchar);
+  free(delim);
+  free(hostname_to_free);
+  free(cert_wild_card_to_free);
+  if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
+  {
+    verb ("V: wildcard match of %s against %s\n",
+          orig_hostname, orig_cert_wild_card);
+    return (wildcard_encountered & ok);
+  } else {
+    verb ("V: wildcard match failure of %s against %s\n",
+          orig_hostname, orig_cert_wild_card);
+    return 0;
+  }
+}
+
 /**
  This extracts the first commonName and checks it against hostname.
 */
@@ -333,7 +479,13 @@ check_san (SSL *ssl, const char *hostname)
               ok = 1;
               break;
             }
-              verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
+            // Attempt to match subjectAltName DNS names
+            if (!strcasecmp(nval->name, "DNS"))
+            {
+              ok = check_wildcard_match_rfc2595(host, nval->value);
+              break;
+            }
+            verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
@@ -571,9 +723,7 @@ int
 main(int argc, char **argv)
 {
   uint32_t *time_map;
-  struct timeval start_timeval;
-  struct timeval end_timeval;
-  struct timeval warp_time;
+  struct tlsdate_time start_time, end_time, warp_time;
   int status;
   pid_t ssl_child;
   long long rt_time_ms;
@@ -596,14 +746,13 @@ main(int argc, char **argv)
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
 
-  warp_time.tv_sec = RECENT_COMPILE_DATE;
-  warp_time.tv_usec = 0;
+  clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
   if (timewarp)
   {
     verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
-         (unsigned long)warp_time.tv_sec,
-         (unsigned long)warp_time.tv_usec);
+         (unsigned long) CLOCK_SEC(&warp_time),
+         (unsigned long) CLOCK_USEC(&warp_time));
   }
 
   /* We are not going to set the clock, thus no need to stay root */
@@ -623,35 +772,35 @@ main(int argc, char **argv)
   }
 
   /* Get the current time from the system clock. */
-  if (0 != gettimeofday(&start_timeval, NULL))
+  if (0 != clock_get_real_time(&start_time))
   {
     die ("Failed to read current time of day: %s\n", strerror (errno));
   }
 
   verb ("V: time is currently %lu.%06lu\n",
-       (unsigned long)start_timeval.tv_sec,
-       (unsigned long)start_timeval.tv_usec);
+       (unsigned long) CLOCK_SEC(&start_time),
+       (unsigned long) CLOCK_NSEC(&start_time));
 
-  if (((unsigned long)start_timeval.tv_sec) < ((unsigned long)warp_time.tv_sec))
+  if (((unsigned long) CLOCK_SEC(&start_time)) < ((unsigned long) CLOCK_SEC(&warp_time)))
   {
     verb ("V: local clock time is less than RECENT_COMPILE_DATE\n");
     if (timewarp)
     {
       verb ("V: Attempting to warp local clock into the future\n");
-      if (0 != settimeofday(&warp_time, NULL))
+      if (0 != clock_set_real_time(&warp_time))
       {
         die ("setting time failed: %s (Attempted to set clock to %lu.%06lu)\n",
         strerror (errno),
-        (unsigned long)warp_time.tv_sec,
-        (unsigned long)warp_time.tv_usec);
+        (unsigned long) CLOCK_SEC(&warp_time),
+        (unsigned long) CLOCK_SEC(&warp_time));
       }
-      if (0 != gettimeofday(&start_timeval, NULL))
+      if (0 != clock_get_real_time(&start_time))
       {
         die ("Failed to read current time of day: %s\n", strerror (errno));
       }
       verb ("V: time is currently %lu.%06lu\n",
-           (unsigned long)start_timeval.tv_sec,
-           (unsigned long)start_timeval.tv_usec);
+           (unsigned long) CLOCK_SEC(&start_time),
+           (unsigned long) CLOCK_NSEC(&start_time));
       verb ("V: It's just a step to the left...\n");
     }
   } else {
@@ -677,11 +826,11 @@ main(int argc, char **argv)
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
     die ("child process failed in SSL handshake\n");
 
-  if (0 != gettimeofday(&end_timeval, NULL))
+  if (0 != clock_get_real_time(&end_time))
     die ("Failed to read current time of day: %s\n", strerror (errno));
   
   /* calculate RTT */
-  rt_time_ms = (end_timeval.tv_sec - start_timeval.tv_sec) * 1000 + (end_timeval.tv_usec - start_timeval.tv_usec) / 1000;
+  rt_time_ms = (CLOCK_SEC(&end_time) - CLOCK_SEC(&start_time)) * 1000 + (CLOCK_USEC(&end_time) - CLOCK_USEC(&start_time)) / 1000;
   if (rt_time_ms < 0)
     rt_time_ms = 0; /* non-linear time... */
   server_time_s = ntohl (*time_map);
@@ -689,7 +838,7 @@ main(int argc, char **argv)
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
   (unsigned int) server_time_s,
-  start_timeval.tv_sec - server_time_s,
+  CLOCK_SEC(&start_time) - server_time_s,
   rt_time_ms);
 
   /* warning if the handshake took too long */
@@ -712,23 +861,22 @@ main(int argc, char **argv)
   /* finally, actually set the time */
   if (setclock)
   {
-    struct timeval server_time;
+    struct tlsdate_time server_time;
 
-    /* correct server time by half of RTT */
-    server_time.tv_sec = server_time_s + (rt_time_ms / 2 / 1000);
-    server_time.tv_usec = (rt_time_ms / 2) % 1000;
+    clock_init_time(&server_time,  server_time_s + (rt_time_ms / 2 / 1000),
+                   (rt_time_ms / 2) % 1000);
 
     // We should never receive a time that is before the time we were last
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
-    if (server_time.tv_sec >= MAX_REASONABLE_TIME)
+    if (CLOCK_SEC(&server_time) >= MAX_REASONABLE_TIME)
       die("remote server is a false ticker from the future!\n");
-    if (server_time.tv_sec <= RECENT_COMPILE_DATE)
+    if (CLOCK_SEC(&server_time) <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!\n");
-    if (0 != settimeofday(&server_time, NULL))
+    if (0 != clock_set_real_time(&server_time))
       die ("setting time failed: %s (Difference from server is about %d)\n",
      strerror (errno),
-     start_timeval.tv_sec - server_time_s);
+     CLOCK_SEC(&start_time) - server_time_s);
     verb ("V: setting time succeeded\n");
   }
   return 0;

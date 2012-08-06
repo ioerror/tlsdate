@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -73,6 +74,9 @@
 // RFC 1034 and posix say...
 #define HOST_NAME_MAX 255
 
+// To support our RFC 2595 wildcard verification
+#define RFC2595_MIN_LABEL_COUNT 3
+
 static int verbose;
 
 static int ca_racket;
@@ -98,6 +102,9 @@ void inspect_key (SSL *ssl, const char *hostname);
 static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
 static void become_nobody (void);
 void check_key_length (SSL *ssl);
+uint32_t dns_label_count (char *label, char *delim);
+uint32_t check_wildcard_match_rfc2595 (const char *orig_hostname,
+                                       const char *orig_cert_wild_card);
 void inspect_key (SSL *ssl, const char *hostname);
 static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
 
