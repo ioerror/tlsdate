@@ -105,6 +105,34 @@ verb (const char *fmt, ...)
 }
 
 
+/** helper function for 'malloc' */
+static void *
+xmalloc (size_t size)
+{
+  void *ptr;
+
+  if (0 == size)
+    die("xmalloc: zero size\n");
+
+  ptr = malloc(size);
+  if (NULL == ptr)
+    die("xmalloc: out of memory (allocating %zu bytes)\n", size);
+
+  return ptr;
+}
+
+
+/** helper function for 'free' */
+static void
+xfree (void *ptr)
+{
+  if (NULL == ptr)
+    die("xfree: NULL pointer given as argument\n");
+
+  free(ptr);
+}
+
+
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
@@ -343,16 +371,13 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
 uint32_t
 check_cn (SSL *ssl, const char *hostname)
 {
+  int ok = 0;
   uint32_t ret;
   char *cn_buf;
   X509 *certificate;
   X509_NAME *xname;
-  cn_buf = malloc(HOST_NAME_MAX + 1);
 
-  if (NULL == cn_buf)
-  {
-    die ("Unable to allocate memory for cn_buf\n");
-  }
+  cn_buf = xmalloc(HOST_NAME_MAX + 1);
 
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
@@ -375,15 +400,14 @@ check_cn (SSL *ssl, const char *hostname)
           hostname, cn_buf);
   } else {
     verb ("V: commonName matched: %s\n", cn_buf);
-    X509_NAME_free(xname);
-    X509_free(certificate);
-    free(cn_buf);
-    return 1;
+    ok = 1;
   }
+
   X509_NAME_free(xname);
   X509_free(certificate);
-  free(cn_buf);
-  return 0;
+  xfree(cn_buf);
+
+  return ok;
 }
 
 /**
