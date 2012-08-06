@@ -192,6 +192,151 @@ get_certificate_keybits (EVP_PKEY *public_key)
   return key_bits;
 }
 
+uint32_t
+dns_label_count(char *label, char *delim)
+{
+  char *label_tmp;
+  char *saveptr;
+  char *saveptr_tmp;
+  uint32_t label_count;
+
+  label_tmp = strdup(label);
+  label_count = 0;
+  saveptr = NULL;
+  saveptr_tmp = NULL;
+  saveptr = strtok_r(label_tmp, delim, &saveptr);
+  if (NULL != saveptr)
+  {
+    // Did we find our first label?
+    if (saveptr[0] != delim[0])
+    {
+      label_count++;
+      verb ("V: label found; total label count: %d\n", label_count);
+    }
+    do
+    {
+      // Find all subsequent labels
+      label_count++;
+      saveptr_tmp = strtok_r(NULL, delim, &saveptr);
+      verb ("V: label found; total label count: %d\n", label_count);
+    } while (NULL != saveptr_tmp);
+  }
+  free(label_tmp);
+  return label_count;
+}
+
+// first we split strings on '.'
+// then we call each split string a 'label'
+// Do not allow '*' for the top level domain label; eg never allow *.*.com
+// Do not allow '*' for subsequent subdomains; eg never allow *.foo.example.com
+// Do allow *.example.com
+uint32_t
+check_wildcard_match_rfc2595 (const char *orig_hostname,
+                      const char *orig_cert_wild_card)
+{
+  char *hostname;
+  char *hostname_to_free;
+  char *cert_wild_card;
+  char *cert_wild_card_to_free;
+  char *expected_label;
+  char *wildcard_label;
+  char *delim;
+  char *wildchar;
+  uint32_t ok;
+  uint32_t wildcard_encountered;
+  uint32_t label_count;
+
+  // First we copy the original strings
+  hostname = strndup(orig_hostname, strlen(orig_hostname));
+  cert_wild_card = strndup(orig_cert_wild_card, strlen(orig_cert_wild_card));
+  hostname_to_free = hostname;
+  cert_wild_card_to_free = cert_wild_card;
+  delim = strdup(".");
+  wildchar = strdup("*");
+
+  verb ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
+         hostname, cert_wild_card);
+
+  // By default we have not processed any labels
+  label_count = dns_label_count(cert_wild_card, delim);
+
+  // By default we have no match
+  ok = 0;
+  wildcard_encountered = 0;
+  // First - do we have labels? If not, we refuse to even try to match
+  if ((NULL != strpbrk(cert_wild_card, delim)) &&
+      (NULL != strpbrk(hostname, delim)) &&
+      (label_count <= ((uint32_t)RFC2595_MIN_LABEL_COUNT)))
+  {
+    if (wildchar[0] == cert_wild_card[0])
+    {
+      verb ("V: Found wildcard in at start of provided certificate name\n");
+      do
+      {
+        // Skip over the bytes between the first char and until the next label
+        wildcard_label = strsep(&cert_wild_card, delim);
+        expected_label = strsep(&hostname, delim);
+        if (NULL != wildcard_label &&
+            NULL != expected_label &&
+            NULL != hostname &&
+            NULL != cert_wild_card)
+        {
+          // Now we only consider this wildcard valid if the rest of the
+          // hostnames match verbatim
+          verb ("V: Attempting match of '%s' against '%s'\n",
+                 expected_label, wildcard_label);
+          // This is the case where we have a label that begins with wildcard
+          // Furthermore, we only allow this for the first label
+          if (wildcard_label[0] == wildchar[0] &&
+              0 == wildcard_encountered && 0 == ok)
+          {
+            verb ("V: Forced match of '%s' against '%s'\n", expected_label, wildcard_label);
+            wildcard_encountered = 1;
+          } else {
+            verb ("V: Attempting match of '%s' against '%s'\n",
+                   hostname, cert_wild_card);
+            if (0 == strcasecmp (expected_label, wildcard_label) &&
+                label_count >= ((uint32_t)RFC2595_MIN_LABEL_COUNT))
+            {
+              ok = 1;
+              verb ("V: remaining labels match!\n");
+              break;
+            } else {
+              ok = 0;
+              verb ("V: remaining labels do not match!\n");
+              break;
+            }
+          }
+        } else {
+          // We hit this case when we have a mismatched number of labels
+          verb("V: NULL label; no wildcard here\n");
+          break;
+        }
+      } while (0 != wildcard_encountered && label_count <= RFC2595_MIN_LABEL_COUNT);
+    } else {
+      verb ("V: Not a RFC 2595 wildcard\n");
+    }
+  } else {
+    verb ("V: Not a valid wildcard certificate\n");
+    ok = 0;
+  }
+  // Free our copies
+  free(wildchar);
+  free(delim);
+  free(hostname_to_free);
+  free(cert_wild_card_to_free);
+  if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
+  {
+    verb ("V: wildcard match of %s against %s\n",
+          orig_hostname, orig_cert_wild_card);
+    return (wildcard_encountered & ok);
+  } else {
+    verb ("V: wildcard match failure of %s against %s\n",
+          orig_hostname, orig_cert_wild_card);
+    return 0;
+  }
+}
+
 /**
  This extracts the first commonName and checks it against hostname.
 */
@@ -310,7 +455,13 @@ check_san (SSL *ssl, const char *hostname)
               ok = 1;
               break;
             }
-              verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
+            // Attempt to match subjectAltName DNS names
+            if (!strcasecmp(nval->name, "DNS"))
+            {
+              ok = check_wildcard_match_rfc2595(host, nval->value);
+              break;
+            }
+            verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
