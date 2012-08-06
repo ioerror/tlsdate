@@ -46,6 +46,7 @@
   Fixed various tiny memory leaks
   Added compat layer library for future multi-platform support by David Goulet
   Compile output is now largely silent by default
+  Wildcard certificate verification per RFC 2595
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
