@@ -12,7 +12,10 @@ LT_INIT
 CFLAGS=" -g -O1 -Wall -fno-strict-aliasing "
 CFLAGS+=" -D_FORTIFY_SOURCE=2 -fstack-protector-all "
 CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
-CFLAGS+=" --param ssp-buffer-size=1 "
+CFLAGS+=" --param ssp-buffer-size=1 -Wcast-align -Wall -Wextra"
+CFLAGS+=" -Wformat -pedantic -Wformat-security -Wformat=2"
+CFLAGS+=" -Winit-self -Wuninitialized -Wswitch-enum -std=gnu99"
+CFLAGS+=" -Wshadow -Wcast-qual -Wwrite-strings -Wconversion"
 LDFLAGS=" -pie -z relro -z now "
 
 dnl Here we should build a small program to fetch the build system time in a portable
@@ -47,4 +50,4 @@ AC_CHECK_HEADERS(
 
 AC_CHECK_FUNCS([setresuid gettimeofday])
 
-AC_OUTPUT(Makefile src/Makefile src/compat/Makefile)
+AC_OUTPUT(Makefile)

@@ -108,6 +108,8 @@ verb (const char *fmt, ...)
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
+  (void)ret;
+
   if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
   {
     // XXX TODO: If we want to trust the remote system for time,
@@ -143,7 +145,7 @@ get_certificate_keybits (EVP_PKEY *public_key)
   /*
     In theory, we could use check_bitlen_dsa() and check_bitlen_rsa()
    */
-  uint32_t key_bits;
+  int key_bits;
   switch (public_key->type)
   {
     case EVP_PKEY_RSA:
@@ -189,7 +191,7 @@ get_certificate_keybits (EVP_PKEY *public_key)
       break;
   }
   verb ("V: keybits: %d\n", key_bits);
-  return key_bits;
+  return (uint32_t)key_bits; /* explicit cast away sign, should be safe */
 }
 
 uint32_t
@@ -343,7 +345,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
 uint32_t
 check_cn (SSL *ssl, const char *hostname)
 {
-  uint32_t ret;
+  int ret;
   char *cn_buf;
   X509 *certificate;
   X509_NAME *xname;
@@ -365,7 +367,7 @@ check_cn (SSL *ssl, const char *hostname)
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
                                   cn_buf, HOST_NAME_MAX);
 
-  if (-1 == ret && ret != strlen(hostname))
+  if (-1 == ret && (size_t)ret != strlen(hostname))
   {
     die ("Unable to extract commonName\n");
   }
@@ -393,7 +395,8 @@ uint32_t
 check_san (SSL *ssl, const char *hostname)
 {
   X509 *cert;
-  int extcount, ok = 0;
+  int extcount;
+  uint32_t ok = 0;
   /* What an OpenSSL mess ... */
   if (NULL == (cert = SSL_get_peer_certificate(ssl)))
   {
@@ -419,7 +422,7 @@ check_san (SSL *ssl, const char *hostname)
 
         STACK_OF(CONF_VALUE) *val;
         CONF_VALUE *nval;
-        X509V3_EXT_METHOD *method;
+        const X509V3_EXT_METHOD *method;
 
         if (!(method = X509V3_EXT_get(ext)))
         {
@@ -711,8 +714,8 @@ main(int argc, char **argv)
 
   if (argc != 11)
     return 1;
-  host = argv[1];
-  port = argv[2];
+  host = strdup(argv[1]);
+  port = strdup(argv[2]);
   protocol = argv[3];
   certdir = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
@@ -721,6 +724,9 @@ main(int argc, char **argv)
   showtime = (0 == strcmp ("showtime", argv[8]));
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
+
+  if (!host || !port)
+    die("Failed to allocate memory for host and/or port");
 
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
@@ -855,5 +861,9 @@ main(int argc, char **argv)
      CLOCK_SEC(&start_time) - server_time_s);
     verb ("V: setting time succeeded\n");
   }
+
+  free(host);
+  free(port);
+
   return 0;
 }
