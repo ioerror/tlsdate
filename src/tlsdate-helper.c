@@ -136,7 +136,8 @@ xfree (void *ptr)
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
-  if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
+  if (where == SSL_CB_CONNECT_LOOP &&
+      (ssl->state == SSL3_ST_CR_CERT_A || ssl->state == SSL3_ST_CR_CERT_B))
   {
     // XXX TODO: If we want to trust the remote system for time,
     // can we just read that time out of the remote system and if the
@@ -554,6 +555,10 @@ check_key_length (SSL *ssl)
   X509 *certificate;
   EVP_PKEY *public_key;
   certificate = SSL_get_peer_certificate (ssl);
+  if (NULL == certificate)
+  {
+    die ("Getting certificate failed\n");
+  }
   public_key = X509_get_pubkey (certificate);
   if (NULL == public_key)
   {
@@ -854,7 +859,10 @@ main(int argc, char **argv)
      char       buf[256];
 
      localtime_r(&tim, &ltm);
-     (void) strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y", &ltm);
+     if (0 == strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y", &ltm))
+     {
+       die ("strftime returned 0\n");
+     }
      fprintf(stdout, "%s\n", buf);
   }
 
