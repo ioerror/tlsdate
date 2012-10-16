@@ -37,6 +37,9 @@
   /etc/ssl/certs/* r,
   /usr/share/ca-certificates/*/** r,
 
+  # Allow reading tlsdate configs and CA cert list
+  /etc/tlsdate/* r,
+
   # Required for getpwnam
   /etc/passwd r,
   /etc/group r,
