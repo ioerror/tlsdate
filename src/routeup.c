@@ -7,6 +7,8 @@
  * We emit 'n' for a route coming up.
  */
 
+#include "config.h"
+
 #include <asm/types.h>
 #include <sys/socket.h>		/* needed for linux/if.h for struct sockaddr */
 #include <linux/if.h>
@@ -19,8 +21,8 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include "routeup.h"
-#include "util.h"
+#include "src/routeup.h"
+#include "src/util.h"
 
 /*
  * Set up the supplied context by creating and binding its netlink socket.

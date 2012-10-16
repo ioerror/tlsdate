@@ -26,6 +26,11 @@
 /** The current version of tlsdate. */
 #define tlsdate_version "0.1"
 
+int is_sane_time (time_t ts);
+int load_disk_timestamp (const char *path, time_t * t);
+void save_disk_timestamp (const char *path, time_t t);
+int tlsdate (char *argv[], char *envp[], int tries, int wait_between_tries);
+
 /** This is where we store parsed commandline options. */
 typedef struct {
   int verbose;

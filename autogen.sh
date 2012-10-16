@@ -11,8 +11,7 @@ then
   mkdir config;
 fi
 
-exec autoreconf -ivf -I src -I config && \
-aclocal && \
-autoheader && \
-autoconf && \
-automake --add-missing --copy
+WARNINGS="all,error"
+export WARNINGS
+
+autoreconf --install --verbose --force
