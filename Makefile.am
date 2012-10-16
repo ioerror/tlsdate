@@ -1,24 +1,64 @@
+# vim:ft=automake
+
+EXTRA_DIST=
+TESTS=
+bin_PROGRAMS=
+check_PROGRAMS=
+lib_LTLIBRARIES=
+man_MANS=
+noinst_HEADERS=
+noinst_LTLIBRARIES=
+noinst_PROGRAMS=
+
+# GNU style is "make check", this will make check and test work
+TESTS+= $(check_PROGRAMS)
+test: check
+
+ACLOCAL_AMFLAGS= -I m4 --install --force
+
 # Our Debian version
 DEBIAN_VERSION := $(shell if [ -e debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi)
-AUTOMAKE_OPTIONS = foreign 1.7
-EXTRA_DIST = \
-  AUTHORS \
-  README \
-  LICENSE \
-  TODO \
-  apparmor-profile \
-  CHANGELOG \
-  autogen.sh 
 
-SUBDIRS = src
+EXTRA_DIST+= AUTHORS
+EXTRA_DIST+= README
+EXTRA_DIST+= LICENSE
+EXTRA_DIST+= TODO
+EXTRA_DIST+= apparmor-profile
+EXTRA_DIST+= CHANGELOG
+EXTRA_DIST+= autogen.sh 
+
+include src/include.am
+
+# Cleanup individual files in order to preserve uninstall/etc order
+maintainer-clean-local:
+	@rm -r -f autom4te.cache
+	@rm Makefile.in
+	@rm aclocal.m4
+	@rm config.in
+	@rm config/config.guess
+	@rm config/config.sub
+	@rm config/depcomp
+	@rm config/install-sh
+	@rm config/ltmain.sh
+	@rm config/missing
+	@rm configure
+	@rmdir config
+	@rm m4/libtool.m4
+	@rm m4/ltoptions.m4
+	@rm m4/ltsugar.m4
+	@rm m4/ltversion.m4
+	@rm m4/lt~obsolete.m4
+	@rm tlsdate-*.tar.gz
+	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 # Our documentation
-man_MANS = man/tlsdate.1 man/tlsdate-helper.1
-EXTRA_DIST += $(man_MANS)
+man_MANS+= man/tlsdate.1
+man_MANS+= man/tlsdate-helper.1
+EXTRA_DIST+= $(man_MANS)
 
-.PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean
+.PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
 debian_orig:
-	$(MAKE) dist
+	$(MAKE) distcheck
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
 
 git-tag:
@@ -35,4 +75,4 @@ deb: debian_orig
 	debuild -rfakeroot -uc -us -d
 
 valgrind_test:
-	PATH=src/:$(PATH) libtool --mode=execute valgrind  --trace-children=yes --leak-check=full ./src/tlsdate -v -V -n -H encrypted.google.com
+	TESTS_ENVIRONMENT="./libtool --mode=execute valgrind  --trace-children=yes --leak-check=full" ./src/tlsdate -v -V -n -H encrypted.google.com

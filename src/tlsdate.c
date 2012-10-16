@@ -74,8 +74,8 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "../config/tlsdate-config.h"
-#include "tlsdate.h"
+#include "config.h"
+#include "src/tlsdate.h"
 
 
 /** Return the proper commandline switches when the user needs information. */

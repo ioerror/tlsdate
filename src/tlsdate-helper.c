@@ -74,10 +74,10 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "../config/tlsdate-config.h"
-#include "tlsdate-helper.h"
+#include "config.h"
+#include "src/tlsdate-helper.h"
 
-#include "compat/clock.h"
+#include "src/compat/clock.h"
 
 /** helper function to print message and die */
 static void
@@ -378,7 +378,7 @@ check_cn (SSL *ssl, const char *hostname)
   X509 *certificate;
   X509_NAME *xname;
 
-  cn_buf = xmalloc(HOST_NAME_MAX + 1);
+  cn_buf = xmalloc(TLSDATE_HOST_NAME_MAX + 1);
 
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
@@ -386,10 +386,10 @@ check_cn (SSL *ssl, const char *hostname)
     die ("Unable to extract certificate\n");
   }
 
-  memset(cn_buf, '\0', (HOST_NAME_MAX + 1));
+  memset(cn_buf, '\0', (TLSDATE_HOST_NAME_MAX + 1));
   xname = X509_get_subject_name(certificate);
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
-                                  cn_buf, HOST_NAME_MAX);
+                                  cn_buf, TLSDATE_HOST_NAME_MAX);
 
   if (-1 == ret && ret != strlen(hostname))
   {
