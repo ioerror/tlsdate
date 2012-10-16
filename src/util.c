@@ -5,11 +5,13 @@
  * found in the LICENSE file.
  */
 
+#include "config.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <syslog.h>
 
-#include "util.h"
+#include "src/util.h"
 
 int verbose = 0;
 

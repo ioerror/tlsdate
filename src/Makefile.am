@@ -8,8 +8,6 @@ AM_CFLAGS = -fvisibility=hidden
 tlsdate_routeup_SOURCES = routeup.c util.c
 tlsdate_routeup_CFLAGS = $(AM_CFLAGS) -DROUTEUP_MAIN
 tlsdate_SOURCES = tlsdate.c
-tlsdate_DATA = ../ca-roots/tlsdate-ca-roots.conf
-tlsdatedir=$(sysconfdir)/tlsdate/
 tlsdate_helper_SOURCES = tlsdate-helper.c
 tlsdate_helper_LDADD = -lssl -lcrypto -lrt \
                        $(top_builddir)/src/compat/libtlsdate_compat.la

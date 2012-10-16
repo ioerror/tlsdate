@@ -8,6 +8,8 @@
   * \brief Contains clock primitives for Linux OS
   **/
 
+#include "config.h"
+
 #include <assert.h>
 
 #include "clock.h"

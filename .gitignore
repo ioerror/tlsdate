@@ -1,3 +1,5 @@
+*.gz
+*.o
 .deps/
 .libs/
 autom4te.cache/
@@ -15,9 +17,19 @@ libtool
 missing
 stamp-h1
 config/
-config/tlsdate-config.h
-config/tlsdate-config.h.in
+src/.dirstamp
+src/compat/.dirstamp
 src/tlsdate-helper.o
 src/tlsdate-helper
 src/tlsdate.o
 src/tlsdate
+m4
+*.swp
+*.la
+*.lo
+src/tlsdate-routeup
+src/tlsdated
+src/tlsdated_unittest
+TAGS
+config.h
+config.in

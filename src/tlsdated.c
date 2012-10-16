@@ -11,6 +11,8 @@
  * (indicated by us getting SIGTERM), we save our timestamp to disk.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -28,9 +30,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../config/tlsdate-config.h"
-#include "routeup.h"
-#include "util.h"
+#include "src/routeup.h"
+#include "src/util.h"
 
 const char *kCacheDir = "/var/cache/tlsdated";
 const char *kTempSuffix = ".new";
