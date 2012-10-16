@@ -5,13 +5,15 @@
  * found in the LICENSE file.
  */
 
+#include "config.h"
+
+#include "src/test_harness.h"
+#include "src/tlsdate.h"
+
 #include <fcntl.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include "tlsdated.c"
-#include "test_harness.h"
 
 FIXTURE(tempdir) {
 	char path[PATH_MAX];

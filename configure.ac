@@ -10,9 +10,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability subdir-objects foreign tar-usta
 
 AC_PREREQ([2.63])
 
-AC_CONFIG_HEADERS([config/tlsdate-config.h])
-
-AH_TOP([#define _GNU_SOURCE  1])
+AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 
 LT_PREREQ([2.2])
 LT_INIT
@@ -20,12 +18,7 @@ LT_LANG([C])
 gl_VISIBILITY
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-# Debug and hardening flags all in one shot
-CFLAGS=" -g -O1 -Wall -fno-strict-aliasing "
-CFLAGS+=" -D_FORTIFY_SOURCE=2 -fstack-protector-all "
-CFLAGS+=" -fwrapv -fPIE -Wstack-protector "
-CFLAGS+=" --param ssp-buffer-size=1 "
-LDFLAGS=" -pie -z relro -z now "
+CONFIG_EXTRA
 
 dnl Here we should build a small program to fetch the build system time in a portable
 dnl manner. We have no Win32 users, we can fix this if we ever find one that
@@ -58,6 +51,24 @@ AC_CHECK_HEADERS(
 , , AC_MSG_ERROR([Required headers missing; compilation will not succeed]))
 
 AC_CHECK_FUNCS([setresuid gettimeofday])
+
+# Debug and hardening flags all in one shot
+# Alwas do this at the end, otherwise you end up filtering system/other libraries
+AC_DEFUN([LOCAL_CHECK_FLAGS],[
+          AC_REQUIRE([AX_CHECK_LINK_FLAG])
+          AC_REQUIRE([AX_APPEND_COMPILE_FLAGS])
+          AC_LANG_PUSH([C])
+          CFLAGS=
+          LIBS=
+          AX_APPEND_COMPILE_FLAGS([-g -O1 -Wall])
+          AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing])
+          AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2 -fstack-protector-all])
+          AX_APPEND_COMPILE_FLAGS([-fwrapv -fPIE -Wstack-protector])
+          AX_APPEND_COMPILE_FLAGS([--param ssp-buffer-size=1])
+          AX_CHECK_LINK_FLAG([-pie -z relro -z now])
+          AC_LANG_POP
+          ])
+LOCAL_CHECK_FLAGS
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

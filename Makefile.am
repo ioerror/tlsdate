@@ -14,9 +14,6 @@ noinst_PROGRAMS=
 TESTS+= $(check_PROGRAMS)
 test: check
 
-AM_CFLAGS = -fvisibility=hidden
-
-# 
 ACLOCAL_AMFLAGS= -I m4 --install --force
 
 # Our Debian version
@@ -32,12 +29,33 @@ EXTRA_DIST+= autogen.sh
 
 include src/include.am
 
+# Cleanup individual files in order to preserve uninstall/etc order
+maintainer-clean-local:
+	@rm -r -f autom4te.cache
+	@rm Makefile.in
+	@rm aclocal.m4
+	@rm config.in
+	@rm config/config.guess
+	@rm config/config.sub
+	@rm config/depcomp
+	@rm config/install-sh
+	@rm config/ltmain.sh
+	@rm config/missing
+	@rm configure
+	@rmdir config
+	@rm m4/libtool.m4
+	@rm m4/ltoptions.m4
+	@rm m4/ltsugar.m4
+	@rm m4/ltversion.m4
+	@rm m4/lt~obsolete.m4
+	@rm tlsdate-*.tar.gz
+
 # Our documentation
 man_MANS+= man/tlsdate.1
 man_MANS+= man/tlsdate-helper.1
 EXTRA_DIST+= $(man_MANS)
 
-.PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean
+.PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
 debian_orig:
 	$(MAKE) distcheck
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz

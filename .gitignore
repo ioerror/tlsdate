@@ -17,8 +17,6 @@ libtool
 missing
 stamp-h1
 config/
-config/tlsdate-config.h
-config/tlsdate-config.h.in
 src/.dirstamp
 src/compat/.dirstamp
 src/tlsdate-helper.o
@@ -33,3 +31,5 @@ src/tlsdate-routeup
 src/tlsdated
 src/tlsdated_unittest
 TAGS
+config.h
+config.in

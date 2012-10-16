@@ -10,7 +10,9 @@
 
 #ifdef __linux__
 
-#include <time.h>
+#ifdef HAVE_TIME_H
+#  include <time.h>
+#endif
 
 struct tlsdate_time {
     struct timespec tp;

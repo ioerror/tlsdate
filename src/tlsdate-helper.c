@@ -74,10 +74,10 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "../config/tlsdate-config.h"
-#include "tlsdate-helper.h"
+#include "config.h"
+#include "src/tlsdate-helper.h"
 
-#include "compat/clock.h"
+#include "src/compat/clock.h"
 
 /** helper function to print message and die */
 static void
