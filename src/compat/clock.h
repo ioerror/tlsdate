@@ -39,13 +39,15 @@ struct tlsdate_time {
     /* TODO: Fix Windows support */
 };
 
-extern int clock_get_real_time_win(struct tlsdate_time *time);
+TLSDATE_API
+int clock_get_real_time_win(struct tlsdate_time *time);
 #define clock_get_real_time(time) clock_get_real_time_win(time)
 
 extern int clock_set_real_time_win(const struct tlsdate_time *time);
 #define clock_set_real_time(time) clock_set_real_time_win(time)
 
-extern void clock_init_time_win(struct tlsdate_time *time, time_t sec,
+TLSDATE_API
+void clock_init_time_win(struct tlsdate_time *time, time_t sec,
                                 long nsec);
 #define clock_init_time(time, sec, nsec) \
         clock_init_time_win(time, sec, nsec)

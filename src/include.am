@@ -1,0 +1,30 @@
+# vim:ft=automake
+
+include src/compat/include.am
+
+# Our main program
+bin_PROGRAMS+= src/tlsdate-routeup
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+bin_PROGRAMS+= src/tlsdated
+
+src_tlsdate_routeup_CFLAGS = $(AM_CFLAGS) -DROUTEUP_MAIN
+src_tlsdate_routeup_SOURCES = src/routeup.c src/util.c
+
+src_tlsdate_SOURCES = src/tlsdate.c
+
+src_tlsdate_helper_CFLAS =  $(AM_CFLAGS)
+src_tlsdate_helper_LDADD = -lssl -lcrypto -lrt
+src_tlsdate_helper_LDADD+= src/compat/libtlsdate_compat.la
+src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
+
+src_tlsdated_CFLAGS = $(AM_CFLAGS) -DTLSDATED_MAIN
+src_tlsdated_SOURCES = src/routeup.c src/tlsdated.c src/util.c
+
+src_tlsdated_unittest_SOURCES = src/routeup.c src/tlsdated-unittest.c src/util.c
+check_PROGRAMS+= src/tlsdated_unittest
+noinst_PROGRAMS+= src/tlsdated_unittest
+
+# We're not shipping headers
+noinst_HEADERS+= src/tlsdate.h
+noinst_HEADERS+= src/visibility.h

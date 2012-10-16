@@ -1,0 +1,7 @@
+# vim:ft=automake
+
+noinst_LTLIBRARIES+= src/compat/libtlsdate_compat.la
+
+src_compat_libtlsdate_compat_la_SOURCES = src/compat/clock-linux.c
+src_compat_libtlsdate_compat_la_CFLAGS = -DBUILDING_TLSDATE
+noinst_HEADERS+= src/compat/clock.h
