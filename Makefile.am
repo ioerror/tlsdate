@@ -49,6 +49,7 @@ maintainer-clean-local:
 	@rm m4/ltversion.m4
 	@rm m4/lt~obsolete.m4
 	@rm tlsdate-*.tar.gz
+	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 # Our documentation
 man_MANS+= man/tlsdate.1

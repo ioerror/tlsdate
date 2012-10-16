@@ -52,6 +52,15 @@ AC_CHECK_HEADERS(
 
 AC_CHECK_FUNCS([setresuid gettimeofday])
 
+# Check for -lrt
+AC_CHECK_LIB([rt], [clock_gettime], [
+              RT_LIB="-lrt"
+              AC_SUBST(RT_LIB)
+              AC_DEFINE([HAVE_LIBRT], [1], [Have clock_gettime])
+              ],[
+                 AC_DEFINE([HAVE_LIBRT], [0], [Have clock_gettime])
+              ])
+
 # Debug and hardening flags all in one shot
 # Alwas do this at the end, otherwise you end up filtering system/other libraries
 AC_DEFUN([LOCAL_CHECK_FLAGS],[

@@ -14,7 +14,7 @@ src_tlsdate_routeup_SOURCES+= src/util.c
 
 src_tlsdate_SOURCES = src/tlsdate.c
 
-src_tlsdate_helper_LDADD = -lssl -lcrypto -lrt
+src_tlsdate_helper_LDADD = -lssl -lcrypto
 src_tlsdate_helper_LDADD+= src/compat/libtlsdate_compat.la
 src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
 
