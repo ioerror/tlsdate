@@ -45,4 +45,6 @@ valgrind_test:
 # https://github.com/agl/extract-nss-root-certs
 update_ca_root_data:
 	curl https://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt\?raw\=1 -o ca-roots/certdata.txt
-	go run ~/Documents/code/git/extract-nss-root-certs/convert_mozilla_certdata.go ca-roots/certdata.txt > ca-roots/certdata.new
+	go run ~/Documents/code/git/extract-nss-root-certs/convert_mozilla_certdata.go ca-roots/certdata.txt > ca-roots/tlsdate-ca-roots.conf
+	rm ca-roots/certdata.txt
+
