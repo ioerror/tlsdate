@@ -31,7 +31,7 @@ AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
 
 # Required headers
 # First check to see if openssl is installed
-AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh. is missing])])
+AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
 
 AC_CHECK_HEADERS([arpa/inet.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([getopt.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
@@ -59,7 +59,7 @@ AC_CHECK_LIB([rt], [clock_gettime], [
               AC_SUBST(RT_LIB)
               AC_DEFINE([HAVE_LIBRT], [1], [Have clock_gettime])
               ],[
-                 AC_DEFINE([HAVE_LIBRT], [0], [Have clock_gettime])
+                 AC_MSG_ERROR([Your system lacks clock_gettime])
               ])
 
 # Debug and hardening flags all in one shot
