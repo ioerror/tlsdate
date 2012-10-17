@@ -30,27 +30,28 @@ AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
                    [Time in seconds since the Disco epoch at build time])
 
 # Required headers
-AC_CHECK_HEADERS(
-  stdio.h  \
-  stdint.h \
-  stdlib.h \
-  unistd.h \
-  getopt.h \
-  sys/time.h \
-  sys/types.h \
-  sys/wait.h \
-  sys/mman.h \
-  time.h \
-  pwd.h \
-  grp.h \
-  arpa/inet.h \
-  openssl/bio.h \
-  openssl/ssl.h \
-  openssl/err.h \
-  openssl/evp.h 
-, , AC_MSG_ERROR([Required headers missing; compilation will not succeed]))
+# First check to see if openssl is installed
+AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
 
-AC_CHECK_FUNCS([setresuid gettimeofday])
+AC_CHECK_HEADERS([arpa/inet.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([getopt.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([grp.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([openssl/bio.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([openssl/err.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([openssl/evp.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([pwd.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([stdint.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([stdio.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([stdlib.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([sys/mman.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([sys/time.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([sys/types.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([sys/wait.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([time.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+
+AC_CHECK_FUNCS([setresuid])
+AC_CHECK_FUNCS([gettimeofday])
 
 # Check for -lrt
 AC_CHECK_LIB([rt], [clock_gettime], [
@@ -58,7 +59,7 @@ AC_CHECK_LIB([rt], [clock_gettime], [
               AC_SUBST(RT_LIB)
               AC_DEFINE([HAVE_LIBRT], [1], [Have clock_gettime])
               ],[
-                 AC_DEFINE([HAVE_LIBRT], [0], [Have clock_gettime])
+                 AC_MSG_ERROR([Your system lacks clock_gettime])
               ])
 
 # Debug and hardening flags all in one shot

@@ -14,7 +14,7 @@ noinst_PROGRAMS=
 TESTS+= $(check_PROGRAMS)
 test: check
 
-ACLOCAL_AMFLAGS= -I m4 --install --force
+ACLOCAL_AMFLAGS= -I m4
 
 # Our Debian version
 DEBIAN_VERSION := $(shell if [ -e debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi)
@@ -48,7 +48,7 @@ maintainer-clean-local:
 	@rm m4/ltsugar.m4
 	@rm m4/ltversion.m4
 	@rm m4/lt~obsolete.m4
-	@rm tlsdate-*.tar.gz
+	@rm -f tlsdate-*.tar.gz
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 # Our documentation
