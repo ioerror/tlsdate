@@ -29,6 +29,10 @@ AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
                    [(uint32_t) ${COMPILE_DATE}],
                    [Time in seconds since the Disco epoch at build time])
 
+# Build up the directory we will use to install certs
+TLSDATE_CA_ROOTS="${sysconfdir}/$PACKAGE_NAME/ca-roots"
+AC_SUBST([TLSDATE_CA_ROOTS])
+
 # Required headers
 # First check to see if openssl is installed
 AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
@@ -74,8 +78,9 @@ AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing])
           AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2 -fstack-protector-all])
           AX_APPEND_COMPILE_FLAGS([-fwrapv -fPIE -Wstack-protector])
-          AX_APPEND_COMPILE_FLAGS([--param ssp-buffer-size=1])
-          AX_CHECK_LINK_FLAG([-pie -z relro -z now])
+          AX_APPEND_COMPILE_FLAGS([--param=ssp-buffer-size=1])
+          AX_CHECK_LINK_FLAG([-z relro -z now])
+          AX_CHECK_LINK_FLAG([-pie])
           AC_LANG_POP
           ])
 LOCAL_CHECK_FLAGS

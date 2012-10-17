@@ -1,5 +1,6 @@
 # vim:ft=automake
 
+BUILT_SOURCES=
 EXTRA_DIST=
 TESTS=
 bin_PROGRAMS=
@@ -51,6 +52,11 @@ maintainer-clean-local:
 	@rm -f tlsdate-*.tar.gz
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
+certdir =  @TLSDATE_CA_ROOTS@
+cert_DATA = ca-roots/tlsdate-ca-roots.conf
+EXTRA_DIST+= $(cert_DATA)
+
+
 # Our documentation
 man_MANS+= man/tlsdate.1
 man_MANS+= man/tlsdate-helper.1
@@ -87,4 +93,18 @@ update_ca_root_data:
 	curl https://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt\?raw\=1 -o ca-roots/certdata.txt
 	go run ~/Documents/code/git/extract-nss-root-certs/convert_mozilla_certdata.go ca-roots/certdata.txt > ca-roots/tlsdate-ca-roots.conf
 	rm ca-roots/certdata.txt
+
+BUILT_SOURCES+= configmake.h
+noinst_HEADERS+= configmake.h
+configmake.h: ${top_srcdir}/Makefile.in
+	@echo "Making $@"
+	@rm -f $@-t $@
+	@{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  echo '#define TLSDATE_CONFIG "$(sysconfdir)/ca-roots/"'; \
+	  } | sed '/""/d' > $@-t
+	@if diff $@-t $@ >/dev/null 2>&1 ; then \
+	  rm @-t ; \
+	  else \
+	  mv $@-t $@ ; \
+	  fi
 
