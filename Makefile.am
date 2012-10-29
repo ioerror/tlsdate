@@ -59,6 +59,7 @@ EXTRA_DIST+= $(cert_DATA)
 
 # Our documentation
 man_MANS+= man/tlsdate.1
+man_MANS+= man/tlsdated.1
 man_MANS+= man/tlsdate-helper.1
 EXTRA_DIST+= $(man_MANS)
 
