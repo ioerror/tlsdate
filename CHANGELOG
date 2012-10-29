@@ -1,4 +1,5 @@
-0.0.2 XXX
+0.0.2 Monday 29 Oct, 2012
+  Released at the Metalab in Vienna during their third #CryptoParty
   Add '-n' and '--dont-set-clock' option to fetch but not set time
   Add '-V' and '--showtime' option to display remote time
   Add '-t' and '--timewarp' option
@@ -31,7 +32,7 @@
   Move {*.c,h} into src/
   Move *.1 into man/
   Update TODO list to reflect desired changes
-  Update AppArmor profile to restrict {tlsdate,tlsdate-helper,tlsdated}
+  Update AppArmor profile to restrict {tlsdate,tlsdate-helper,tlsdated,tlsdate-routeup}
   Update AUTHORS file to include a new email address
   Update CHANGELOG
     Added proper date for the 0.0.1 release
