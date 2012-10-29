@@ -31,7 +31,7 @@
   Move {*.c,h} into src/
   Move *.1 into man/
   Update TODO list to reflect desired changes
-  Update AppArmor profile to restrict {tlsdate,tlsdate-helper}
+  Update AppArmor profile to restrict {tlsdate,tlsdate-helper,tlsdated}
   Update AUTHORS file to include a new email address
   Update CHANGELOG
     Added proper date for the 0.0.1 release
@@ -49,6 +49,8 @@
   Wildcard certificate verification per RFC 2595
   Add list of trusted CA certs to /etc/tlsdate/tlsdate-ca-roots.conf
   Add Makefile target to update trusted CA certs from Mozilla's NSS trust root
+  Add tlsdated daemon
+  Add tlsdated documentation
 
 0.0.1 Fri Jul 13, 2012
   First git tagged release
