@@ -1,0 +1,62 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TLSDATED 1 "OCTOBER 2012" Linux "User Manuals"
+.SH NAME
+tlsdated \- secure parasitic rdate replacement daemon
+.SH SYNOPSIS
+.B tlsdated [-wprlsvh] \
+[-t <n>] \
+[-d <n>] \
+[-T <n>] \
+[-D <n>] \
+[-c /path/to ] \
+[-a seconds ] \
+[\-\-] \
+[tlsdate command]
+.SH DESCRIPTION
+.B tlsdated
+is a daemon that runs tlsdate. It must be run as root or otherwise have the
+proper caps; it will not be able to set the system time without running as root
+or another privileged user.
+.SH OPTIONS
+.IP "-w"
+don't set hwclock
+.IP "-p"
+dry run (don't really set time)
+.IP "-r"
+use stdin instead of netlink for routes
+.IP "-t [n]"
+try [n] times when a new route appears
+.IP "-d [n]"
+delay n seconds between tries
+.IP "-T [n]"
+give subprocess n chances to exit
+.IP "-D [n]"
+delay n seconds between wait attempts
+.IP "-c [/path/to/cache/directory/]"
+set the cache directory
+.IP "-a [n]"
+run at most every n seconds in steady state
+.IP "-l"
+don't load disk timestamps 
+.IP "-s"
+don't save disk timestamp
+.IP "-v"
+be verbose
+.IP "-h"
+print help message
+.IP "[tlsdate command]"
+arguments to be passed to tlsdate at launch time
+
+.SH BUGS
+It's likely! Let us know by contacting jacob@appelbaum.net
+
+Note that
+.B tlsdate(1)
+is still in Alpha, and may not work as expected.
+.SH AUTHOR
+Jacob Appelbaum <jacob at appelbaum dot net>
+.SH "SEE ALSO"
+.B tlsdate(1),
+.B tlsdate-helper(1)

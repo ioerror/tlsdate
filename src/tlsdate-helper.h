@@ -72,7 +72,7 @@
 #define MAX_CN_NAME_LENGTH 64
 
 // RFC 1034 and posix say...
-#define HOST_NAME_MAX 255
+#define TLSDATE_HOST_NAME_MAX 255
 
 // To support our RFC 2595 wildcard verification
 #define RFC2595_MIN_LABEL_COUNT 3

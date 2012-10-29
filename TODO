@@ -6,7 +6,6 @@ Here is a nice list of things to do to improve tlsdate:
        set it to all zeros or something cute or something random
 
  3)  add HTTP GET request to avoid network fingerprinting
- 5)  daemonize and regularly slam the clock
  6)  skew the clock rather than slamming it
  7)  drop privs earlier
  9)  make this work with Tor in a proxy safe manner (no DNS mode)
@@ -17,7 +16,6 @@ Here is a nice list of things to do to improve tlsdate:
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
 16)  ensure that 32bit time isn't near wrapping time on 32bit systems
 17)  find others to audit it - we need more eyes!
-18)  cache recent time to /tmp/tlsdate_stamp or something
 19)  override client time
        Add a way to read the cache of the last updated time and read that as
        the new epoch.

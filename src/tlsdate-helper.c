@@ -74,10 +74,10 @@ know:
  * the system time without running as root or another privileged user.
  */
 
-#include "../config/tlsdate-config.h"
-#include "tlsdate-helper.h"
+#include "config.h"
+#include "src/tlsdate-helper.h"
 
-#include "compat/clock.h"
+#include "src/compat/clock.h"
 
 /** helper function to print message and die */
 static void
@@ -105,10 +105,39 @@ verb (const char *fmt, ...)
 }
 
 
+/** helper function for 'malloc' */
+static void *
+xmalloc (size_t size)
+{
+  void *ptr;
+
+  if (0 == size)
+    die("xmalloc: zero size\n");
+
+  ptr = malloc(size);
+  if (NULL == ptr)
+    die("xmalloc: out of memory (allocating %zu bytes)\n", size);
+
+  return ptr;
+}
+
+
+/** helper function for 'free' */
+static void
+xfree (void *ptr)
+{
+  if (NULL == ptr)
+    die("xfree: NULL pointer given as argument\n");
+
+  free(ptr);
+}
+
+
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
-  if (where == SSL_CB_CONNECT_LOOP && ssl->state == SSL3_ST_CR_CERT_A)
+  if (where == SSL_CB_CONNECT_LOOP &&
+      (ssl->state == SSL3_ST_CR_CERT_A || ssl->state == SSL3_ST_CR_CERT_B))
   {
     // XXX TODO: If we want to trust the remote system for time,
     // can we just read that time out of the remote system and if the
@@ -343,16 +372,13 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
 uint32_t
 check_cn (SSL *ssl, const char *hostname)
 {
+  int ok = 0;
   uint32_t ret;
   char *cn_buf;
   X509 *certificate;
   X509_NAME *xname;
-  cn_buf = malloc(HOST_NAME_MAX + 1);
 
-  if (NULL == cn_buf)
-  {
-    die ("Unable to allocate memory for cn_buf\n");
-  }
+  cn_buf = xmalloc(TLSDATE_HOST_NAME_MAX + 1);
 
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
@@ -360,10 +386,10 @@ check_cn (SSL *ssl, const char *hostname)
     die ("Unable to extract certificate\n");
   }
 
-  memset(cn_buf, '\0', (HOST_NAME_MAX + 1));
+  memset(cn_buf, '\0', (TLSDATE_HOST_NAME_MAX + 1));
   xname = X509_get_subject_name(certificate);
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
-                                  cn_buf, HOST_NAME_MAX);
+                                  cn_buf, TLSDATE_HOST_NAME_MAX);
 
   if (-1 == ret && ret != strlen(hostname))
   {
@@ -375,15 +401,14 @@ check_cn (SSL *ssl, const char *hostname)
           hostname, cn_buf);
   } else {
     verb ("V: commonName matched: %s\n", cn_buf);
-    X509_NAME_free(xname);
-    X509_free(certificate);
-    free(cn_buf);
-    return 1;
+    ok = 1;
   }
+
   X509_NAME_free(xname);
   X509_free(certificate);
-  free(cn_buf);
-  return 0;
+  xfree(cn_buf);
+
+  return ok;
 }
 
 /**
@@ -530,6 +555,10 @@ check_key_length (SSL *ssl)
   X509 *certificate;
   EVP_PKEY *public_key;
   certificate = SSL_get_peer_certificate (ssl);
+  if (NULL == certificate)
+  {
+    die ("Getting certificate failed\n");
+  }
   public_key = X509_get_pubkey (certificate);
   if (NULL == public_key)
   {
@@ -830,7 +859,10 @@ main(int argc, char **argv)
      char       buf[256];
 
      localtime_r(&tim, &ltm);
-     (void) strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y", &ltm);
+     if (0 == strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y", &ltm))
+     {
+       die ("strftime returned 0\n");
+     }
      fprintf(stdout, "%s\n", buf);
   }
 
