@@ -32,13 +32,10 @@
 
 #include "src/routeup.h"
 #include "src/util.h"
+#include "src/tlsdate.h"
 
-const char *kCacheDir = "/var/cache/tlsdated";
-const char *kTempSuffix = ".new";
-
-#ifndef TLSDATED_MAX_DATE
-#define TLSDATED_MAX_DATE 1999991337	/* this'll be a great bug some day */
-#endif
+const char *kCacheDir = DEFAULT_DAEMON_CACHEDIR;
+const char *kTempSuffix = DEFAULT_DAEMON_TMPSUFFIX;
 
 int
 is_sane_time (time_t ts)
@@ -280,22 +277,22 @@ int API
 main (int argc, char *argv[], char *envp[])
 {
   struct routeup rtc;
-  int max_tries = 10;
-  int wait_between_tries = 10;
-  int subprocess_tries = 10;
-  int subprocess_wait_between_tries = 3;
-  int steady_state_interval = 86400;
+  int max_tries = MAX_TRIES;
+  int wait_between_tries = WAIT_BETWEEN_TRIES;
+  int subprocess_tries = SUBPROCESS_TRIES;
+  int subprocess_wait_between_tries = SUBPROCESS_WAIT_BETWEEN_TRIES;
+  int steady_state_interval = STEADY_STATE_INTERVAL;
   const char *base_path = kCacheDir;
   int hwclock_fd = -1;
   static char *kDefaultArgv[] = {
-    "/usr/sbin/tlsdate", "-H", "clients3.google.com", NULL
+    DEFAULT_TLSDATE, "-H", DEFAULT_HOST, NULL
   };
   char **tlsdate_argv = kDefaultArgv;
-  int should_sync_hwclock = 1;
-  int should_load_disk = 1;
-  int should_save_disk = 1;
-  int should_netlink = 1;
-  int dry_run = 0;
+  int should_sync_hwclock = DEFAULT_SYNC_HWCLOCK;
+  int should_load_disk = DEFAULT_LOAD_FROM_DISK;
+  int should_save_disk = DEFAULT_SAVE_TO_DISK;
+  int should_netlink = DEFAULT_USE_NETLINK;
+  int dry_run = DEFAULT_DRY_RUN;
 
   /* Parse arguments */
   int opt;

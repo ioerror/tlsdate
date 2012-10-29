@@ -22,6 +22,26 @@
 #define DEFAULT_PORT "443"
 #define DEFAULT_PROTOCOL "tlsv1"
 #define DEFAULT_CERTDIR "/etc/ssl/certs"
+#define DEFAULT_DAEMON_CACHEDIR "/var/cache/tlsdated"
+#define DEFAULT_DAEMON_TMPSUFFIX ".new"
+#define DEFAULT_TLSDATE "/usr/sbin/tlsdate"
+
+/* tlsdated magic numbers */
+#define MAX_TRIES 10
+#define WAIT_BETWEEN_TRIES 10
+#define SUBPROCESS_TRIES 10
+#define SUBPROCESS_WAIT_BETWEEN_TRIES 3
+#define STEADY_STATE_INTERVAL 86400
+#define DEFAULT_SYNC_HWCLOCK 1
+#define DEFAULT_LOAD_FROM_DISK 1
+#define DEFAULT_SAVE_TO_DISK 1
+#define DEFAULT_USE_NETLINK 1
+#define DEFAULT_DRY_RUN 0
+
+#ifndef TLSDATED_MAX_DATE
+#define TLSDATED_MAX_DATE 1999991337 /* this'll be a great bug some day */
+#endif
+
 
 /** The current version of tlsdate. */
 #define tlsdate_version "0.1"
