@@ -44,7 +44,7 @@
 
 
 /** The current version of tlsdate. */
-#define tlsdate_version "0.1"
+#define tlsdate_version "0.2"
 
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
