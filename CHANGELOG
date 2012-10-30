@@ -1,3 +1,10 @@
+0.0.3 XXX
+  Add tlsdate-routeup man page
+  Update all man pages to reference other related man pages
+  Fix deb Makefile target
+  Update documentation
+  misc src changes (retab, formatting, includes, etc)
+  Update AppArmor profiles
 0.0.2 Monday 29 Oct, 2012
   Released at the Metalab in Vienna during their third #CryptoParty
   Add '-n' and '--dont-set-clock' option to fetch but not set time
