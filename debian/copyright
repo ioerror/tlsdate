@@ -5,10 +5,15 @@ Source: https://github.com/ioerror/tlsdate/
 Files: *
 Copyright: 2012 Jacob Appelbaum <jacob@appelbaum.net>
            2012 Christian Grothoff <christian@grothoff.org>
+           2011-2012, The Tor Project, Inc.
 License: BSD-3-Clause
 
-Files: src/routeup.*, src/test_harness.h, src/tlsdated.c, src/tlsdated-unittest.c, src/util.*
+Files: src/routeup.*, src/tlsdated.c, src/tlsdated-unittest.c, src/util.*
 Copyright: 2012 The Chromium Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: src/test_harness.h
+Copyright: The Chromium OS Authors. All rights reserved.
 License: BSD-3-Clause
 
 Files: visibility.h
