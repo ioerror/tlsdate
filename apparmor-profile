@@ -172,6 +172,9 @@
   /dev/random r,
   /dev/urandom r,
 
+  # RTC
+  /dev/rtc0 rw,
+
   # Allow mapping of shared libraries
   /lib/* rm,
   /lib32/* rm,
