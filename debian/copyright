@@ -11,6 +11,10 @@ Files: src/routeup.*, src/test_harness.h, src/tlsdated.c, src/tlsdated-unittest.
 Copyright: 2012 The Chromium Authors. All rights reserved.
 License: BSD-3-Clause
 
+Files: visibility.h
+Copyright: 2012 Brian Aker <brian@tangent.org>
+License: BSD-3-Clause
+
 Files: apparmor-profile
 Copyright: 2012 Jacob Appelbaum <jacob@appelbaum.net>
 License: GPLv2
