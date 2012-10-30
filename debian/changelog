@@ -1,6 +1,7 @@
 tlsdate (0.0.2-1) unstable; urgency=low
 
   * New upstream version
+  * Update init.d script to run tlsdated
 
  -- Jacob Appelbaum <jacob@appelbaum.net>  Tue, 30 Oct 2012 00:06:35 +0100
 
