@@ -79,7 +79,7 @@ git-push:
 	git push
 
 deb: debian_orig
-	debuild -rfakeroot -uc -us -d
+	debuild -i'.*' -rfakeroot -uc -us -d
 
 valgrind_test:
 	TESTS_ENVIRONMENT="./libtool --mode=execute valgrind  --trace-children=yes --leak-check=full" ./src/tlsdate -v -V -n -H encrypted.google.com
