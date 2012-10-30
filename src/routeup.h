@@ -14,7 +14,7 @@
 #define ROUTEUP_H
 
 struct routeup {
-	int netlinkfd;	/* AF_NETLINK event socket */
+  int netlinkfd;  /* AF_NETLINK event socket */
 };
 
 int routeup_setup(struct routeup *ifc);
