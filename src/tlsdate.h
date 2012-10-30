@@ -10,6 +10,7 @@
 #ifndef TLSDATE_H
 #define TLSDATE_H
 
+#include "src/configmake.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

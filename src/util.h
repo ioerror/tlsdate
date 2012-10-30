@@ -22,8 +22,8 @@ extern void logat(int isverbose, const char *fmt, ...);
 #define perror(fmt, ...) logat(0, fmt ": %s", ## __VA_ARGS__, strerror(errno))
 #define fatal(fmt, ...) do { logat(0, fmt, ## __VA_ARGS__); exit(1); } while (0)
 #define pfatal(fmt, ...) do { \
-	logat(0, fmt ": %s", ## __VA_ARGS__, strerror(errno)); \
-	exit(1); \
+  logat(0, fmt ": %s", ## __VA_ARGS__, strerror(errno)); \
+  exit(1); \
 } while (0)
 
 #endif /* !UTIL_H */

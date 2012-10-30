@@ -10,7 +10,7 @@
 #include "config.h"
 
 #include <asm/types.h>
-#include <sys/socket.h>		/* needed for linux/if.h for struct sockaddr */
+#include <sys/socket.h>   /* needed for linux/if.h for struct sockaddr */
 #include <linux/if.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
@@ -77,25 +77,25 @@ routeup_once (struct routeup *rtc, unsigned int timeout)
       FD_ZERO (&fds);
       FD_SET (rtc->netlinkfd, &fds);
       if (timeout && !remaining.tv_sec && !remaining.tv_usec)
-	return 1;
+  return 1;
       if ((sz = read (rtc->netlinkfd, buf, sizeof (buf))) < 0)
-	return -1;
+  return -1;
       struct nlmsghdr *nh;
       for (nh = (struct nlmsghdr *) buf; NLMSG_OK (nh, sz);
-	   nh = NLMSG_NEXT (nh, sz))
-	{
-	  /*
-	   * Unpack the netlink message into a bunch of... well...
-	   * netlink messages. The terminology is overloaded. Walk
-	   * through the message until we find a header of type
-	   * NLMSG_DONE.
-	   */
-	  if (nh->nlmsg_type == NLMSG_DONE)
-	    break;
-	  if (nh->nlmsg_type != RTM_NEWROUTE)
-	    continue;
-	  return 0;
-	}
+     nh = NLMSG_NEXT (nh, sz))
+  {
+    /*
+     * Unpack the netlink message into a bunch of... well...
+     * netlink messages. The terminology is overloaded. Walk
+     * through the message until we find a header of type
+     * NLMSG_DONE.
+     */
+    if (nh->nlmsg_type == NLMSG_DONE)
+      break;
+    if (nh->nlmsg_type != RTM_NEWROUTE)
+      continue;
+    return 0;
+  }
     }
 
   return -1;

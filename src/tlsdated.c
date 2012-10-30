@@ -65,20 +65,20 @@ tlsdate (char *argv[], char *envp[], int tries, int wait_between_tries)
       int status = -1;
       int i = 0;
       for (i = 0; i < tries; ++i)
-	{
-	  info ("wait for child attempt %d", i);
-	  if (waitpid (-1, &status, WNOHANG) > 0)
-	    break;
-	  sleep (wait_between_tries);
-	}
+  {
+    info ("wait for child attempt %d", i);
+    if (waitpid (-1, &status, WNOHANG) > 0)
+      break;
+    sleep (wait_between_tries);
+  }
       if (i == tries)
-	{
-	  error ("child hung?");
-	  kill (pid, SIGKILL);
-	  /* still have to wait() so we don't leak the child. */
-	  wait (&status);
-	  return -1;
-	}
+  {
+    error ("child hung?");
+    kill (pid, SIGKILL);
+    /* still have to wait() so we don't leak the child. */
+    wait (&status);
+    return -1;
+  }
       info ("child exited with %d", status);
       return WIFEXITED (status) ? WEXITSTATUS (status) : -1;
     }
@@ -137,7 +137,7 @@ save_disk_timestamp (const char *path, time_t t)
     }
 
   if ((fd = open (tmp, O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC,
-		  S_IRWXU)) < 0)
+      S_IRWXU)) < 0)
     {
       pinfo ("open failed");
       return;
@@ -237,7 +237,7 @@ sync_and_save (int hwclock_fd, int should_sync, int should_save)
   if (should_save)
     {
       if (gettimeofday (&tv, NULL))
-	pfatal ("gettimeofday() failed");
+  pfatal ("gettimeofday() failed");
       save_disk_timestamp (timestamp_path, tv.tv_sec);
     }
 }
@@ -299,48 +299,48 @@ main (int argc, char *argv[], char *envp[])
   while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsv")) != -1)
     {
       switch (opt)
-	{
-	case 'w':
-	  should_sync_hwclock = 0;
-	  break;
-	case 'r':
-	  should_netlink = 0;
-	  break;
-	case 'p':
-	  dry_run = 1;
-	  break;
-	case 't':
-	  max_tries = atoi (optarg);
-	  break;
-	case 'd':
-	  wait_between_tries = atoi (optarg);
-	  break;
-	case 'T':
-	  subprocess_tries = atoi (optarg);
-	  break;
-	case 'D':
-	  subprocess_wait_between_tries = atoi (optarg);
-	  break;
-	case 'c':
-	  base_path = optarg;
-	  break;
-	case 'a':
-	  steady_state_interval = atoi (optarg);
-	  break;
-	case 'l':
-	  should_load_disk = 0;
-	  break;
-	case 's':
-	  should_save_disk = 0;
-	  break;
-	case 'v':
-	  verbose = 1;
-	  break;
-	case 'h':
-	default:
-	  usage (argv[0]);
-	  exit (1);
-	}
+  {
+  case 'w':
+    should_sync_hwclock = 0;
+    break;
+  case 'r':
+    should_netlink = 0;
+    break;
+  case 'p':
+    dry_run = 1;
+    break;
+  case 't':
+    max_tries = atoi (optarg);
+    break;
+  case 'd':
+    wait_between_tries = atoi (optarg);
+    break;
+  case 'T':
+    subprocess_tries = atoi (optarg);
+    break;
+  case 'D':
+    subprocess_wait_between_tries = atoi (optarg);
+    break;
+  case 'c':
+    base_path = optarg;
+    break;
+  case 'a':
+    steady_state_interval = atoi (optarg);
+    break;
+  case 'l':
+    should_load_disk = 0;
+    break;
+  case 's':
+    should_save_disk = 0;
+    break;
+  case 'v':
+    verbose = 1;
+    break;
+  case 'h':
+  default:
+    usage (argv[0]);
+    exit (1);
+  }
     }
 
   if (optind < argc)
@@ -358,7 +358,7 @@ main (int argc, char *argv[], char *envp[])
   if (!steady_state_interval)
     fatal ("-a argument must be nonzero");
   if (snprintf (timestamp_path, sizeof (timestamp_path), "%s/timestamp",
-		base_path) >= sizeof (timestamp_path))
+    base_path) >= sizeof (timestamp_path))
     fatal ("supplied base path is too long: '%s'", base_path);
   if (strlen (timestamp_path) + strlen (kTempSuffix) >= PATH_MAX)
     fatal ("supplied base path is too long: '%s'", base_path);
@@ -381,10 +381,10 @@ main (int argc, char *argv[], char *envp[])
        */
       tv.tv_sec = RECENT_COMPILE_DATE;
       if (should_load_disk &&
-	  load_disk_timestamp (timestamp_path, &tv.tv_sec))
-	pinfo ("can't load disk timestamp");
+    load_disk_timestamp (timestamp_path, &tv.tv_sec))
+  pinfo ("can't load disk timestamp");
       if (!dry_run && settimeofday (&tv, NULL))
-	pfatal ("settimeofday() failed");
+  pfatal ("settimeofday() failed");
       /*
        * don't save here - we either just loaded this time or used the
        * default time, and neither of those are good to save
@@ -402,7 +402,7 @@ main (int argc, char *argv[], char *envp[])
    * succeed.
    */
   if (!tlsdate (tlsdate_argv, envp, subprocess_tries,
-		subprocess_wait_between_tries))
+    subprocess_wait_between_tries))
     sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
 
   /*
@@ -420,15 +420,15 @@ main (int argc, char *argv[], char *envp[])
        */
       int i;
       for (i = 0; i < max_tries &&
-	   tlsdate (tlsdate_argv, envp, subprocess_tries,
-		    subprocess_wait_between_tries); ++i)
-	sleep (wait_between_tries);
+     tlsdate (tlsdate_argv, envp, subprocess_tries,
+        subprocess_wait_between_tries); ++i)
+  sleep (wait_between_tries);
       if (i != max_tries)
-	{
-	  info ("tlsdate succeeded");
-	  sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
-	  break;
-	}
+  {
+    info ("tlsdate succeeded");
+    sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
+    break;
+  }
     }
 
   return 1;
