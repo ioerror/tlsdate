@@ -50,6 +50,7 @@ maintainer-clean-local:
 	@rm m4/ltversion.m4
 	@rm m4/lt~obsolete.m4
 	@rm -f tlsdate-*.tar.gz
+	@rm src/configmake.h
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 certdir =  @TLSDATE_CA_ROOTS@
@@ -95,9 +96,9 @@ update_ca_root_data:
 	go run ~/Documents/code/git/extract-nss-root-certs/convert_mozilla_certdata.go ca-roots/certdata.txt > ca-roots/tlsdate-ca-roots.conf
 	rm ca-roots/certdata.txt
 
-BUILT_SOURCES+= configmake.h
-noinst_HEADERS+= configmake.h
-configmake.h: ${top_srcdir}/Makefile.in
+BUILT_SOURCES+= src/configmake.h
+noinst_HEADERS+= src/configmake.h
+src/configmake.h: ${top_srcdir}/Makefile.in
 	@echo "Making $@"
 	@rm -f $@-t $@
 	@{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
