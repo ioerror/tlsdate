@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          tlsdate
+# Provides:          tlsdated
 # Required-Start:    $network $local_fs $remote_fs
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
@@ -20,7 +20,7 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="secure parasitic rdate replacement"
+DESC="secure parasitic rdate replacement daemon"
 NAME=tlsdated
 DAEMON=/usr/bin/tlsdated
 DAEMON_ARGS=""
