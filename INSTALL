@@ -22,7 +22,7 @@ To make a Debian source package:
   git checkout debian-master
   fakeroot debian/rules clean
   cd ../
-  dpkg-source -b tlsdate
+  dpkg-source -i'.*' -b tlsdate
 
 Example of how to build a package for Debian:
 
