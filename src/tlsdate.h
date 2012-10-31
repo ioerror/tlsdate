@@ -25,7 +25,7 @@
 #define DEFAULT_CERTDIR "/etc/ssl/certs"
 #define DEFAULT_DAEMON_CACHEDIR "/var/cache/tlsdated"
 #define DEFAULT_DAEMON_TMPSUFFIX ".new"
-#define DEFAULT_TLSDATE "/usr/sbin/tlsdate"
+#define DEFAULT_TLSDATE "/usr/bin/tlsdate"
 
 /* tlsdated magic numbers */
 #define MAX_TRIES 10
