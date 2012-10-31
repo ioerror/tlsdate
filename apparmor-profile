@@ -45,7 +45,6 @@
   /etc/group r,
   /proc/sys/kernel/ngroups_max r,
 
-
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
 
@@ -105,7 +104,7 @@
   # Required for getpwnam
   /etc/passwd r,
   /etc/group r,
-
+  /proc/sys/kernel/ngroups_max r,
 
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
@@ -163,7 +162,7 @@
   # Required for getpwnam
   /etc/passwd r,
   /etc/group r,
-
+  /proc/sys/kernel/ngroups_max r,
 
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
