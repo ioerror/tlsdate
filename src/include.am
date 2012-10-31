@@ -45,3 +45,5 @@ noinst_HEADERS+= src/tlsdate-helper.h
 noinst_HEADERS+= src/tlsdate.h
 noinst_HEADERS+= src/util.h
 noinst_HEADERS+= src/visibility.h
+noinst_HEADERS+= src/proxy-bio.h
+noinst_HEADERS+= src/test-bio.h
