@@ -94,7 +94,7 @@ usage(void)
           " [-V|--showtime]\n"
           " [-t|--timewarp]\n"
           " [-l|--leap]\n"
-	  " [-x|--proxy] [url]\n");
+    " [-x|--proxy] [url]\n");
 }
 
 
