@@ -176,6 +176,7 @@ main(int argc, char **argv)
       fprintf(stderr, "WARNING: Skipping certificate verification!\n");
   }
 
+  // XXX Update to have absolute path here
   execlp ("tlsdate-helper",
     "tlsdate",
     host,
