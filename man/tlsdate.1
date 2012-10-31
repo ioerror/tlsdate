@@ -6,7 +6,7 @@
 tlsdate \- secure parasitic rdate replacement
 .SH SYNOPSIS
 .B tlsdate [-hnvVstl] [-H [hostname]] [-p [port]] [-P [sslv23|sslv3|tlsv1]] \
-[--certdir [dirname]]
+[--certdir [dirname]] [-x [--proxy] proxy-type://proxyhost:proxyport]
 .SH DESCRIPTION
 .B tlsdate
 is a tool for setting the system clock by hand or by communication
@@ -39,6 +39,14 @@ This allows for certificate or certificate authority (CA) pinning. To ensure
 that signatures are only valid if they are signed by a specific CA or
 certificate, set the path to a directory containing only the desired
 certificates.
+.IP "-x | --proxy [proxy-type://proxyhost:proxyport]"
+The proxy argument expects HTTP, SOCKS4A or SOCKS5 formatted as followed:
+
+ http://127.0.0.1:8118
+ socks4a://127.0.0.1:9050
+ socks5://127.0.0.1:9050
+
+The proxy support should not leak DNS requests and is suitable for use with Tor.
 .IP "-v | --verbose"
 Provide verbose output
 .IP "-V | --showtime"

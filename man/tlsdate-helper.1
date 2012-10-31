@@ -6,7 +6,7 @@
 tlsdate-helper \- secure parasitic rdate replacement
 .SH SYNOPSIS
 .B tlsdate-helper host port protocol ca_racket verbose certdir setclock \
-showtime timewarp leapaway
+showtime timewarp leapaway proxy-type://proxyhost:proxyport
 .SH DESCRIPTION
 .B tlsdate-helper
 is a tool for setting the system clock by hand or by communication
@@ -15,6 +15,12 @@ secure as TLS (RFC 2246) but of course the security of TLS is often reduced to
 whichever CA racket you believe is trustworthy. By default, tlsdate-helper
 trusts your local CA root store - so any of these companies could assist in a
 MITM attack against you and you'd be screwed.
+
+The proxy argument expects HTTP, SOCKS4A or SOCKS5 formatted as followed:
+
+ http://127.0.0.1:8118
+ socks4a://127.0.0.1:9050
+ socks5://127.0.0.1:9050
 
 This tool is designed to be run by hand or as a system daemon. It must be
 run as root or otherwise have the proper caps; it will not be able to set
