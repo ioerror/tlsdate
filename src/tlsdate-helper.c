@@ -77,6 +77,8 @@ know:
 #include "config.h"
 #include "src/tlsdate-helper.h"
 
+#include "proxy-bio.h"
+
 #include "src/compat/clock.h"
 
 /** helper function to print message and die */
@@ -104,6 +106,103 @@ verb (const char *fmt, ...)
   va_end(ap);
 }
 
+static void
+validate_proxy_scheme(const char *scheme)
+{
+  if (!strcmp(scheme, "http"))
+    return;
+  if (!strcmp(scheme, "socks4"))
+    return;
+  if (!strcmp(scheme, "socks5"))
+    return;
+  die("invalid proxy scheme\n");
+}
+
+static void
+validate_proxy_host(const char *host)
+{
+  const char *kValid = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                       "abcdefghijklmnopqrstuvwxyz"
+                       "0123456789"
+                       ".-";
+  if (strspn(host, kValid) != strlen(host))
+    die("invalid char in host\n");
+}
+
+static void
+validate_proxy_port(const char *port)
+{
+  while (*port)
+    if (!isdigit(*port++))
+      die("invalid char in port\n");
+}
+
+static void
+parse_proxy_uri(char *proxy, char **scheme, char **host, char **port)
+{
+  /* Expecting a URI, so: <scheme> '://' <host> ':' <port> */
+  *scheme = proxy;
+  proxy = strstr(proxy, "://");
+  if (!proxy)
+    die("malformed proxy URI\n");
+  *proxy = '\0'; /* terminate scheme string */
+  proxy += strlen("://");
+
+  *host = proxy;
+  proxy = strchr(proxy, ':');
+  if (!proxy)
+    die("malformed proxy URI\n");
+  *proxy++ = '\0';
+
+  *port = proxy;
+
+  validate_proxy_scheme(*scheme);
+  validate_proxy_host(*host);
+  validate_proxy_port(*port);
+}
+
+static void
+setup_proxy(BIO *ssl)
+{
+  BIO *bio;
+  char *scheme;
+  char *proxy_host;
+  char *proxy_port;
+
+  if (!proxy)
+    return;
+  /*
+   * grab the proxy's host and port out of the URI we have for it. We want the
+   * underlying connect BIO to connect to this, not the target host and port, so
+   * we squirrel away the target host and port in the proxy BIO (as the proxy
+   * target) and swap out the connect BIO's target host and port so it'll
+   * connect to the proxy instead.
+   */
+  parse_proxy_uri(proxy, &scheme, &proxy_host, &proxy_port);
+  bio = BIO_new_proxy();
+  BIO_proxy_set_type(bio, scheme);
+  BIO_proxy_set_host(bio, host);
+  BIO_proxy_set_port(bio, atoi(port));
+  host = proxy_host;
+  port = proxy_port;
+  BIO_push(ssl, bio);
+}
+
+static BIO *
+make_ssl_bio(SSL_CTX *ctx)
+{
+  BIO *con = NULL;
+  BIO *ssl = NULL;
+  BIO *proxy = NULL;
+
+  if (!(con = BIO_new(BIO_s_connect())))
+    die("BIO_s_connect failed\n");
+  if (!(ssl = BIO_new_ssl(ctx, 1)))
+    die("BIO_new_ssl failed\n");
+  setup_proxy(ssl);
+  BIO_push(ssl, con);
+  return ssl;
+}
 
 /** helper function for 'malloc' */
 static void *
@@ -635,7 +734,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
       fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
   }
 
-  if (NULL == (s_bio = BIO_new_ssl_connect(ctx)))
+  if (NULL == (s_bio = make_ssl_bio(ctx)))
     die ("SSL BIO setup failed\n");
   BIO_get_ssl(s_bio, &ssl);
   if (NULL == ssl)
@@ -647,6 +746,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   }
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+  verb("opening socket to %s:%s\n", host, port);
   if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
        (1 != BIO_set_conn_port(s_bio, port)) )
     die ("Failed to initialize connection to `%s:%s'\n", host, port);
@@ -738,7 +838,7 @@ main(int argc, char **argv)
   int timewarp;
   int leap;
 
-  if (argc != 11)
+  if (argc != 12)
     return 1;
   host = argv[1];
   port = argv[2];
@@ -750,6 +850,7 @@ main(int argc, char **argv)
   showtime = (0 == strcmp ("showtime", argv[8]));
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
+  proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
 
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
