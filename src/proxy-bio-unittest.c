@@ -10,6 +10,7 @@
 #include "proxy-bio.h"
 #include "test-bio.h"
 #include "test_harness.h"
+#include "tlsdate.h"
 
 FIXTURE(test_bio) {
 	BIO *test;
@@ -23,12 +24,6 @@ FIXTURE_SETUP(test_bio) {
 FIXTURE_TEARDOWN(test_bio) {
 	BIO_free(self->test);
 }
-
-#define TEST_HOST 'w', 'w', 'w', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', \
-                  'c', 'o', 'm'
-#define TEST_HOST_SIZE 14
-static const char kTestHost[] = { TEST_HOST, 0 };
-#define TEST_PORT 80
 
 BIO *proxy_bio(BIO *test, const char *type)
 {
@@ -48,7 +43,7 @@ int need_out_bytes(BIO *test, const unsigned char *out, size_t sz)
 		return 1;
 	if (BIO_test_output_left(test) <  sz) {
 		fprintf(TH_LOG_STREAM, "not enough output: %d < %d\n",
-		        BIO_test_output_left(test), sz);
+		        (int)BIO_test_output_left(test), (int)sz);
 		return 2;
 	}
 	if (BIO_test_get_output(test, buf, sz) != sz)
@@ -57,8 +52,8 @@ int need_out_bytes(BIO *test, const unsigned char *out, size_t sz)
 		for (i = 0; i < sz; i++) {
 			if (buf[i] != out[i])
 				fprintf(TH_LOG_STREAM,
-				        "mismatch %d %02x %02x\n", i, buf[i],
-				        out[i]);
+				        "mismatch %d %02x %02x\n", (int)i,
+				        buf[i], out[i]);
 		}
 	}
 	return memcmp(buf, out, sz);
@@ -86,7 +81,7 @@ void put_bytes(BIO *test, const unsigned char *buf, size_t sz)
 
 void put_byte(BIO *test, char c)
 {
-	BIO_test_add_input(test, &c, 1);
+	BIO_test_add_input(test, (unsigned char *)&c, 1);
 }
 
 unsigned const char kSocks4ARequest[] = {
@@ -128,7 +123,6 @@ TEST_F(test_bio, socks4a_fail) {
 		TEST_PORT & 0xff,	/* port low */
 		0x00, 0x00, 0x00, 0x00	/* bogus IP */
 	};
-	char buf[64];
 	BIO *proxy = proxy_bio(self->test, "socks4a");
 	put_bytes(self->test, kReply, sizeof(kReply));
 	EXPECT_EQ(0, BIO_write(proxy, kTestInput, sizeof(kTestInput)));
@@ -232,14 +226,16 @@ TEST_F(test_bio, http_success)
 	BIO *proxy = proxy_bio(self->test, "http");
 	char kConnectRequest[1024];
 	char kConnectResponse[] = "HTTP/1.0 200 OK\r\n"
-	                          "Uninteresting-Header: foobar\r\n"
-	                          "Another-Header: lol\r\n"
-	                          "\r\n";
+	                                   "Uninteresting-Header: foobar\r\n"
+	                                   "Another-Header: lol\r\n"
+	                                   "\r\n";
 	snprintf(kConnectRequest, sizeof(kConnectRequest),
 	         "CONNECT %s:%d HTTP/1.1\r\n\r\n", kTestHost, TEST_PORT);
-	put_bytes(self->test, kConnectResponse, strlen(kConnectResponse));
+	put_bytes(self->test, (unsigned char *)kConnectResponse,
+	          strlen(kConnectResponse));
 	EXPECT_EQ(4, BIO_write(proxy, kTestInput, sizeof(kTestInput)));
-	EXPECT_EQ(0, need_out_bytes(self->test, kConnectRequest,
+	EXPECT_EQ(0, need_out_bytes(self->test,
+	                            (unsigned char *)kConnectRequest,
 	                            strlen(kConnectRequest)));
 	EXPECT_EQ(0, need_out_bytes(self->test, kTestInput,
 	                            sizeof(kTestInput)));
@@ -257,9 +253,11 @@ TEST_F(test_bio, http_error)
 	                          "\r\n";
 	snprintf(kConnectRequest, sizeof(kConnectRequest),
 	         "CONNECT %s:%d HTTP/1.1\r\n\r\n", kTestHost, TEST_PORT);
-	put_bytes(self->test, kConnectResponse, strlen(kConnectResponse));
+	put_bytes(self->test, (unsigned char *)kConnectResponse,
+	          strlen(kConnectResponse));
 	EXPECT_EQ(0, BIO_write(proxy, kTestInput, sizeof(kTestInput)));
-	EXPECT_EQ(0, need_out_bytes(self->test, kConnectRequest,
+	EXPECT_EQ(0, need_out_bytes(self->test,
+	                            (unsigned char *)kConnectRequest,
 	                            strlen(kConnectRequest)));
 	EXPECT_EQ(0, BIO_test_output_left(self->test));
 }

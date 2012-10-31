@@ -43,6 +43,11 @@
 #define TLSDATED_MAX_DATE 1999991337 /* this'll be a great bug some day */
 #endif
 
+#define TEST_HOST 'w', 'w', 'w', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', \
+                  'c', 'o', 'm'
+#define TEST_HOST_SIZE 14
+static const char kTestHost[] = { TEST_HOST, 0 };
+#define TEST_PORT 80
 
 /** The current version of tlsdate. */
 #define tlsdate_version "0.2"

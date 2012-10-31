@@ -15,6 +15,6 @@ BIO *BIO_new_test();
 
 size_t BIO_test_output_left(BIO *b);
 size_t BIO_test_get_output(BIO *b, unsigned char *buf, size_t bufsz);
-void BIO_test_add_input(BIO *b, unsigned char *buf, size_t bufsz);
+void BIO_test_add_input(BIO *b, const unsigned char *buf, size_t bufsz);
 
 #endif /* !TEST_BIO_H */

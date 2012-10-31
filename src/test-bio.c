@@ -148,7 +148,7 @@ size_t API BIO_test_get_output(BIO *b, unsigned char *buf, size_t bufsz)
 	return buf_drain(&c->out, &c->outsz, buf, bufsz);
 }
 
-void API BIO_test_add_input(BIO *b, unsigned char *buf, size_t bufsz)
+void API BIO_test_add_input(BIO *b, const unsigned char *buf, size_t bufsz)
 {
 	struct test_ctx *c = bio_ctx(b);
 	return buf_fill(&c->in, &c->insz, buf, bufsz);
