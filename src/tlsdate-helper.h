@@ -87,6 +87,8 @@ static const char *port;
 
 static const char *protocol;
 
+static char *proxy;
+
 static const char *certdir;
 static void die (const char *fmt, ...);
 static void verb (const char *fmt, ...);

@@ -427,7 +427,6 @@ main (int argc, char *argv[], char *envp[])
   {
     info ("tlsdate succeeded");
     sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
-    break;
   }
     }
 

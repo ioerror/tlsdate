@@ -5,6 +5,7 @@
   Update documentation
   misc src changes (retab, formatting, includes, etc)
   Update AppArmor profiles
+  Add HTTP/socks4a/socks5 proxy support and update man page documentation
 0.0.2 Monday 29 Oct, 2012
   Released at the Metalab in Vienna during their third #CryptoParty
   Add '-n' and '--dont-set-clock' option to fetch but not set time
