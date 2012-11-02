@@ -13,8 +13,6 @@
 
 #include "src/util.h"
 
-static int verbose = 0;
-
 /** helper function to print message and die */
 void
 die (const char *fmt, ...)

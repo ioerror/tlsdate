@@ -18,6 +18,8 @@
 #include "test-bio.h"
 #include "util.h"
 
+int verbose;
+
 static const unsigned int kMagic = 0x5f8d3f15;
 
 struct test_ctx {
