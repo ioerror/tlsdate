@@ -19,8 +19,12 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
+#ifndef __USE_MISC
 #define __USE_MISC
+#endif
+#ifndef __USE_POSIX
 #define __USE_POSIX
+#endif
 #include <netdb.h>
 #include <stdint.h>
 
