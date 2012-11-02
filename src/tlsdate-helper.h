@@ -23,6 +23,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
@@ -82,6 +83,8 @@ static int verbose;
 static int ca_racket;
 
 static const char *host;
+
+static const char *hostname_to_verify;
 
 static const char *port;
 

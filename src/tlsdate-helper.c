@@ -193,7 +193,6 @@ make_ssl_bio(SSL_CTX *ctx)
 {
   BIO *con = NULL;
   BIO *ssl = NULL;
-  BIO *proxy = NULL;
 
   if (!(con = BIO_new(BIO_s_connect())))
     die("BIO_s_connect failed\n");
@@ -763,7 +762,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
 
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
-    inspect_key (ssl, host);
+    inspect_key (ssl, hostname_to_verify);
   } else {
     verb ("V: Certificate verification skipped!\n");
   }
@@ -841,6 +840,7 @@ main(int argc, char **argv)
   if (argc != 12)
     return 1;
   host = argv[1];
+  hostname_to_verify = argv[1];
   port = argv[2];
   protocol = argv[3];
   certdir = argv[6];
