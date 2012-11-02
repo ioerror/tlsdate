@@ -10,10 +10,12 @@
 
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define API __attribute__((visibility("default")))
 
-extern int verbose;
+void die (const char *fmt, ...);
+void verb (const char *fmt, ...);
 extern void logat(int isverbose, const char *fmt, ...);
 
 #define info(fmt, ...) logat(1, fmt, ## __VA_ARGS__)

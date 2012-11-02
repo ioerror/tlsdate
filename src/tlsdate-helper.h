@@ -33,6 +33,8 @@
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
 
+#include "src/util.h"
+
 /** Name of user that we feel safe to run SSL handshake with. */
 #ifndef UNPRIV_USER
 #define UNPRIV_USER "nobody"
@@ -93,8 +95,6 @@ static const char *protocol;
 static char *proxy;
 
 static const char *certdir;
-static void die (const char *fmt, ...);
-static void verb (const char *fmt, ...);
 void openssl_time_callback (const SSL* ssl, int where, int ret);
 uint32_t get_certificate_keybits (EVP_PKEY *public_key);
 uint32_t check_cn (SSL *ssl, const char *hostname);

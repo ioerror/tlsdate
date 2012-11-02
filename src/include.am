@@ -18,6 +18,7 @@ src_tlsdate_helper_LDADD = -lssl -lcrypto
 src_tlsdate_helper_LDADD+= src/compat/libtlsdate_compat.la
 src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
 src_tlsdate_helper_SOURCES+= src/proxy-bio.c
+src_tlsdate_helper_SOURCES+= src/util.c
 
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN
 src_tlsdated_SOURCES = src/routeup.c
@@ -35,6 +36,7 @@ src_proxy_bio_unittest_LDADD = -lssl -lcrypto
 src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
 src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
 src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
 
