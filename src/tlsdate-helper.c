@@ -745,7 +745,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   }
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-  verb("opening socket to %s:%s\n", host, port);
+  verb("V: opening socket to %s:%s\n", host, port);
   if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
        (1 != BIO_set_conn_port(s_bio, port)) )
     die ("Failed to initialize connection to `%s:%s'\n", host, port);
