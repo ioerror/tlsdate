@@ -21,8 +21,10 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include "src/routeup.h"
 #include "src/util.h"
+#include "src/routeup.h"
+
+int verbose;
 
 /*
  * Set up the supplied context by creating and binding its netlink socket.

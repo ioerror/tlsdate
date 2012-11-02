@@ -14,6 +14,7 @@
 
 #define API __attribute__((visibility("default")))
 
+extern int verbose;
 void die (const char *fmt, ...);
 void verb (const char *fmt, ...);
 extern void logat(int isverbose, const char *fmt, ...);

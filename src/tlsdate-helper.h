@@ -33,6 +33,8 @@
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
 
+int verbose;
+
 #include "src/util.h"
 
 /** Name of user that we feel safe to run SSL handshake with. */
@@ -79,8 +81,6 @@
 
 // To support our RFC 2595 wildcard verification
 #define RFC2595_MIN_LABEL_COUNT 3
-
-static int verbose;
 
 static int ca_racket;
 
