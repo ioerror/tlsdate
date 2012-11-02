@@ -51,7 +51,7 @@ static size_t buf_drain(unsigned char **buf, size_t *bufsz,
 }
 
 static void buf_fill(unsigned char **buf, size_t *bufsz,
-                     unsigned char *in, size_t insz)
+                     const unsigned char *in, size_t insz)
 {
   *buf = realloc(*buf, *bufsz + insz);
   memcpy(*buf + *bufsz, in, insz);
