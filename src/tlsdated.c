@@ -293,6 +293,7 @@ main (int argc, char *argv[], char *envp[])
   int should_save_disk = DEFAULT_SAVE_TO_DISK;
   int should_netlink = DEFAULT_USE_NETLINK;
   int dry_run = DEFAULT_DRY_RUN;
+  int verbose = 0;
 
   /* Parse arguments */
   int opt;

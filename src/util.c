@@ -13,8 +13,31 @@
 
 #include "src/util.h"
 
-int verbose = 0;
+static int verbose = 0;
 
+/** helper function to print message and die */
+void
+die (const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  va_end(ap);
+  exit(1);
+}
+
+/** helper function for 'verbose' output */
+void
+verb (const char *fmt, ...)
+{
+  va_list ap;
+
+  if (! verbose) return;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  va_end(ap);
+}
 void API logat(int isverbose, const char *fmt, ...)
 {
   if (isverbose && !verbose)

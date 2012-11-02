@@ -29,7 +29,6 @@
 #include <stdint.h>
 
 #include "proxy-bio.h"
-#include "util.h"
 
 struct proxy_ctx {
   char *host;
@@ -79,7 +78,7 @@ int socks4a_connect(BIO *b)
   uint16_t port_n = htons(ctx->port);
   size_t sz = 0;
 
-  printf("proxy4: connecting %s:%d\n", ctx->host, ctx->port);
+  verb("V: proxy4: connecting %s:%d\n", ctx->host, ctx->port);
 
   /*
    * Packet layout:
@@ -118,7 +117,7 @@ int socks4a_connect(BIO *b)
   if (r != 8)
     return 0;
   if (buf[1] == 0x5a) {
-    printf("proxy4: connected\n");
+    verb("V: proxy4: connected\n");
     ctx->connected = 1;
     return 1;
   }
@@ -137,7 +136,7 @@ int socks5_connect(BIO *b)
   if (strnlen(ctx->host, UINT8_MAX + 1) == UINT8_MAX + 1)
     return 0;
 
-  printf("proxy5: connecting %s:%d\n", ctx->host, ctx->port);
+  verb("V: proxy5: connecting %s:%d\n", ctx->host, ctx->port);
 
   /*
    * Hello packet layout:
@@ -161,7 +160,7 @@ int socks5_connect(BIO *b)
     return 0;
 
   if (buf[0] != 0x05 || buf[1] != 0x00) {
-    printf("proxy5: auth error %02x %02x\n", buf[0], buf[1]);
+    verb("V: proxy5: auth error %02x %02x\n", buf[0], buf[1]);
     return 0;
   }
 
@@ -205,7 +204,7 @@ int socks5_connect(BIO *b)
     return 0;
 
   if (buf[0] != 0x05 || buf[1] != 0x00) {
-    printf("proxy5: connect error %02x %02x\n", buf[0], buf[1]);
+    verb("V: proxy5: connect error %02x %02x\n", buf[0], buf[1]);
     return 0;
   }
 
@@ -226,7 +225,7 @@ int socks5_connect(BIO *b)
       return 0;
   }
 
-  printf("proxy5: connected\n");
+  verb("V: proxy5: connected\n");
   ctx->connected = 1;
   return 1;
 }

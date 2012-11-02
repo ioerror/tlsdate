@@ -81,31 +81,6 @@ know:
 
 #include "src/compat/clock.h"
 
-/** helper function to print message and die */
-static void
-die (const char *fmt, ...)
-{
-  va_list ap;
-
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-  exit(1);
-}
-
-
-/** helper function for 'verbose' output */
-static void
-verb (const char *fmt, ...)
-{
-  va_list ap;
-
-  if (! verbose) return;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-}
-
 static void
 validate_proxy_scheme(const char *scheme)
 {
