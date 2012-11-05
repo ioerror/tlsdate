@@ -1,3 +1,9 @@
+tlsdate (0.0.3-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 05 Nov 2012 14:55:22 -0800
+
 tlsdate (0.0.2-1) unstable; urgency=low
 
   * New upstream version
