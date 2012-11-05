@@ -33,6 +33,10 @@ Here is a nice list of things to do to improve tlsdate:
 33)  Implement checking of RFC 2818 style wildcards:
        http://wiki.cacert.org/WildcardCertificates
 34)  Clear the environment for tlsdated and related utils before execve()
+35)  seatbelt profile for Mac OS X
+36)  SELinux policy for GNU/Linux platforms
+37)  Port to some Windows operating system that anyone actually uses
+38)  Add seccomp suport
 
 Patches welcome!
 
