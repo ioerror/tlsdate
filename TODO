@@ -12,7 +12,7 @@ Here is a nice list of things to do to improve tlsdate:
        This should work with torsocks, does it? Audit results please!
 11)  verification of remote certificate for Tor nodes
 13)  account for servers that do not send UTC (Microsoft sends local time)
-14)  port to nss, gnutls, yassl and other libraries
+14)  port to nss, gnutls, yassl, polarssl and other libraries
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
 16)  ensure that 32bit time isn't near wrapping time on 32bit systems
 17)  find others to audit it - we need more eyes!
