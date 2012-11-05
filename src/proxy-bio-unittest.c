@@ -230,7 +230,8 @@ TEST_F(test_bio, http_success)
                                      "Another-Header: lol\r\n"
                                      "\r\n";
   snprintf(kConnectRequest, sizeof(kConnectRequest),
-           "CONNECT %s:%d HTTP/1.1\r\n\r\n", kTestHost, TEST_PORT);
+           "CONNECT %s:%d HTTP/1.1\r\nHost: %s:%d\r\n\r\n",
+           kTestHost, TEST_PORT, kTestHost, TEST_PORT);
   put_bytes(self->test, (unsigned char *)kConnectResponse,
             strlen(kConnectResponse));
   EXPECT_EQ(4, BIO_write(proxy, kTestInput, sizeof(kTestInput)));
@@ -252,7 +253,8 @@ TEST_F(test_bio, http_error)
                             "Another-Header: lol\r\n"
                             "\r\n";
   snprintf(kConnectRequest, sizeof(kConnectRequest),
-           "CONNECT %s:%d HTTP/1.1\r\n\r\n", kTestHost, TEST_PORT);
+           "CONNECT %s:%d HTTP/1.1\r\nHost: %s:%d\r\n\r\n",
+           kTestHost, TEST_PORT, kTestHost, TEST_PORT);
   put_bytes(self->test, (unsigned char *)kConnectResponse,
             strlen(kConnectResponse));
   EXPECT_EQ(0, BIO_write(proxy, kTestInput, sizeof(kTestInput)));
