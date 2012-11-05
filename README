@@ -6,6 +6,12 @@ tlsdate: secure parasitic rdate replacement
  enabled service, and provides some protection against adversaries that try to
  feed you malicious time information.
 
+On Debian GNU/Linux and related systems, we provide an init.d script that
+controls the tlsdated daemon. It will notice network changes and regularly
+invoke tlsdate to keep the clock in sync. Start it like so:
+
+  /etc/init.d/tlsdate start
+
 Here is an example an unprivileged user fetching the remote time:
 
   % tlsdate -v -V -n
