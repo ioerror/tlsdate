@@ -50,7 +50,7 @@ static const char kTestHost[] = { TEST_HOST, 0 };
 #define TEST_PORT 80
 
 /** The current version of tlsdate. */
-#define tlsdate_version "0.2"
+#define tlsdate_version VERSION
 
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
