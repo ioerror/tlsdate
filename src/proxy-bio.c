@@ -74,7 +74,7 @@ int socks4a_connect(BIO *b)
 {
   struct proxy_ctx *ctx = b->ptr;
   int r;
-  char buf[NI_MAXHOST + 16];
+  unsigned char buf[NI_MAXHOST + 16];
   uint16_t port_n = htons(ctx->port);
   size_t sz = 0;
 
@@ -109,7 +109,7 @@ int socks4a_connect(BIO *b)
   sz += strlen(ctx->host) + 1;
 
   r = BIO_write(b->next_bio, buf, sz);
-  if (!r)
+  if (r != sz)
     return 0;
 
   /* server reply: 1 + 1 + 2 + 4 */
@@ -126,7 +126,7 @@ int socks4a_connect(BIO *b)
 
 int socks5_connect(BIO *b)
 {
-  char buf[NI_MAXHOST + 16];
+  unsigned char buf[NI_MAXHOST + 16];
   int r;
   struct proxy_ctx *ctx = b->ptr;
   uint16_t port_n = htons(ctx->port);
@@ -152,11 +152,11 @@ int socks5_connect(BIO *b)
   buf[2] = 0x00;
 
   r = BIO_write(b->next_bio, buf, 3);
-  if (!r)
+  if (r != 3)
     return 0;
 
   r = BIO_read(b->next_bio, buf, 2);
-  if (!r)
+  if (r != 2)
     return 0;
 
   if (buf[0] != 0x05 || buf[1] != 0x00) {
@@ -185,7 +185,7 @@ int socks5_connect(BIO *b)
   sz += sizeof(port_n);
 
   r = BIO_write(b->next_bio, buf, sz);
-  if (!r)
+  if (r != sz)
     return 0;
 
   /*
@@ -200,7 +200,7 @@ int socks5_connect(BIO *b)
 
   /* grab up through the addr type */
   r = BIO_read(b->next_bio, buf, 4);
-  if (!r)
+  if (r != 4)
     return 0;
 
   if (buf[0] != 0x05 || buf[1] != 0x00) {
@@ -211,17 +211,20 @@ int socks5_connect(BIO *b)
   if (buf[3] == 0x03) {
     unsigned int len;
     r = BIO_read(b->next_bio, buf + 4, 1);
-    if (!r)
+    if (r != 1)
       return 0;
     /* host (buf[4] bytes) + port (2 bytes) */
-    len = (unsigned int)buf[4] + 2;
-    r = BIO_read(b->next_bio, buf + 5, len);
-    if (!r)
-      return 0;
+    len = buf[4] + 2;
+    while (len) {
+      r = BIO_read(b->next_bio, buf + 5, min(len, sizeof(buf)));
+      if (r <= 0)
+        return 0;
+      len -= min(len, r);
+    }
   } else if (buf[3] == 0x01) {
     /* 4 bytes ipv4 addr, 2 bytes port */
     r = BIO_read(b->next_bio, buf + 4, 6);
-    if (!r)
+    if (r != 6)
       return 0;
   }
 
@@ -255,17 +258,16 @@ int http_connect(BIO *b)
   snprintf(buf, sizeof(buf), "CONNECT %s:%d HTTP/1.1\r\n",
            ctx->host, ctx->port);
   r = BIO_write(b->next_bio, buf, strlen(buf));
-  if (!r)
+  if (r != strlen(buf))
     return 0;
-/*
+  /* required by RFC 2616 14.23 */
   snprintf(buf, sizeof(buf), "Host: %s:%d\r\n", ctx->host, ctx->port);
-  r = BIO_puts(b->next_bio, buf);
-  if (!r)
+  r = BIO_write(b->next_bio, buf, strlen(buf));
+  if (r != strlen(buf))
     return 0;
-*/
   strcpy(buf, "\r\n");
   r = BIO_write(b->next_bio, buf, strlen(buf));
-  if (!r)
+  if (r != strlen(buf))
     return 0;
 
   r = sock_gets(b->next_bio, buf, sizeof(buf));
@@ -414,12 +416,13 @@ int API BIO_proxy_set_type(BIO *b, const char *type)
   return 0;
 }
 
-void API BIO_proxy_set_host(BIO *b, const char *host)
+int API BIO_proxy_set_host(BIO *b, const char *host)
 {
   struct proxy_ctx *ctx = b->ptr;
   if (strnlen(host, NI_MAXHOST) == NI_MAXHOST)
-    return;
+    return 1;
   ctx->host = strdup(host);
+  return 0;
 }
 
 void API BIO_proxy_set_port(BIO *b, uint16_t port)
