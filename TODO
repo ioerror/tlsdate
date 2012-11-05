@@ -8,17 +8,12 @@ Here is a nice list of things to do to improve tlsdate:
  3)  add HTTP GET request to avoid network fingerprinting
  6)  skew the clock rather than slamming it
  7)  drop privs earlier
- 9)  make this work with Tor in a proxy safe manner (no DNS mode)
-       This should work with torsocks, does it? Audit results please!
 11)  verification of remote certificate for Tor nodes
 13)  account for servers that do not send UTC (Microsoft sends local time)
-14)  port to nss, gnutls, yassl and other libraries
+14)  port to nss, gnutls, yassl, polarssl and other libraries
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
 16)  ensure that 32bit time isn't near wrapping time on 32bit systems
 17)  find others to audit it - we need more eyes!
-19)  override client time
-       Add a way to read the cache of the last updated time and read that as
-       the new epoch.
 20)  Add verification of remote servers by DANE/CAA DNSSEC protected records
 21)  Integrate Chrome's CRL list into tlsdate
 22)  Block revoked or bad certs such as MD5 inc. and others.

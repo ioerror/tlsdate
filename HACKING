@@ -71,6 +71,10 @@ Try to avoid static allocations like the following:
 
   char widget[WIDGET_SIZE];
 
+Try to use unsigned values unless an API requires signed values:
+
+  uint32_t server_time_s;
+
 Please provide relevant CHANGELOG entries for all changes.
 Please remove items from the TODO file as they are completed.
 Please provide unittest cases.
