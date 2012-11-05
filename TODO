@@ -14,9 +14,6 @@ Here is a nice list of things to do to improve tlsdate:
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
 16)  ensure that 32bit time isn't near wrapping time on 32bit systems
 17)  find others to audit it - we need more eyes!
-19)  override client time
-       Add a way to read the cache of the last updated time and read that as
-       the new epoch.
 20)  Add verification of remote servers by DANE/CAA DNSSEC protected records
 21)  Integrate Chrome's CRL list into tlsdate
 22)  Block revoked or bad certs such as MD5 inc. and others.
