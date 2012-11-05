@@ -29,4 +29,6 @@ extern void logat(int isverbose, const char *fmt, ...);
   exit(1); \
 } while (0)
 
+static inline int min(int x, int y) { return x < y ? x : y; }
+
 #endif /* !UTIL_H */
