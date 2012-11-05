@@ -8,8 +8,6 @@ Here is a nice list of things to do to improve tlsdate:
  3)  add HTTP GET request to avoid network fingerprinting
  6)  skew the clock rather than slamming it
  7)  drop privs earlier
- 9)  make this work with Tor in a proxy safe manner (no DNS mode)
-       This should work with torsocks, does it? Audit results please!
 11)  verification of remote certificate for Tor nodes
 13)  account for servers that do not send UTC (Microsoft sends local time)
 14)  port to nss, gnutls, yassl, polarssl and other libraries
