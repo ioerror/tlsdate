@@ -1,7 +1,8 @@
 tlsdate (0.0.4-1) unstable; urgency=low
 
-  * New upstream version
-  * Merge in all git fixes after 0.0.4 to fix various lintian issues
+  * Initial release (Closes: #681000)
+  * New upstream version.
+  * Merge in all git fixes after 0.0.4 to fix various lintian issues.
 
  -- Jacob Appelbaum <jacob@appelbaum.net>  Wed, 07 Nov 2012 21:36:15 -0800
 
@@ -20,6 +21,6 @@ tlsdate (0.0.2-1) unstable; urgency=low
 
 tlsdate (0.0.1-1) unstable; urgency=low
 
-  * Initial release (Closes: #681000).
+  * Initial release.
 
  -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 09 Jul 2012 21:04:36 +0200
