@@ -8,15 +8,15 @@ Copyright: 2012 Jacob Appelbaum <jacob@appelbaum.net>
            2011-2012, The Tor Project, Inc.
 License: BSD-3-Clause
 
-Files: src/compat/clock.h, src/compat/clock-linux.c
+Files: src/compat/clock.h src/compat/clock-linux.c
 Copyright: Copyright (c) 2012, David Goulet <dgoulet@ev0ke.net>
            Copyright (c) 2012, The Tor Project, Inc.
 
-Files: src/routeup.*, src/tlsdated.c, src/tlsdated-unittest.c, src/util.*, test-bio.*, proxy-bio.h
+Files: src/routeup.* src/tlsdated.c src/tlsdated-unittest.c src/util.* test-bio.* proxy-bio.h
 Copyright: 2012 The Chromium Authors. All rights reserved.
 License: BSD-3-Clause
 
-Files: src/test_harness.h, src/proxy-bio.c, src/proxy-bio-unittest.c
+Files: src/test_harness.h src/proxy-bio.c src/proxy-bio-unittest.c
 Copyright: The Chromium OS Authors. All rights reserved.
 License: BSD-3-Clause
 
