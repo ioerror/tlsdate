@@ -1,6 +1,11 @@
-tlsdate binary: package-name-doesnt-match-sonames
-tlsdate binary: non-dev-pkg-with-shlib-symlink
-tlsdate binary: no-symbols-control-file
-tlsdate source: package-name-doesnt-match-sonames
-tlsdate source: non-dev-pkg-with-shlib-symlink
-tlsdate source: no-symbols-control-file
+tlsdate binary: package-name-doesnt-match-sonames libtlsdate-compat0
+tlsdate binary: package-name-doesnt-match-sonames *
+tlsdate binary: non-dev-pkg-with-shlib-symlink usr/lib/libtlsdate_compat.so.0.0.0 usr/lib/libtlsdate_compat.so
+tlsdate binary: non-dev-pkg-with-shlib-symlink *
+tlsdate binary: no-symbols-control-file *
+tlsdate binary: possible-gpl-code-linked-with-openssl *
+tlsdate source: package-name-doesnt-match-sonames libtlsdate-compat0
+tlsdate source: non-dev-pkg-with-shlib-symlink usr/lib/libtlsdate_compat.so.0.0.0 usr/lib/libtlsdate_compat.so
+tlsdate source: non-dev-pkg-with-shlib-symlink *
+tlsdate source: no-symbols-control-file *
+tlsdate source: possible-gpl-code-linked-with-openssl *
