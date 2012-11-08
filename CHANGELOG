@@ -1,4 +1,7 @@
-0.0.3 Monday 5 Nov, 2012
+0.0.4 Wed 7 Nov, 2012
+  Fixup CHANGELOG and properly tag
+    Version Numbers Are Free! Hooray!
+0.0.3 Mon 5 Nov, 2012
   Add tlsdate-routeup man page
   Update all man pages to reference other related man pages
   Fix deb Makefile target
@@ -6,7 +9,7 @@
   misc src changes (retab, formatting, includes, etc)
   Update AppArmor profiles
   Add HTTP/socks4a/socks5 proxy support and update man page documentation
-0.0.2 Monday 29 Oct, 2012
+0.0.2 Mon 29 Oct, 2012
   Released at the Metalab in Vienna during their third #CryptoParty
   Add '-n' and '--dont-set-clock' option to fetch but not set time
   Add '-V' and '--showtime' option to display remote time
