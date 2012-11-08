@@ -2,14 +2,17 @@ Source: tlsdate
 Section: net
 Priority: extra
 Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
-Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libssl-dev, dh-apparmor, dpkg (>= 1.16.1.1), hardening-includes
+Build-Depends: autotools-dev,
+               debhelper (>= 7.0.50~),
+               dh-apparmor,
+               hardening-wrapper,
+               libssl-dev
 Standards-Version: 3.9.3
 Homepage: https://www.github.com/ioerror/tlsdate/
-Vcs-Git: git://github.com/ioerror/tlsdate.git
 
 Package: tlsdate
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: secure parasitic rdate replacement
  tlsdate sets the local clock by securely connecting with TLS to remote
  servers and extracting the remote time out of the secure handshake. Unlike
