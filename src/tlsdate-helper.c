@@ -228,7 +228,7 @@ openssl_time_callback (const SSL* ssl, int where, int ret)
         &&
         ntohl(server_time) < max_reasonable_time)
     {
-      verb("V: remote peer provided: %d, prefered over compile time: %d\n",
+      verb("V: remote peer provided: %d, preferred over compile time: %d\n",
             ntohl(server_time), compiled_time);
       verb("V: freezing time with X509_VERIFY_PARAM_set_time\n");
       X509_VERIFY_PARAM_set_time(ssl->ctx->param, (time_t) ntohl(server_time));

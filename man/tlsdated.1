@@ -5,13 +5,13 @@
 .SH NAME
 tlsdated \- secure parasitic rdate replacement daemon
 .SH SYNOPSIS
-.B tlsdated [-wprlsvh] \
-[-t <n>] \
-[-d <n>] \
-[-T <n>] \
-[-D <n>] \
-[-c /path/to ] \
-[-a seconds ] \
+.B tlsdated [\-wprlsvh] \
+[\-t <n>] \
+[\-d <n>] \
+[\-T <n>] \
+[\-D <n>] \
+[\-c /path/to ] \
+[\-a seconds ] \
 [\-\-] \
 [tlsdate command]
 .SH DESCRIPTION
@@ -20,31 +20,31 @@ is a daemon that runs tlsdate. It must be run as root or otherwise have the
 proper caps; it will not be able to set the system time without running as root
 or another privileged user.
 .SH OPTIONS
-.IP "-w"
+.IP "\-w"
 don't set hwclock
-.IP "-p"
+.IP "\-p"
 dry run (don't really set time)
-.IP "-r"
+.IP "\-r"
 use stdin instead of netlink for routes
-.IP "-t [n]"
+.IP "\-t [n]"
 try [n] times when a new route appears
-.IP "-d [n]"
+.IP "\-d [n]"
 delay n seconds between tries
-.IP "-T [n]"
+.IP "\-T [n]"
 give subprocess n chances to exit
-.IP "-D [n]"
+.IP "\-D [n]"
 delay n seconds between wait attempts
-.IP "-c [/path/to/cache/directory/]"
+.IP "\-c [/path/to/cache/directory/]"
 set the cache directory
-.IP "-a [n]"
+.IP "\-a [n]"
 run at most every n seconds in steady state
-.IP "-l"
+.IP "\-l"
 don't load disk timestamps 
-.IP "-s"
+.IP "\-s"
 don't save disk timestamp
-.IP "-v"
+.IP "\-v"
 be verbose
-.IP "-h"
+.IP "\-h"
 print help message
 .IP "[tlsdate command]"
 arguments to be passed to tlsdate at launch time
