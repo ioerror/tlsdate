@@ -1,0 +1,4 @@
+version=3
+
+# We will eventually want to put up new releases on github
+http://githubredir.debian.net/github/ioerror/tlsdate (.*).tar.gz
