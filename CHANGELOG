@@ -1,6 +1,7 @@
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!
+  Update certificate data in ca-roots/
 0.0.3 Mon 5 Nov, 2012
   Add tlsdate-routeup man page
   Update all man pages to reference other related man pages
