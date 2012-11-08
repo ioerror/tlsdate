@@ -1,0 +1,6 @@
+tlsdate binary: package-name-doesnt-match-sonames
+tlsdate binary: non-dev-pkg-with-shlib-symlink
+tlsdate binary: no-symbols-control-file
+tlsdate source: package-name-doesnt-match-sonames
+tlsdate source: non-dev-pkg-with-shlib-symlink
+tlsdate source: no-symbols-control-file
