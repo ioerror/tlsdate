@@ -9,6 +9,18 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+# Per http://wiki.debian.org/Hardening#hardening-wrapper
+# we add the following:
+export DEB_BUILD_HARDENING=1
+
+# Per http://wiki.debian.org/Hardening#hardening-includes
+# we add the following:
+include /usr/share/hardening-includes/hardening.make
+
+CFLAGS=$(shell dpkg-buildflags --get CFLAGS)
+LDFLAGS=$(shell dpkg-buildflags --get LDFLAGS)
+CFLAGS+=$(HARDENING_CFLAGS)
+LDFLAGS+=$(HARDENING_LDFLAGS)
 
 %:
 	dh $@ 
