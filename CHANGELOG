@@ -3,6 +3,8 @@
     Version Numbers Are Free! Hooray!
   Update certificate data in ca-roots/
   tlsdate will now call tlsdate-helper with an absolute path
+    Pointed out ages ago by 0xabad1dea and others as a better execlp path
+    forward for execution.
 0.0.3 Mon 5 Nov, 2012
   Add tlsdate-routeup man page
   Update all man pages to reference other related man pages
