@@ -17,7 +17,7 @@ from the list and use it for timing information.
 
 The genepool list will be in the following CSV format:
 
-  hostname,port,last known IP address, protocol
+    hostname,port,last known IP address, protocol
 
 Currently, the default protocol is TLSv1 unless otherwise specified. Fields may
 include sslv2, sslv3, tlsv1, tlsv1.1, tlsv1.2, xmpp, pop3, imap and other
