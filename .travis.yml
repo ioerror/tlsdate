@@ -1,0 +1,4 @@
+install: ./autogen.sh && ./configure && make && make test
+compiler:
+  - clang
+  - gcc
