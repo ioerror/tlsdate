@@ -1,4 +1,5 @@
-install: ./autogen.sh && ./configure && make && make test
+language: c
+before_script: ./autogen.sh
 compiler:
   - clang
   - gcc
