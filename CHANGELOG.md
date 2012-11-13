@@ -1,0 +1,94 @@
+0.0.5 XXX
+=========
+
+  - Fix spelling error in tlsdate-helper
+  - Update man pages formatting
+
+0.0.4 Wed 7 Nov, 2012
+=====================
+
+  - Fixup CHANGELOG and properly tag
+    Version Numbers Are Free! Hooray!
+  - Update certificate data in ca-roots/
+  - tlsdate will now call tlsdate-helper with an absolute path
+    Pointed out ages ago by 0xabad1dea and others as a better execlp path
+    forward for execution.
+
+0.0.3 Mon 5 Nov, 2012
+=====================
+
+  - Add tlsdate-routeup man page
+  - Update all man pages to reference other related man pages
+  - Fix deb Makefile target
+  - Update documentation
+  - misc src changes (retab, formatting, includes, etc)
+  - Update AppArmor profiles
+  - Add HTTP/socks4a/socks5 proxy support and update man page documentation
+
+0.0.2 Mon 29 Oct, 2012
+=====================
+
+  - Released at the Metalab in Vienna during their third #CryptoParty
+  - Add '-n' and '--dont-set-clock' option to fetch but not set time
+  - Add '-V' and '--showtime' option to display remote time
+  - Add '-t' and '--timewarp' option
+
+    If the local clock is before RECENT_COMPILE_DATE; we set the clock to the
+    RECENT_COMPILE_DATE. If the local clock is after RECENT_COMPILE_DATE, we
+    leave the clock alone. Clock setting is performed as the first operation
+    and will impact certificate verification. Specifically, this option is
+    helpful if on first boot, the local system clock is set back to the era
+    of Disco and Terrible Hair. This should ensure that
+    X509_V_ERR_CERT_NOT_YET_VALID or X509_V_ERR_CERT_HAS_EXPIRED are not
+    encountered because of a broken RTC or the lack of a local RTC; we assume
+    that tlsdate is recompiled yearly and that all certificates are otherwise
+    considered valid.
+
+  - Add '-l' and '--leap'
+
+    Normally, the passing of time or time yet to come ensures that SSL verify
+    functions will fail to validate certificates. Commonly,
+    X509_V_ERR_CERT_NOT_YET_VALID and X509_V_ERR_CERT_HAS_EXPIRED are painfully
+    annoying but still very important error states. When the only issue with
+    the certificates in question is the timing information, this option allows
+    one to trust the remote system's time, as long as it is after
+    RECENT_COMPILE_DATE and before MAX_REASONABLE_TIME. The connection will
+    only be trusted if X509_V_ERR_CERT_NOT_YET_VALID and/or
+    X509_V_OKX509_V_ERR_CERT_HAS_EXPIRED are the only errors encountered. The
+    SSL verify function will not return X509_V_OK if there are any other
+    issues, such as self-signed certificates or if the user pins to a CA that
+    is not used by the remote server. This is useful if your RTC is broken on
+    boot and you are unable to use DNSSEC until you've at least had some kind
+    of leap of cryptographically assured data.
+
+  - Update usage documentation
+  - Move {*.c,h} into src/
+  - Move *.1 into man/
+  - Update TODO list to reflect desired changes
+  - Update AppArmor profile to restrict {tlsdate,tlsdate-helper,tlsdated,tlsdate-routeup}
+  - Update AUTHORS file to include a new email address
+  - Update CHANGELOG
+
+    Added proper date for the 0.0.1 release
+    (Added all of the above items, obviously)
+
+  - Print key bit length and key type information
+  - Update Copyright headers to include the Great Christian Grothoff
+  - Ensure key bit length and key type values are reasonable
+  - Add CommonName and SAN checking
+  - Add enumeration and printing of other x.509 extensions in SAN checking
+  - Add SAN checking for iPAddress field per RFC2818
+  - Various small bug fixes
+  - Fixed various tiny memory leaks
+  - Added compat layer library for future multi-platform support by David Goulet
+  - Compile output is now largely silent by default
+  - Wildcard certificate verification per RFC 2595
+  - Add list of trusted CA certs to /etc/tlsdate/tlsdate-ca-roots.conf
+  - Add Makefile target to update trusted CA certs from Mozilla's NSS trust root
+  - Add tlsdated daemon
+  - Add tlsdated documentation
+
+0.0.1 Fri Jul 13, 2012
+======================
+
+  - First git tagged release
