@@ -4,7 +4,7 @@ tlsdate (0.0.4-1) unstable; urgency=low
   * New upstream version.
   * Merge in all git fixes after 0.0.4 to fix various lintian issues.
 
- -- Jacob Appelbaum <jacob@appelbaum.net>  Wed, 07 Nov 2012 21:36:15 -0800
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Fri, 16 Nov 2012 02:00:00 -0800
 
 tlsdate (0.0.3-1) unstable; urgency=low
 
