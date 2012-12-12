@@ -905,7 +905,7 @@ main(int argc, char **argv)
     run_ssl (time_map, leap);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
-  } 
+  }
   if (ssl_child != waitpid (ssl_child, &status, 0))
     die ("waitpid failed: %s\n", strerror (errno));
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
@@ -913,7 +913,7 @@ main(int argc, char **argv)
 
   if (0 != clock_get_real_time(&end_time))
     die ("Failed to read current time of day: %s\n", strerror (errno));
-  
+
   /* calculate RTT */
   rt_time_ms = (CLOCK_SEC(&end_time) - CLOCK_SEC(&start_time)) * 1000 + (CLOCK_USEC(&end_time) - CLOCK_USEC(&start_time)) / 1000;
   if (rt_time_ms < 0)
