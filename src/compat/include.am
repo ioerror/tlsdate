@@ -1,6 +1,6 @@
 # vim:ft=automake
 
-lib_LTLIBRARIES+= src/compat/libtlsdate_compat.la
+noinst_LTLIBRARIES+= src/compat/libtlsdate_compat.la
 
 src_compat_libtlsdate_compat_la_SOURCES = src/compat/clock-linux.c
 src_compat_libtlsdate_compat_la_CFLAGS = -DBUILDING_TLSDATE
