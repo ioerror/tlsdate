@@ -267,6 +267,7 @@ usage (const char *progn)
   printf ("  -D <n>    delay n seconds between wait attempts\n");
   printf ("  -c <path> set the cache directory\n");
   printf ("  -a <n>    run at most every n seconds in steady state\n");
+  printf ("  -m <n>    run at most once every n seconds in steady state\n");
   printf ("  -l        don't load disk timestamps\n");
   printf ("  -s        don't save disk timestamps\n");
   printf ("  -v        be verbose\n");
@@ -278,6 +279,7 @@ main (int argc, char *argv[], char *envp[])
 {
   struct routeup rtc;
   int max_tries = MAX_TRIES;
+  int min_steady_state_interval = STEADY_STATE_INTERVAL;
   int wait_between_tries = WAIT_BETWEEN_TRIES;
   int subprocess_tries = SUBPROCESS_TRIES;
   int subprocess_wait_between_tries = SUBPROCESS_WAIT_BETWEEN_TRIES;
@@ -293,10 +295,11 @@ main (int argc, char *argv[], char *envp[])
   int should_save_disk = DEFAULT_SAVE_TO_DISK;
   int should_netlink = DEFAULT_USE_NETLINK;
   int dry_run = DEFAULT_DRY_RUN;
+  time_t last_success = 0;
 
   /* Parse arguments */
   int opt;
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsv")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:")) != -1)
     {
       switch (opt)
   {
@@ -335,6 +338,9 @@ main (int argc, char *argv[], char *envp[])
     break;
   case 'v':
     verbose = 1;
+    break;
+  case 'm':
+    min_steady_state_interval = atoi (optarg);
     break;
   case 'h':
   default:
@@ -402,8 +408,10 @@ main (int argc, char *argv[], char *envp[])
    * succeed.
    */
   if (!tlsdate (tlsdate_argv, envp, subprocess_tries,
-    subprocess_wait_between_tries))
+    subprocess_wait_between_tries)) {
+    last_success = time (NULL);
     sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
+  }
 
   /*
    * Loop until we catch a fatal signal or routeup_once() fails. We run
@@ -419,12 +427,15 @@ main (int argc, char *argv[], char *envp[])
        * from now on.
        */
       int i;
+      if (time (NULL) - last_success < min_steady_state_interval)
+        continue;
       for (i = 0; i < max_tries &&
      tlsdate (tlsdate_argv, envp, subprocess_tries,
         subprocess_wait_between_tries); ++i)
   sleep (wait_between_tries);
       if (i != max_tries)
   {
+    last_success = time (NULL);
     info ("tlsdate succeeded");
     sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
   }
