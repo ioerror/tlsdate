@@ -67,19 +67,28 @@ AC_SUBST(RT_LIB)
 
 dnl Debug and hardening flags all in one shot
 dnl Always do this at the end, otherwise you end up filtering system/other libraries
+AC_ARG_ENABLE([hardened-checks],
+              [AS_HELP_STRING([--disable-hardened-checks],
+                              [Disable automatically enabling hardened toolchain options])])
 AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AC_REQUIRE([AX_CHECK_LINK_FLAG])
           AC_REQUIRE([AX_APPEND_COMPILE_FLAGS])
           AC_LANG_PUSH([C])
-          CFLAGS=
-          LIBS=
-          AX_APPEND_COMPILE_FLAGS([-g -O1 -Wall])
-          AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing])
-          AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2 -fstack-protector-all])
-          AX_APPEND_COMPILE_FLAGS([-fwrapv -fPIE -Wstack-protector])
-          AX_APPEND_COMPILE_FLAGS([--param=ssp-buffer-size=1])
-          AX_CHECK_LINK_FLAG([-z relro -z now])
-          AX_CHECK_LINK_FLAG([-pie])
+          AS_IF([test "x$enable_hardened_checks" != xno], [
+              CFLAGS=
+              LIBS=
+              AX_APPEND_COMPILE_FLAGS([-g -O1])
+          ], [
+              AC_MSG_WARN([using hardened flags is HIGHLY RECOMMENDED and disabling them is a BAD IDEA])
+          ])
+          AX_APPEND_COMPILE_FLAGS([-Wall -fno-strict-aliasing])
+          AS_IF([test "x$enable_hardened_checks" != xno], [
+              AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2 -fstack-protector-all])
+              AX_APPEND_COMPILE_FLAGS([-fwrapv -fPIE -Wstack-protector])
+              AX_APPEND_COMPILE_FLAGS([--param=ssp-buffer-size=1])
+              AX_CHECK_LINK_FLAG([-z relro -z now])
+              AX_CHECK_LINK_FLAG([-pie])
+          ])
           AC_LANG_POP
           ])
 LOCAL_CHECK_FLAGS
