@@ -210,7 +210,7 @@ void
 openssl_time_callback (const SSL* ssl, int where, int ret)
 {
   if (where == SSL_CB_CONNECT_LOOP &&
-      (ssl->state == SSL3_ST_CR_CERT_A || ssl->state == SSL3_ST_CR_CERT_B))
+      (ssl->state == SSL3_ST_CR_SRVR_HELLO_A || ssl->state == SSL3_ST_CR_SRVR_HELLO_B))
   {
     // XXX TODO: If we want to trust the remote system for time,
     // can we just read that time out of the remote system and if the
@@ -231,7 +231,8 @@ openssl_time_callback (const SSL* ssl, int where, int ret)
       verb("V: remote peer provided: %d, preferred over compile time: %d\n",
             ntohl(server_time), compiled_time);
       verb("V: freezing time with X509_VERIFY_PARAM_set_time\n");
-      X509_VERIFY_PARAM_set_time(ssl->ctx->param, (time_t) ntohl(server_time));
+      X509_VERIFY_PARAM_set_time(ssl->ctx->cert_store->param,
+                                 (time_t) ntohl(server_time) + 86400);
     } else {
       die("V: the remote server is a false ticker! server: %d compile: %d\n",
            ntohl(server_time), compiled_time);
