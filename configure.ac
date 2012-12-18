@@ -57,14 +57,13 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
-dnl Check for -lrt
-AC_CHECK_LIB([rt], [clock_gettime], [
-              RT_LIB="-lrt"
-              AC_SUBST(RT_LIB)
-              AC_DEFINE([HAVE_LIBRT], [1], [Have clock_gettime])
-              ],[
-                 AC_MSG_ERROR([Your system lacks clock_gettime])
-              ])
+dnl Check for clock_gettime.  Some systems put it into -lc, while
+dnl others use -lrt.  Try the first and fallback to the latter.
+RT_LIB=
+AC_CHECK_FUNC([clock_gettime], [:],
+              [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                            [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+AC_SUBST(RT_LIB)
 
 dnl Debug and hardening flags all in one shot
 dnl Always do this at the end, otherwise you end up filtering system/other libraries
