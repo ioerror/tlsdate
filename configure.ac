@@ -29,12 +29,12 @@ AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
                    [(uint32_t) ${COMPILE_DATE}],
                    [Time in seconds since the Disco epoch at build time])
 
-# Build up the directory we will use to install certs
+dnl Build up the directory we will use to install certs
 TLSDATE_CA_ROOTS="${sysconfdir}/$PACKAGE_NAME/ca-roots"
 AC_SUBST([TLSDATE_CA_ROOTS])
 
-# Required headers
-# First check to see if openssl is installed
+dnl Required headers
+dnl First check to see if openssl is installed
 AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
 
 AC_CHECK_HEADERS([arpa/inet.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
@@ -57,7 +57,7 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
-# Check for -lrt
+dnl Check for -lrt
 AC_CHECK_LIB([rt], [clock_gettime], [
               RT_LIB="-lrt"
               AC_SUBST(RT_LIB)
@@ -66,8 +66,8 @@ AC_CHECK_LIB([rt], [clock_gettime], [
                  AC_MSG_ERROR([Your system lacks clock_gettime])
               ])
 
-# Debug and hardening flags all in one shot
-# Alwas do this at the end, otherwise you end up filtering system/other libraries
+dnl Debug and hardening flags all in one shot
+dnl Always do this at the end, otherwise you end up filtering system/other libraries
 AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AC_REQUIRE([AX_CHECK_LINK_FLAG])
           AC_REQUIRE([AX_APPEND_COMPILE_FLAGS])
