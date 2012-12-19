@@ -29,12 +29,12 @@ AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
                    [(uint32_t) ${COMPILE_DATE}],
                    [Time in seconds since the Disco epoch at build time])
 
-# Build up the directory we will use to install certs
+dnl Build up the directory we will use to install certs
 TLSDATE_CA_ROOTS="${sysconfdir}/$PACKAGE_NAME/ca-roots"
 AC_SUBST([TLSDATE_CA_ROOTS])
 
-# Required headers
-# First check to see if openssl is installed
+dnl Required headers
+dnl First check to see if openssl is installed
 AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
 
 AC_CHECK_HEADERS([arpa/inet.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
@@ -57,30 +57,38 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
-# Check for -lrt
-AC_CHECK_LIB([rt], [clock_gettime], [
-              RT_LIB="-lrt"
-              AC_SUBST(RT_LIB)
-              AC_DEFINE([HAVE_LIBRT], [1], [Have clock_gettime])
-              ],[
-                 AC_MSG_ERROR([Your system lacks clock_gettime])
-              ])
+dnl Check for clock_gettime.  Some systems put it into -lc, while
+dnl others use -lrt.  Try the first and fallback to the latter.
+RT_LIB=
+AC_CHECK_FUNC([clock_gettime], [:],
+              [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                            [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+AC_SUBST(RT_LIB)
 
-# Debug and hardening flags all in one shot
-# Alwas do this at the end, otherwise you end up filtering system/other libraries
+dnl Debug and hardening flags all in one shot
+dnl Always do this at the end, otherwise you end up filtering system/other libraries
+AC_ARG_ENABLE([hardened-checks],
+              [AS_HELP_STRING([--disable-hardened-checks],
+                              [Disable automatically enabling hardened toolchain options])])
 AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AC_REQUIRE([AX_CHECK_LINK_FLAG])
           AC_REQUIRE([AX_APPEND_COMPILE_FLAGS])
           AC_LANG_PUSH([C])
-          CFLAGS=
-          LIBS=
-          AX_APPEND_COMPILE_FLAGS([-g -O1 -Wall])
-          AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing])
-          AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2 -fstack-protector-all])
-          AX_APPEND_COMPILE_FLAGS([-fwrapv -fPIE -Wstack-protector])
-          AX_APPEND_COMPILE_FLAGS([--param=ssp-buffer-size=1])
-          AX_CHECK_LINK_FLAG([-z relro -z now])
-          AX_CHECK_LINK_FLAG([-pie])
+          AS_IF([test "x$enable_hardened_checks" != xno], [
+              CFLAGS=
+              LIBS=
+              AX_APPEND_COMPILE_FLAGS([-g -O1])
+          ], [
+              AC_MSG_WARN([using hardened flags is HIGHLY RECOMMENDED and disabling them is a BAD IDEA])
+          ])
+          AX_APPEND_COMPILE_FLAGS([-Wall -fno-strict-aliasing])
+          AS_IF([test "x$enable_hardened_checks" != xno], [
+              AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2 -fstack-protector-all])
+              AX_APPEND_COMPILE_FLAGS([-fwrapv -fPIE -Wstack-protector])
+              AX_APPEND_COMPILE_FLAGS([--param=ssp-buffer-size=1])
+              AX_CHECK_LINK_FLAG([-z relro -z now])
+              AX_CHECK_LINK_FLAG([-pie])
+          ])
           AC_LANG_POP
           ])
 LOCAL_CHECK_FLAGS

@@ -1,3 +1,4 @@
+*~
 *.gz
 *.o
 .deps/
@@ -19,6 +20,7 @@ stamp-h1
 config/
 src/.dirstamp
 src/compat/.dirstamp
+src/configmake.h
 src/tlsdate-helper.o
 src/tlsdate-helper
 src/tlsdate.o
@@ -27,6 +29,7 @@ m4
 *.swp
 *.la
 *.lo
+src/proxy-bio_unittest
 src/tlsdate-routeup
 src/tlsdated
 src/tlsdated_unittest
