@@ -57,6 +57,26 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
+AC_MSG_CHECKING([user/group to drop privs to])
+
+AC_ARG_WITH([unpriv-user],
+            [AS_HELP_STRING([--with-unpriv-user=<user>],
+                            [User to drop privs to @<:@default: nobody@:>@])])
+AS_CASE([$with_unpriv_user],
+        [""|yes|no], [UNPRIV_USER="nobody"],
+        [*], [UNPRIV_USER=$with_unpriv_user])
+AC_DEFINE_UNQUOTED([UNPRIV_USER], ["${UNPRIV_USER}"], [Unprivileged user])
+
+AC_ARG_WITH([unpriv-group],
+            [AS_HELP_STRING([--with-unpriv-group=<group>],
+                            [Group to drop privs to @<:@default: nogroup@:>@])])
+AS_CASE([$with_unpriv_group],
+        [""|yes|no], [UNPRIV_GROUP="nogroup"],
+        [*], [UNPRIV_GROUP=$with_unpriv_group])
+AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+
+AC_MSG_RESULT(${UNPRIV_USER}:${UNPRIV_GROUP})
+
 dnl Check for clock_gettime.  Some systems put it into -lc, while
 dnl others use -lrt.  Try the first and fallback to the latter.
 RT_LIB=
