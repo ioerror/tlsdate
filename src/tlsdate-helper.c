@@ -518,6 +518,9 @@ check_san (SSL *ssl, const char *hostname)
 
         STACK_OF(CONF_VALUE) *val;
         CONF_VALUE *nval;
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+        const
+#endif
         X509V3_EXT_METHOD *method;
 
         if (!(method = X509V3_EXT_get(ext)))
