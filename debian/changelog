@@ -1,0 +1,26 @@
+tlsdate (0.0.4-1) unstable; urgency=low
+
+  * Initial release (Closes: #681000)
+  * New upstream version.
+  * Merge in all git fixes after 0.0.4 to fix various lintian issues.
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Fri, 16 Nov 2012 02:00:00 -0800
+
+tlsdate (0.0.3-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 05 Nov 2012 14:55:22 -0800
+
+tlsdate (0.0.2-1) unstable; urgency=low
+
+  * New upstream version
+  * Update init.d script to run tlsdated
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Tue, 30 Oct 2012 00:06:35 +0100
+
+tlsdate (0.0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 09 Jul 2012 21:04:36 +0200

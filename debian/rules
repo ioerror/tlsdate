@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# See: http://wiki.debian.org/Hardening#hardening-wrapper
+export DEB_BUILD_HARDENING=1
+
+%:
+	dh $@
+
+override_dh_install:
+	dh_install
+	# Remove .la file
+	rm -f debian/tlsdate/usr/lib/libtlsdate_compat.la
+	
+	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
+	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
