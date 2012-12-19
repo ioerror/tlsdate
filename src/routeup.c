@@ -53,10 +53,10 @@ routeup_setup (struct routeup *rtc)
       close (rtc->netlinkfd);
       return 1;
     }
-  if (fcntl(rtc->netlinkfd, F_SETFL, O_NONBLOCK) < 0)
+  if (fcntl (rtc->netlinkfd, F_SETFL, O_NONBLOCK) < 0)
     {
-      perror("netlink fcntl(O_NONBLOCK) failed");
-      close(rtc->netlinkfd);
+      perror ("netlink fcntl(O_NONBLOCK) failed");
+      close (rtc->netlinkfd);
       return 1;
     }
   return 0;
@@ -108,7 +108,7 @@ routeup_once (struct routeup *rtc, unsigned int timeout)
      * Clear out the socket so we don't keep old messages
      * queued up and eventually overflow the receive buffer.
      */
-    while (read(rtc->netlinkfd, buf, sizeof(buf)) > 0)
+    while (read (rtc->netlinkfd, buf, sizeof(buf)) > 0)
       /* loop through receive queue */;
     if (errno != EAGAIN) return -1;
     return 0;
