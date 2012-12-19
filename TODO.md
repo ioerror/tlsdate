@@ -1,0 +1,37 @@
+To-Do
+=====
+
+Here is a nice list of things to do to improve tlsdate:
+
+1.  hack the client handshake to not leak the clock to the server
+    set it to all zeros or something cute or something random
+
+3.  add HTTP GET request to avoid network fingerprinting
+6.  skew the clock rather than slamming it
+7.  drop privs earlier
+11. verification of remote certificate for Tor nodes
+13. account for servers that do not send UTC (Microsoft sends local time)
+14. port to nss, gnutls, yassl, polarssl and other libraries
+15. starttls support (smtp, pop, imap, ftp, xmpp)
+16. ensure that 32bit time isn't near wrapping time on 32bit systems
+17. find others to audit it - we need more eyes!
+20. Add verification of remote servers by DANE/CAA DNSSEC protected records
+21. Integrate Chrome's CRL list into tlsdate
+22. Block revoked or bad certs such as MD5 inc. and others.
+24. Add OCSP check option
+25. Block weak signature algorithms
+26. Hard code block list of known horrible certs (extract from Chrome/FF)
+28. Check that extended key usage is empty, or includes TLS Server Auth
+29. extract the SubjectPublicKeyInfo from the certificates; match against
+    public keys
+31. Fetch HTTP over TLS to parse date field and confirm sync with the tls date
+32. Integrate tack support https://github.com/tack/tackc
+33. Implement checking of RFC 2818 style wildcards:
+    http://wiki.cacert.org/WildcardCertificates
+34. Clear the environment for tlsdated and related utils before execve()
+35. seatbelt profile for Mac OS X
+36. SELinux policy for GNU/Linux platforms
+37. Port to some Windows operating system that anyone actually uses
+38. Add seccomp suport
+
+Patches welcome!
