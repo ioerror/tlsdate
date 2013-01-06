@@ -32,6 +32,11 @@ Here is a nice list of things to do to improve tlsdate:
 36)  SELinux policy for GNU/Linux platforms
 37)  Port to some Windows operating system that anyone actually uses
 38)  Add seccomp suport
+39) Add file loading of CA list
+40) Add tlsdated support for machines without a RTC
+     Explicitly support Raspberry pi use case
+41) Port to Mac OS X 10.8.2
+     This work has started in a private branch
 
 Patches welcome!
 
