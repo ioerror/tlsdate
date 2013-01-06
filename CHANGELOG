@@ -1,6 +1,7 @@
 0.0.5 XXX
   Fix spelling error in tlsdate-helper
   Update man pages formatting
+  Add Seccomp-BPF policies to be used with Minijail
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!
