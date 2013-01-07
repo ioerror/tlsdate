@@ -683,6 +683,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
+  struct stat statbuf;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -708,8 +709,25 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
 
   if (ca_racket)
   {
-    if (1 != SSL_CTX_load_verify_locations(ctx, NULL, certdir))
-      fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+    if (-1 == stat(ca_cert_container, &statbuf))
+    {
+      die("Unable to stat CA certficate container\n");
+    } else
+    {
+      switch (statbuf.st_mode & S_IFMT)
+      {
+      case S_IFREG:
+        if (1 != SSL_CTX_load_verify_locations(ctx, ca_cert_container, NULL))
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+        break;
+      case S_IFDIR:
+        if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+        break;
+      default:
+        die("Unable to load CA certficate container\n");
+      }
+    }
   }
 
   if (NULL == (s_bio = make_ssl_bio(ctx)))
@@ -822,7 +840,7 @@ main(int argc, char **argv)
   hostname_to_verify = argv[1];
   port = argv[2];
   protocol = argv[3];
-  certdir = argv[6];
+  ca_cert_container = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
   setclock = (0 == strcmp ("setclock", argv[7]));
@@ -905,7 +923,7 @@ main(int argc, char **argv)
     run_ssl (time_map, leap);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
-  } 
+  }
   if (ssl_child != waitpid (ssl_child, &status, 0))
     die ("waitpid failed: %s\n", strerror (errno));
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
@@ -913,7 +931,7 @@ main(int argc, char **argv)
 
   if (0 != clock_get_real_time(&end_time))
     die ("Failed to read current time of day: %s\n", strerror (errno));
-  
+
   /* calculate RTT */
   rt_time_ms = (CLOCK_SEC(&end_time) - CLOCK_SEC(&start_time)) * 1000 + (CLOCK_USEC(&end_time) - CLOCK_USEC(&start_time)) / 1000;
   if (rt_time_ms < 0)
