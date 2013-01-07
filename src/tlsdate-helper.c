@@ -683,6 +683,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
+  struct stat statbuf;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -708,8 +709,25 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
 
   if (ca_racket)
   {
-    if (1 != SSL_CTX_load_verify_locations(ctx, NULL, certdir))
-      fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+    if (-1 == stat(ca_cert_container, &statbuf))
+    {
+      die("Unable to stat CA certficate container\n");
+    } else
+    {
+      switch (statbuf.st_mode & S_IFMT)
+      {
+      case S_IFREG:
+        if (1 != SSL_CTX_load_verify_locations(ctx, ca_cert_container, NULL))
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+        break;
+      case S_IFDIR:
+        if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+        break;
+      default:
+        die("Unable to load CA certficate container\n");
+      }
+    }
   }
 
   if (NULL == (s_bio = make_ssl_bio(ctx)))
@@ -822,7 +840,7 @@ main(int argc, char **argv)
   hostname_to_verify = argv[1];
   port = argv[2];
   protocol = argv[3];
-  certdir = argv[6];
+  ca_cert_container = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
   setclock = (0 == strcmp ("setclock", argv[7]));

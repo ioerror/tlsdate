@@ -104,6 +104,7 @@ src/configmake.h: ${top_srcdir}/Makefile.in
 	@rm -f $@-t $@
 	@{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
 	  echo '#define TLSDATE_CONFIG "$(sysconfdir)/ca-roots/"'; \
+	  echo '#define TLSDATE_CERTFILE "$(sysconfdir)/tlsdate/ca-roots/tlsdate-ca-roots.conf"'; \
 	  echo '#define TLSDATE_HELPER "$(bindir)/tlsdate-helper"'; \
 	  echo '#define TLSDATE "$(bindir)/tlsdate"'; \
 	  echo '#define TLSDATED "$(bindir)/tlsdated"'; \

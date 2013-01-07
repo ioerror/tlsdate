@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -94,7 +95,7 @@ static const char *protocol;
 
 static char *proxy;
 
-static const char *certdir;
+static const char *ca_cert_container;
 void openssl_time_callback (const SSL* ssl, int where, int ret);
 uint32_t get_certificate_keybits (EVP_PKEY *public_key);
 uint32_t check_cn (SSL *ssl, const char *hostname);

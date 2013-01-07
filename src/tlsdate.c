@@ -89,7 +89,7 @@ usage(void)
           " [-H|--host] [hostname|ip]\n"
           " [-p|--port] [port number]\n"
           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
-          " [-C|--certdir] [dirname]\n"
+          " [-C|--certcontainer] [dirname|filename]\n"
           " [-v|--verbose]\n"
           " [-V|--showtime]\n"
           " [-t|--timewarp]\n"
@@ -108,7 +108,7 @@ main(int argc, char **argv)
   const char *host;
   const char *port;
   const char *protocol;
-  const char *certdir;
+  const char *ca_cert_container;
   int timewarp;
   int leap;
   const char *proxy;
@@ -116,7 +116,7 @@ main(int argc, char **argv)
   host = DEFAULT_HOST;
   port = DEFAULT_PORT;
   protocol = DEFAULT_PROTOCOL;
-  certdir = DEFAULT_CERTDIR;
+  ca_cert_container = DEFAULT_CERTFILE;
   verbose = 0;
   ca_racket = 1;
   showtime = 0;
@@ -139,7 +139,7 @@ main(int argc, char **argv)
         {"port", 0, 0, 'p'},
         {"protocol", 0, 0, 'P'},
         {"dont-set-clock", 0, 0, 'n'},
-        {"certdir", 0, 0, 'C'},
+        {"certcontainer", 0, 0, 'C'},
         {"timewarp", 0, 0, 't'},
         {"leap", 0, 0, 'l'},
         {"proxy", 0, 0, 'x'},
@@ -160,7 +160,7 @@ main(int argc, char **argv)
       case 'p': port = optarg; break;
       case 'P': protocol = optarg; break;
       case 'n': setclock = 0; break;
-      case 'C': certdir = optarg; break;
+      case 'C': ca_cert_container = optarg; break;
       case 't': timewarp = 1; break;
       case 'l': leap = 1; break;
       case 'x': proxy = optarg; break;
@@ -188,7 +188,7 @@ main(int argc, char **argv)
     protocol,
     (ca_racket ? "racket" : "unchecked"),
     (verbose ? "verbose" : "quiet"),
-    certdir,
+    ca_cert_container,
     (setclock ? "setclock" : "dont-set-clock"),
     (showtime ? "showtime" : "no-showtime"),
     (timewarp ? "timewarp" : "no-fun"),
