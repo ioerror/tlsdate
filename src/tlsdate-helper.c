@@ -772,53 +772,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
 }
 
 /** drop root rights and become 'nobody' */
-static void
-become_nobody (void)
-{
-  uid_t uid;
-  gid_t gid;
-  struct passwd *pw;
-  struct group  *gr;
-
-  if (0 != getuid ())
-    return; /* not running as root to begin with; should (!) be harmless to continue
-         without dropping to 'nobody' (setting time will fail in the end) */
-  pw = getpwnam(UNPRIV_USER);
-  gr = getgrnam(UNPRIV_GROUP);
-  if (NULL == pw)
-    die ("Failed to obtain UID for `%s'\n", UNPRIV_USER);
-  if (NULL == gr)
-    die ("Failed to obtain GID for `%s'\n", UNPRIV_GROUP);
-  uid = pw->pw_uid;
-  if (0 == uid)
-    die ("UID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
-  gid = pw->pw_gid;
-  if (0 == gid || 0 == gr->gr_gid)
-    die ("GID for `%s' is 0, refusing to run SSL\n", UNPRIV_USER);
-  if (pw->pw_gid != gr->gr_gid)
-    die ("GID for `%s' is not `%s' as expected, refusing to run SSL\n",
-          UNPRIV_USER, UNPRIV_GROUP);
-
-  if (0 != initgroups((const char *)UNPRIV_USER, gr->gr_gid))
-    die ("Unable to initgroups for `%s' in group `%s' as expected\n",
-          UNPRIV_USER, UNPRIV_GROUP);
-
-#ifdef HAVE_SETRESGID
-  if (0 != setresgid (gid, gid, gid))
-    die ("Failed to setresgid: %s\n", strerror (errno));
-#else
-  if (0 != (setgid (gid) | setegid (gid)))
-    die ("Failed to setgid: %s\n", strerror (errno));
-#endif
-#ifdef HAVE_SETRESUID
-  if (0 != setresuid (uid, uid, uid))
-    die ("Failed to setresuid: %s\n", strerror (errno));
-#else
-  if (0 != (setuid (uid) | seteuid (uid)))
-    die ("Failed to setuid: %s\n", strerror (errno));
-#endif
-}
-
 
 int
 main(int argc, char **argv)
@@ -861,7 +814,7 @@ main(int argc, char **argv)
   /* We are not going to set the clock, thus no need to stay root */
   if (0 == setclock && 0 == timewarp)
   {
-    become_nobody ();
+    drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
   }
 
   time_map = mmap (NULL, sizeof (uint32_t),
@@ -919,7 +872,7 @@ main(int argc, char **argv)
     die ("fork failed: %s\n", strerror (errno));
   if (0 == ssl_child)
   {
-    become_nobody ();
+    drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
     run_ssl (time_map, leap);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);

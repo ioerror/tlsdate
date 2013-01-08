@@ -108,6 +108,7 @@ src/configmake.h: ${top_srcdir}/Makefile.in
 	  echo '#define TLSDATE_HELPER "$(bindir)/tlsdate-helper"'; \
 	  echo '#define TLSDATE "$(bindir)/tlsdate"'; \
 	  echo '#define TLSDATED "$(bindir)/tlsdated"'; \
+	  echo '#define TLSDATE_DBUS_ANNOUNCE "$(bindir)/tlsdate-dbus-announce"'; \
 	  } | sed '/""/d' > $@-t
 	@if diff $@-t $@ >/dev/null 2>&1 ; then \
 	  rm @-t ; \
