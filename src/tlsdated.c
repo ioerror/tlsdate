@@ -243,6 +243,29 @@ sync_and_save (int hwclock_fd, int should_sync, int should_save)
 }
 
 #ifdef TLSDATED_MAIN
+#ifdef HAVE_DBUS
+void
+dbus_announce (void)
+{
+  char *argv[] = { TLSDATE_DBUS_ANNOUNCE, NULL };
+  pid_t pid = fork();
+  if (!pid) {
+    drop_privs_to (DBUS_USER, DBUS_GROUP);
+    pid = fork();
+    if (!pid)
+      exit(execve(argv[0], argv, NULL));
+    else
+      exit(pid < 0);
+  } else if (pid > 0) {
+    wait(NULL);
+  }
+}
+#else
+void dbus_announce(void)
+{
+}
+#endif
+
 void
 sigterm_handler (int _unused)
 {
@@ -391,6 +414,7 @@ main (int argc, char *argv[], char *envp[])
   pinfo ("can't load disk timestamp");
       if (!dry_run && settimeofday (&tv, NULL))
   pfatal ("settimeofday() failed");
+      dbus_announce();
       /*
        * don't save here - we either just loaded this time or used the
        * default time, and neither of those are good to save
@@ -411,6 +435,7 @@ main (int argc, char *argv[], char *envp[])
     subprocess_wait_between_tries)) {
     last_success = time (NULL);
     sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
+    dbus_announce();
   }
 
   /*
@@ -438,6 +463,7 @@ main (int argc, char *argv[], char *envp[])
     last_success = time (NULL);
     info ("tlsdate succeeded");
     sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
+    dbus_announce();
   }
     }
 

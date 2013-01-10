@@ -37,6 +37,7 @@ Here is a nice list of things to do to improve tlsdate:
      Explicitly support Raspberry pi use case
 41) Port to Mac OS X 10.8.2
      This work has started in a private branch
+42) Unit-test everything
 
 Patches welcome!
 
