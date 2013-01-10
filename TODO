@@ -38,6 +38,10 @@ Here is a nice list of things to do to improve tlsdate:
 41) Port to Mac OS X 10.8.2
      This work has started in a private branch
 42) Unit-test everything
+43) Random jitter on when we do time fetches
+44) Exponential backoff
+45) Drop root from tlsdated
+46) Support multiple fetch hosts
 
 Patches welcome!
 
