@@ -393,7 +393,7 @@ main (int argc, char *argv[], char *envp[])
     fatal ("supplied base path is too long: '%s'", base_path);
 
   /* grab a handle to /dev/rtc for sync_hwclock() */
-  if (should_sync_hwclock && (hwclock_fd = open ("/dev/rtc", O_RDONLY)) < 0)
+  if (should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
     pfatal ("can't open hwclock fd");
 
   /* set up a netlink context if we need one */
