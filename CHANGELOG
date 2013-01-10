@@ -4,6 +4,7 @@
   Add Seccomp-BPF policies to be used with Minijail
   Update CA cert file to remove TÜRKTRUST
   Support both CA certificate files or directories full of CA certs
+  Support announcing time updates over DBus with --enable-dbus
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!

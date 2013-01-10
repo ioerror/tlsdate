@@ -31,4 +31,6 @@ extern void logat(int isverbose, const char *fmt, ...);
 
 static inline int min(int x, int y) { return x < y ? x : y; }
 
+void drop_privs_to (const char *user, const char *group);
+
 #endif /* !UTIL_H */

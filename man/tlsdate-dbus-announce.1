@@ -1,0 +1,20 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TLSDATE 1 "JANUARY 2013" Linux "User Manuals"
+.SH NAME
+tlsdate-dbus-announce \- tlsdate date change dbus announcer
+.SH SYNOPSIS
+.B tlsdate-dbus-announce
+.SH DESCRIPTION
+.B tlsdate-dbus-announce
+is a tool for announcing network time changes over DBus. It takes no arguments.
+It returns 0 if no errors are detected, 1 if there's a DBus error, and 2 if DBus
+support is not built in.
+.SH BUGS
+Probably.
+.SH AUTHOR
+Elly Fong-Jones <ellyjones at chromium dot org>
+.SH "SEE ALSO"
+.B tlsdate(1),
+.B tlsdated(1)
