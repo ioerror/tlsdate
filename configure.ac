@@ -113,5 +113,10 @@ AC_DEFUN([LOCAL_CHECK_FLAGS],[
           ])
 LOCAL_CHECK_FLAGS
 
+AC_ARG_ENABLE([code-coverage-checks],
+              [AS_HELP_STRING([--enable-code-coverage-checks],
+                              [Enable gcov/lcov compile time options])],
+              [AX_APPEND_COMPILE_FLAGS([-ftest-coverage -fprofile-arcs])])
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

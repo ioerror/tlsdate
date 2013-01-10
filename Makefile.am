@@ -83,6 +83,11 @@ git-push:
 deb: debian_orig
 	debuild -i'.*' -rfakeroot -uc -us -d
 
+# This generates code coverage data that is useful for continuous integration
+lcov:
+#  ./configure --enable-code-coverage-checks && make && # ... run everything and then...
+	lcov --directory src -b . --capture --output-file tlsdate.lcov && genhtml -o lcov/ tlsdate.lcov
+
 valgrind_test:
 	TESTS_ENVIRONMENT="./libtool --mode=execute valgrind  --trace-children=yes --leak-check=full" ./src/tlsdate -v -V -n -H encrypted.google.com
 
