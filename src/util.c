@@ -11,7 +11,9 @@
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <sys/types.h>
 #include <syslog.h>
+#include <unistd.h>
 
 #include "src/util.h"
 
