@@ -477,13 +477,19 @@ main (int argc, char *argv[], char *envp[])
        * from now on.
        */
       int i;
+      int backoff = wait_between_tries;
       wait_time = add_jitter(steady_state_interval, jitter);
       if (time (NULL) - last_success < min_steady_state_interval)
         continue;
       for (i = 0; i < max_tries &&
-     tlsdate (tlsdate_argv, envp, subprocess_tries,
-        subprocess_wait_between_tries); ++i)
-  sleep (wait_between_tries);
+           tlsdate (tlsdate_argv, envp, subprocess_tries,
+           subprocess_wait_between_tries); ++i) {
+        if (backoff < 1)
+          fatal ("backoff too small? %d", backoff);
+        sleep (backoff);
+        if (backoff < MAX_SANE_BACKOFF)
+          backoff *= 2;
+      }
       if (i != max_tries)
   {
     last_success = time (NULL);

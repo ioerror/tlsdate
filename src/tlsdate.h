@@ -39,6 +39,7 @@
 #define DEFAULT_SAVE_TO_DISK 1
 #define DEFAULT_USE_NETLINK 1
 #define DEFAULT_DRY_RUN 0
+#define MAX_SANE_BACKOFF 600 /* exponential backoff should only go this far */
 
 #ifndef TLSDATED_MAX_DATE
 #define TLSDATED_MAX_DATE 1999991337 /* this'll be a great bug some day */
