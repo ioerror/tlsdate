@@ -7,6 +7,7 @@
   Support announcing time updates over DBus with --enable-dbus
   Add support for lcov/gcov at build time
     see ./configure --enable-code-coverage-checks and make lcov
+  Don't hardfail if DEFAULT_RTC_DEVICE cannot be opened, even if desired
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!

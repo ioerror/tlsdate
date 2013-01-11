@@ -394,7 +394,10 @@ main (int argc, char *argv[], char *envp[])
 
   /* grab a handle to /dev/rtc for sync_hwclock() */
   if (should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
-    pfatal ("can't open hwclock fd");
+    {
+      pinfo ("can't open hwclock fd");
+      should_sync_hwclock = 0;
+    }
 
   /* set up a netlink context if we need one */
   if (should_netlink && routeup_setup (&rtc))
