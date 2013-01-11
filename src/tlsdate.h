@@ -56,6 +56,7 @@ static const char kTestHost[] = { TEST_HOST, 0 };
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
 void save_disk_timestamp (const char *path, time_t t);
+int add_jitter (int base, int jitter);
 int tlsdate (char *argv[], char *envp[], int tries, int wait_between_tries);
 
 /** This is where we store parsed commandline options. */
