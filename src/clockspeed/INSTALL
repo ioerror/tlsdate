@@ -1,0 +1,80 @@
+Like any other piece of software (and information generally), clockspeed
+comes with NO WARRANTY.
+
+
+Things you have to decide before starting:
+
+* Where the clockspeed package will be installed, normally
+/usr/local/clockspeed. To change this directory, edit conf-home now.
+
+
+How to install:
+
+ 1. Compile the programs and create the formatted man pages:
+       % make
+    The system must support unadjusted hardware ticks, either with RDTSC
+    or with gethrtime(). The compiler must support a 64-bit type, either
+    long or long long.
+
+ 2. Install the programs, the man pages, and /etc/leapsecs.dat:
+       # make setup check
+    Put /usr/local/clockspeed/bin into $PATH.
+
+
+How to test:
+
+ 3. Find an NTP server that you trust. Some public NTP servers are
+    listed in http://www.eecis.udel.edu/~mills/ntp/clock2.html, but you
+    will probably obtain more accurate results from a local server.
+    Compute the difference between the remote clock and your clock:
+       % sntpclock 1.2.3.4 | clockview
+    Here 1.2.3.4 is the IP address of the NTP server.
+
+ 4. As root, set your clock:
+       # sntpclock 1.2.3.4 | clockadd
+    Compute a new adjustment:
+       % sntpclock 1.2.3.4 | clockview
+    The new clock difference will typically be a few milliseconds.
+
+ 5. Start clockspeed:
+       # clockspeed &
+    Give clockspeed a time measurement:
+       # sntpclock 1.2.3.4 > /usr/local/clockspeed/adjust &
+
+ 6. After a few hours, give clockspeed a second time measurement:
+       # sntpclock 1.2.3.4 > /usr/local/clockspeed/adjust &
+    You can run sntpclock as a non-root user, if you change
+    /usr/local/clockspeed/adjust to be owned by that user. I recommend
+    this for security.
+
+ 7. After a few days, check how well clockspeed has adjusted your clock:
+       % sntpclock 1.2.3.4 | clockview
+    Check how many attoseconds clockspeed thinks are in one tick:
+       % clockview < /usr/local/clockspeed/etc/atto
+    Give it another time measurement:
+       # sntpclock 1.2.3.4 > /usr/local/clockspeed/adjust &
+
+ 8. Repeat step 7 after a few weeks, then after a few months. Your clock
+    should now be synchronized to the remote clock to within a few
+    seconds per century, as long as neither clock drifts from its
+    original frequency.
+
+ 9. To synchronize times on your local network, select a local machine
+    as a master. Announce the master's clock through the TAICLOCK
+    protocol:
+       % taiclockd &
+    taiclockd does not need to run as root. On a client machine, check
+    the time difference:
+       % taiclock 5.6.7.8 > adjustment
+       % clockview < adjustment
+    Here 5.6.7.8 is the master's IP address. Set the client's clock:
+       # clockadd < adjustment
+    Finally, run clockspeed as in step 5, and do
+       % taiclock 5.6.7.8 > /usr/local/clockspeed/adjust &
+    after a few days.
+
+
+That's it! To report success:
+       % ( echo 'First M. Last'; cat `cat SYSDEPS` ) \
+         | mail djb-qst@cr.yp.to
+Replace First M. Last with your name.

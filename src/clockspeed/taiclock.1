@@ -1,0 +1,30 @@
+.TH taiclock 1
+.SH NAME
+taiclock \- check a system's clock through TAICLOCK
+.SH SYNOPSIS
+.B taiclock
+.I host
+.SH DESCRIPTION
+.B taiclock
+connects to a TAICLOCK server on
+.IR host .
+.I host
+must be a dotted-decimal IP address.
+
+.B taiclock
+prints a 16-byte TAI64NA adjustment that,
+when added to the local UNIX clock,
+will produce the TAI clock on
+.IR host .
+.B taiclock
+limits the adjustment to 2 days.
+.SH NOTES
+See
+.B http://pobox.com/~djb/proto/taiclock.txt
+for a description of the TAICLOCK protocol.
+.SH "SEE ALSO"
+clockspeed(1),
+clockadd(1),
+clockview(1),
+sntpclock(1),
+taiclockd(1)

@@ -1,0 +1,24 @@
+clockspeed 0.62, alpha.
+19981013
+Copyright 1998
+D. J. Bernstein, djb@pobox.com
+http://pobox.com/~djb/clockspeed.html
+
+clockspeed uses a hardware tick counter to compensate for a persistently
+fast or slow system clock. See BLURB for a more detailed advertisement.
+
+INSTALL says how to set up and test clockspeed.
+
+The rest of this file is a list of systypes where various versions of
+clockspeed have been reported to work.
+
+0.51: freebsd-2.2-stable-:i386-:-:pentium-:- (tnx JMG)
+0.52: linux-2.0.30-:i386-:-:i486-:- (tnx HS)
+0.51: linux-2.0.30-:i386-:-:pentium-:- (tnx MJY)
+0.51: linux-2.0.30-:i386-:-:ppro-:- (tnx TG)
+0.61: linux-2.0.33-:i386-:-:ppro-:- (tnx TG)
+0.61: linux-2.0.34-:i386-:-:pentium-:- (tnx FBR)
+0.51: linux-2.1.48-:i386-:-:pentium-:- (tnx JF)
+0.52: linux-2.1.54-:i386-:-:pentium-:- (tnx JF)
+0.52: sunos-4.1.4-1-:unknown-:sun4-:sun4m-:sun4m- (tnx JB)
+0.61: sunos-5.6-generic_105181-04-:sparc-:sun4-:sun4u-:sun4u- (tnx TG)

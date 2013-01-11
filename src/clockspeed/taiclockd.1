@@ -1,0 +1,20 @@
+.TH taiclockd 1
+.SH NAME
+taiclockd \- announce the system's clock through TAICLOCK
+.SH SYNOPSIS
+.B taiclockd
+.SH DESCRIPTION
+.B taiclockd
+announces the local UNIX clock through the TAICLOCK protocol.
+It listens for TAICLOCK requests through UDP
+and responds with the system's current time.
+
+.B DO NOT RUN taiclockd IF YOUR SYSTEM IS TUNED BY xntpd.
+See
+.B http://pobox.com/~djb/proto/utctai.html
+for further discussion.
+
+.B taiclockd
+does not need to run as root.
+.SH "SEE ALSO"
+taiclock(1)

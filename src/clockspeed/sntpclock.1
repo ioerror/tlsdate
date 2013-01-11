@@ -1,0 +1,44 @@
+.TH sntpclock 1
+.SH NAME
+sntpclock \- check a system's clock through NTP
+.SH SYNOPSIS
+.B sntpclock
+.I host
+.SH DESCRIPTION
+.B sntpclock
+connects to an NTP server on
+.IR host .
+.I host
+must be a dotted-decimal IP address.
+
+.B sntpclock
+prints a 16-byte TAI64NA adjustment that,
+when added to the local UNIX clock,
+will produce the TAI clock on
+.IR host .
+.B sntpclock
+limits the adjustment to 2 days.
+
+.B sntpclock
+does not bind to port 123;
+this means that it does not need to run as root.
+Note that some firewalls will not permit
+.B sntpclock
+requests.
+.SH NOTES
+An NTP timestamp is a count of non-leap seconds.
+.B sntpclock
+uses a local leap-second table to
+convert the NTP timestamp to TAI with an epoch of
+1970-01-01 00:00:10 TAI.
+For a discussion of the difference between UTC and TAI see
+.BR http://pobox.com/~djb/proto/utctai.html .
+
+The current NTP time scale will break down in 2036.
+.SH "SEE ALSO"
+clockspeed(1),
+clockadd(1),
+clockview(1),
+taiclock(1),
+leapsecs(3),
+xntpd(8)

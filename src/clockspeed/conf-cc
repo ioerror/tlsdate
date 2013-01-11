@@ -1,0 +1,3 @@
+gcc -O2
+
+This will be used to compile .c files.
