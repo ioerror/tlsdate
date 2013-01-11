@@ -26,6 +26,7 @@
 #define DEFAULT_DAEMON_CACHEDIR "/var/cache/tlsdated"
 #define DEFAULT_DAEMON_TMPSUFFIX ".new"
 #define DEFAULT_TLSDATE TLSDATE
+#define DEFAULT_RTC_DEVICE "/dev/rtc"
 
 /* tlsdated magic numbers */
 #define MAX_TRIES 10
