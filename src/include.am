@@ -22,6 +22,7 @@ src_tlsdate_helper_SOURCES+= src/proxy-bio.c
 src_tlsdate_helper_SOURCES+= src/util.c
 
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN
+src_tlsdated_LDADD = -lcrypto
 src_tlsdated_SOURCES = src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
 src_tlsdated_SOURCES+= src/util.c
@@ -30,6 +31,7 @@ src_tlsdate_dbus_announce_CFLAGS = @DBUS_CFLAGS@
 src_tlsdate_dbus_announce_LDADD = @DBUS_LIBS@
 src_tlsdate_dbus_announce_SOURCES = src/tlsdate-dbus-announce.c
 
+src_tlsdated_unittest_LDADD = -lcrypto
 src_tlsdated_unittest_SOURCES = src/routeup.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated-unittest.c
 src_tlsdated_unittest_SOURCES+= src/util.c

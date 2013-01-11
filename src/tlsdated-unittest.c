@@ -120,4 +120,20 @@ TEST(tlsdate_tests) {
   EXPECT_EQ(0, tlsdate(args, environ, 2, 5));
 }
 
+TEST(jitter) {
+  int i = 0;
+  int r;
+  const int kBase = 100;
+  const int kJitter = 25;
+  int nonequal = 0;
+  for (i = 0; i < 1000; i++) {
+    r = add_jitter(kBase, kJitter);
+    EXPECT_GE(r, kBase - kJitter);
+    EXPECT_LE(r, kBase + kJitter);
+    if (r != kBase)
+      nonequal++;
+  }
+  EXPECT_NE(nonequal, 0);
+}
+
 TEST_HARNESS_MAIN
