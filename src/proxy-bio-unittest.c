@@ -37,17 +37,21 @@ BIO *proxy_bio(BIO *test, const char *type)
 
 int need_out_bytes(BIO *test, const unsigned char *out, size_t sz)
 {
-  unsigned char *buf = alloca(sz);
+  unsigned char *buf = malloc(sz);
   size_t i;
+  int result;
   if (!buf)
     return 1;
   if (BIO_test_output_left(test) <  sz) {
     fprintf(TH_LOG_STREAM, "not enough output: %d < %d\n",
             (int)BIO_test_output_left(test), (int)sz);
+    free(buf);
     return 2;
   }
-  if (BIO_test_get_output(test, buf, sz) != sz)
+  if (BIO_test_get_output(test, buf, sz) != sz) {
+    free(buf);
     return 3;
+  }
   if (memcmp(buf, out, sz)) {
     for (i = 0; i < sz; i++) {
       if (buf[i] != out[i])
@@ -56,7 +60,9 @@ int need_out_bytes(BIO *test, const unsigned char *out, size_t sz)
                 buf[i], out[i]);
     }
   }
-  return memcmp(buf, out, sz);
+  result = memcmp(buf, out, sz);
+  free(buf);
+  return result;
 }
 
 int need_out_byte(BIO *test, unsigned char out)
