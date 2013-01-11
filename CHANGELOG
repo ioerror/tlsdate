@@ -10,6 +10,7 @@
     see ./configure --enable-code-coverage-checks and make lcov
   Don't hardfail if DEFAULT_RTC_DEVICE cannot be opened, even if desired
   Support -j to add jitter to tlsdated time checks.
+  Exponential backoff when tls connections fail.
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!
