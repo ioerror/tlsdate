@@ -1,16 +1,16 @@
 #include <sys/types.h>
 #include <sys/time.h>
-#include "readwrite.h"
-#include "exit.h"
-#include "select.h"
-#include "scan.h"
-#include "fmt.h"
-#include "str.h"
-#include "fifo.h"
-#include "open.h"
-#include "error.h"
-#include "auto_home.h"
-#include "timing.h"
+#include "src/clockspeed/readwrite.h"
+#include "src/clockspeed/exit.h"
+#include "src/clockspeed/select.h"
+#include "src/clockspeed/scan.h"
+#include "src/clockspeed/fmt.h"
+#include "src/clockspeed/str.h"
+#include "src/clockspeed/fifo.h"
+#include "src/clockspeed/open.h"
+#include "src/clockspeed/error.h"
+#include "src/clockspeed/auto_home.h"
+#include "src/clockspeed/timing.h"
 
 #ifndef HASRDTSC
 #ifndef HASGETHRTIME

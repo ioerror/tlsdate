@@ -1,0 +1,26 @@
+# vim:ft=automake
+
+bin_PROGRAMS+= src/clockspeed/tlsdate-clockspeed
+
+src_clockspeed_tlsdate_clockspeed_CFLAGS = --include=errno.h --include=time.h
+src_clockspeed_tlsdate_clockspeed_LDADD =
+src_clockspeed_tlsdate_clockspeed_SOURCES = src/clockspeed/clockspeed.c
+src_clockspeed_tlsdate_clockspeed_SOURCES+= src/clockspeed/auto_home.c
+src_clockspeed_tlsdate_clockspeed_SOURCES+= src/clockspeed/fifo.c
+src_clockspeed_tlsdate_clockspeed_SOURCES+= src/clockspeed/error.c
+src_clockspeed_tlsdate_clockspeed_SOURCES+= src/clockspeed/open_read.c
+src_clockspeed_tlsdate_clockspeed_SOURCES+= src/clockspeed/open_write.c
+src_clockspeed_tlsdate_clockspeed_SOURCES+= src/clockspeed/open_trunc.c
+src_clockspeed_tlsdate_clockspeed_INCLUDE = src/clockspeed/readwrite.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/exit.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/select.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/scan.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/fmt.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/str.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/fifo.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/open.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/error.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/auto_home.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/timing.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/hasrdtsc.h
+src_clockspeed_tlsdate_clockspeed_INCLUDE+= src/clockspeed/hasgethr.h

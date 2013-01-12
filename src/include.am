@@ -1,6 +1,7 @@
 # vim:ft=automake
 
 include src/compat/include.am
+include src/clockspeed/include.am
 
 # Our main program
 bin_PROGRAMS+= src/tlsdate-routeup
@@ -34,6 +35,7 @@ src_tlsdated_unittest_SOURCES = src/routeup.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated-unittest.c
 src_tlsdated_unittest_SOURCES+= src/util.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated.c
+
 check_PROGRAMS+= src/tlsdated_unittest
 noinst_PROGRAMS+= src/tlsdated_unittest
 
@@ -54,3 +56,4 @@ noinst_HEADERS+= src/util.h
 noinst_HEADERS+= src/visibility.h
 noinst_HEADERS+= src/proxy-bio.h
 noinst_HEADERS+= src/test-bio.h
+
