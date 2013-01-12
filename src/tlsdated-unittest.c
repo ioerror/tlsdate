@@ -37,7 +37,7 @@ FIXTURE_TEARDOWN(tempdir) {
 }
 
 int write_time(const char *path, time_t time) {
-  int fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0700);
+  int fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0600);
   if (fd == -1)
     return 1;
   if (write(fd, &time, sizeof(time)) != sizeof(time)) {

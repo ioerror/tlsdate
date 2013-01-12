@@ -138,7 +138,7 @@ save_disk_timestamp (const char *path, time_t t)
     }
 
   if ((fd = open (tmp, O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC,
-      S_IRWXU)) < 0)
+      S_IRUSR | S_IWUSR)) < 0)
     {
       pinfo ("open failed");
       return;
