@@ -1,3 +1,0 @@
-gcc -O2 --include=errno.h --include=time.h
-
-This will be used to compile .c files.
