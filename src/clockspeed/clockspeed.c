@@ -9,8 +9,8 @@
 #include "src/clockspeed/fifo.h"
 #include "src/clockspeed/open.h"
 #include "src/clockspeed/error.h"
-#include "src/clockspeed/auto_home.h"
 #include "src/clockspeed/timing.h"
+#include "src/configmake.h"
 
 #ifndef HASRDTSC
 #ifndef HASGETHRTIME
@@ -83,7 +83,7 @@ void savederiv()
   if (deriv <= 0) return;
   if (deriv > 200000000) return; /* 5Hz ticks? be serious */
 
-  fd = open_trunc("etc/atto.tmp");
+  fd = open_trunc(TLSDATE_CLOCKSPEED_ATTO_TMP);
   if (fd == -1) return;
 
   buf[0] = 0;
@@ -119,7 +119,7 @@ void savederiv()
   if (fsync(fd) == -1) { close(fd); return; }
   if (close(fd) == -1) return; /* NFS stupidity */
 
-  rename("etc/atto.tmp","etc/atto"); /* if it fails, bummer */
+  rename(TLSDATE_CLOCKSPEED_ATTO_TMP, TLSDATE_CLOCKSPEED_ATTO_TMP); /* if it fails, bummer */
 }
 
 void main()
@@ -133,10 +133,10 @@ void main()
 
   close(0);
 
-  if (chdir(auto_home) == -1) _exit(1);
+  if (chdir(TLSDATE_CLOCKSPEED_HOME) == -1) _exit(1);
   umask(033);
 
-  if (open_read("etc/atto") == 0) {
+  if (open_read(TLSDATE_CLOCKSPEED_ATTO) == 0) {
     r = read(0,buf,sizeof buf);
     if (r == sizeof buf)
       deriv = nano(buf);

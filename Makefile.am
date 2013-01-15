@@ -114,6 +114,10 @@ src/configmake.h: ${top_srcdir}/Makefile.in
 	  echo '#define TLSDATE "$(bindir)/tlsdate"'; \
 	  echo '#define TLSDATED "$(bindir)/tlsdated"'; \
 	  echo '#define TLSDATE_DBUS_ANNOUNCE "$(bindir)/tlsdate-dbus-announce"'; \
+	  echo '#define TLSDATE_CLOCKSPEED "$(bindir)/tlsdate-clockspeed"'; \
+	  echo '#define TLSDATE_CLOCKSPEED_HOME "/var/cache/tlsdated/"'; \
+	  echo '#define TLSDATE_CLOCKSPEED_ATTO "/var/cache/tlsdated/atto"'; \
+	  echo '#define TLSDATE_CLOCKSPEED_ATTO_TMP "/var/cache/tlsdated/atto.tmp"'; \
 	  } | sed '/""/d' > $@-t
 	@if diff $@-t $@ >/dev/null 2>&1 ; then \
 	  rm @-t ; \
