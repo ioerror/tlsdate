@@ -11,6 +11,7 @@
   Don't hardfail if DEFAULT_RTC_DEVICE cannot be opened, even if desired
   Support -j to add jitter to tlsdated time checks.
   Exponential backoff when tls connections fail.
+  Add config file support (have a look at man/tlsdated.conf.5)
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!
