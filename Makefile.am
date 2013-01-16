@@ -57,12 +57,16 @@ certdir =  @TLSDATE_CA_ROOTS@
 cert_DATA = ca-roots/tlsdate-ca-roots.conf
 EXTRA_DIST+= $(cert_DATA)
 
+confdir = @TLSDATE_CONF_DIR@
+conf_DATA = etc/tlsdated.conf
+EXTRA_DIST+= $(conf_DATA)
 
 # Our documentation
 man_MANS+= man/tlsdate.1
 man_MANS+= man/tlsdated.1
 man_MANS+= man/tlsdate-helper.1
 man_MANS+= man/tlsdate-routeup.1
+man_MANS+= man/tlsdated.conf.5
 EXTRA_DIST+= $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
@@ -110,6 +114,7 @@ src/configmake.h: ${top_srcdir}/Makefile.in
 	@{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
 	  echo '#define TLSDATE_CONFIG "$(sysconfdir)/ca-roots/"'; \
 	  echo '#define TLSDATE_CERTFILE "$(sysconfdir)/tlsdate/ca-roots/tlsdate-ca-roots.conf"'; \
+	  echo '#define TLSDATE_CONF_DIR "$(sysconfdir)/tlsdate/"'; \
 	  echo '#define TLSDATE_HELPER "$(bindir)/tlsdate-helper"'; \
 	  echo '#define TLSDATE "$(bindir)/tlsdate"'; \
 	  echo '#define TLSDATED "$(bindir)/tlsdated"'; \
