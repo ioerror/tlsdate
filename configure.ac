@@ -34,6 +34,10 @@ dnl Build up the directory we will use to install certs
 TLSDATE_CA_ROOTS="${sysconfdir}/$PACKAGE_NAME/ca-roots"
 AC_SUBST([TLSDATE_CA_ROOTS])
 
+dnl Place we install our config file
+TLSDATE_CONF_DIR="${sysconfdir}/$PACKAGE_NAME/"
+AC_SUBST([TLSDATE_CONF_DIR])
+
 dnl Required headers
 dnl First check to see if openssl is installed
 AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])

@@ -20,6 +20,7 @@
 
 #define DEFAULT_HOST "www.ptb.de"
 #define DEFAULT_PORT "443"
+#define DEFAULT_PROXY "none"
 #define DEFAULT_PROTOCOL "tlsv1"
 #define DEFAULT_CERTDIR "/etc/ssl/certs"
 #define DEFAULT_CERTFILE TLSDATE_CERTFILE
@@ -27,6 +28,7 @@
 #define DEFAULT_DAEMON_TMPSUFFIX ".new"
 #define DEFAULT_TLSDATE TLSDATE
 #define DEFAULT_RTC_DEVICE "/dev/rtc"
+#define DEFAULT_CONF_FILE TLSDATE_CONF_DIR "tlsdated.conf"
 
 /* tlsdated magic numbers */
 #define MAX_TRIES 10

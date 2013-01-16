@@ -9,6 +9,11 @@ bin_PROGRAMS+= src/tlsdate-helper
 bin_PROGRAMS+= src/tlsdated
 bin_PROGRAMS+= src/tlsdate-dbus-announce
 
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+
 src_tlsdate_routeup_CFLAGS = -DROUTEUP_MAIN
 src_tlsdate_routeup_SOURCES = src/routeup.c
 src_tlsdate_routeup_SOURCES+= src/util.c
@@ -23,7 +28,8 @@ src_tlsdate_helper_SOURCES+= src/util.c
 
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN
 src_tlsdated_LDADD = -lcrypto
-src_tlsdated_SOURCES = src/routeup.c
+src_tlsdated_SOURCES = src/conf.c
+src_tlsdated_SOURCES+= src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
 src_tlsdated_SOURCES+= src/util.c
 

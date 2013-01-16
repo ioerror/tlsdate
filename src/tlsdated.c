@@ -31,6 +31,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "src/conf.h"
 #include "src/routeup.h"
 #include "src/util.h"
 #include "src/tlsdate.h"
@@ -310,78 +311,106 @@ usage (const char *progn)
   printf ("  -h        this\n");
 }
 
-int API
-main (int argc, char *argv[], char *envp[])
+struct opts {
+  int max_tries;
+  int min_steady_state_interval;
+  int wait_between_tries;
+  int subprocess_tries;
+  int subprocess_wait_between_tries;
+  int steady_state_interval;
+  const char *base_path;
+  char **tlsdate_argv;
+  int should_sync_hwclock;
+  int should_load_disk;
+  int should_save_disk;
+  int should_netlink;
+  int dry_run;
+  int jitter;
+  char *conf_file;
+  char *host;
+  char *port;
+  char *proxy;
+};
+
+void
+set_conf_defaults(struct opts *opts)
 {
-  struct routeup rtc;
-  int max_tries = MAX_TRIES;
-  int min_steady_state_interval = STEADY_STATE_INTERVAL;
-  int wait_between_tries = WAIT_BETWEEN_TRIES;
-  int subprocess_tries = SUBPROCESS_TRIES;
-  int subprocess_wait_between_tries = SUBPROCESS_WAIT_BETWEEN_TRIES;
-  int steady_state_interval = STEADY_STATE_INTERVAL;
-  const char *base_path = kCacheDir;
-  int hwclock_fd = -1;
   static char *kDefaultArgv[] = {
     DEFAULT_TLSDATE, "-H", DEFAULT_HOST, NULL
   };
-  char **tlsdate_argv = kDefaultArgv;
-  int should_sync_hwclock = DEFAULT_SYNC_HWCLOCK;
-  int should_load_disk = DEFAULT_LOAD_FROM_DISK;
-  int should_save_disk = DEFAULT_SAVE_TO_DISK;
-  int should_netlink = DEFAULT_USE_NETLINK;
-  int dry_run = DEFAULT_DRY_RUN;
-  time_t last_success = 0;
-  int jitter = 0;
-  int wait_time = 0;
+  opts->max_tries = MAX_TRIES;
+  opts->min_steady_state_interval = STEADY_STATE_INTERVAL;
+  opts->wait_between_tries = WAIT_BETWEEN_TRIES;
+  opts->subprocess_tries = SUBPROCESS_TRIES;
+  opts->subprocess_wait_between_tries = SUBPROCESS_WAIT_BETWEEN_TRIES;
+  opts->steady_state_interval = STEADY_STATE_INTERVAL;
+  opts->base_path = kCacheDir;
+  opts->tlsdate_argv = kDefaultArgv;
+  opts->should_sync_hwclock = DEFAULT_SYNC_HWCLOCK;
+  opts->should_load_disk = DEFAULT_LOAD_FROM_DISK;
+  opts->should_save_disk = DEFAULT_SAVE_TO_DISK;
+  opts->should_netlink = DEFAULT_USE_NETLINK;
+  opts->dry_run = DEFAULT_DRY_RUN;
+  opts->jitter = 0;
+  opts->conf_file = NULL;
+  opts->host = DEFAULT_HOST;
+  opts->port = DEFAULT_PORT;
+  opts->proxy = DEFAULT_PROXY;
+}
 
-  /* Parse arguments */
+void
+parse_argv(struct opts *opts, int argc, char *argv[])
+{
   int opt;
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:")) != -1)
+
+  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:")) != -1)
     {
       switch (opt)
   {
   case 'w':
-    should_sync_hwclock = 0;
+    opts->should_sync_hwclock = 0;
     break;
   case 'r':
-    should_netlink = 0;
+    opts->should_netlink = 0;
     break;
   case 'p':
-    dry_run = 1;
+    opts->dry_run = 1;
     break;
   case 't':
-    max_tries = atoi (optarg);
+    opts->max_tries = atoi (optarg);
     break;
   case 'd':
-    wait_between_tries = atoi (optarg);
+    opts->wait_between_tries = atoi (optarg);
     break;
   case 'T':
-    subprocess_tries = atoi (optarg);
+    opts->subprocess_tries = atoi (optarg);
     break;
   case 'D':
-    subprocess_wait_between_tries = atoi (optarg);
+    opts->subprocess_wait_between_tries = atoi (optarg);
     break;
   case 'c':
-    base_path = optarg;
+    opts->base_path = optarg;
     break;
   case 'a':
-    steady_state_interval = atoi (optarg);
+    opts->steady_state_interval = atoi (optarg);
     break;
   case 'l':
-    should_load_disk = 0;
+    opts->should_load_disk = 0;
     break;
   case 's':
-    should_save_disk = 0;
+    opts->should_save_disk = 0;
     break;
   case 'v':
     verbose = 1;
     break;
   case 'm':
-    min_steady_state_interval = atoi (optarg);
+    opts->min_steady_state_interval = atoi (optarg);
     break;
   case 'j':
-    jitter = atoi (optarg);
+    opts->jitter = atoi (optarg);
+    break;
+  case 'f':
+    opts->conf_file = optarg;
     break;
   case 'h':
   default:
@@ -391,37 +420,151 @@ main (int argc, char *argv[], char *envp[])
     }
 
   if (optind < argc)
-    tlsdate_argv = argv + optind;
+    opts->tlsdate_argv = argv + optind;
 
   /* Validate arguments */
-  if (!max_tries)
+}
+
+void
+load_conf(struct opts *opts)
+{
+  FILE *f;
+  struct conf_entry *conf, *e;
+  char *conf_file = opts->conf_file;
+  if (!opts->conf_file)
+    conf_file = DEFAULT_CONF_FILE;
+  f = fopen (conf_file, "r");
+  if (!f) {
+    if (opts->conf_file) {
+      pfatal ("can't open conf file '%s'", opts->conf_file);
+    } else {
+      pinfo ("can't open conf file '%s'", conf_file);
+      return;
+    }
+  }
+  conf = conf_parse (f);
+  if (!conf)
+    pfatal ("can't parse config file");
+
+  for (e = conf; e; e = e->next) {
+    if (!strcmp (e->key, "max-tries") && e->value) {
+      opts->max_tries = atoi (e->value);
+    } else if (!strcmp (e->key, "min-steady-state-interval") && e->value) {
+      opts->min_steady_state_interval = atoi (e->value);
+    } else if (!strcmp (e->key, "wait-between-tries") && e->value) {
+      opts->wait_between_tries = atoi (e->value);
+    } else if (!strcmp (e->key, "subprocess-tries") && e->value) {
+      opts->subprocess_tries = atoi (e->value);
+    } else if (!strcmp (e->key, "subprocess-wait-between-tries") && e->value) {
+      opts->subprocess_wait_between_tries = atoi (e->value);
+    } else if (!strcmp (e->key, "steady-state-interval") && e->value) {
+      opts->steady_state_interval = atoi (e->value);
+    } else if (!strcmp (e->key, "base-path") && e->value) {
+      opts->base_path = strdup (e->value);
+      if (!opts->base_path)
+        fatal ("out of memory for base path");
+    } else if (!strcmp (e->key, "should-sync-hwclock")) {
+      opts->should_sync_hwclock = e->value ? !strcmp(e->value, "yes") : 1;
+    } else if (!strcmp (e->key, "should-load-disk")) {
+      opts->should_load_disk = e->value ? !strcmp(e->value, "yes") : 1;
+    } else if (!strcmp (e->key, "should-save-disk")) {
+      opts->should_save_disk = e->value ? !strcmp(e->value, "yes") : 1;
+    } else if (!strcmp (e->key, "should-netlink")) {
+      opts->should_netlink = e->value ? !strcmp(e->value, "yes") : 1;
+    } else if (!strcmp (e->key, "dry-run")) {
+      opts->dry_run = e->value ? !strcmp(e->value, "yes") : 1;
+    } else if (!strcmp (e->key, "jitter") && e->value) {
+      opts->jitter = atoi (e->value);
+    } else if (!strcmp (e->key, "verbose")) {
+      verbose = e->value ? !strcmp(e->value, "yes") : 1;
+    } else if (!strcmp (e->key, "host")) {
+      opts->host = strdup (e->value);
+      if (!opts->host)
+        fatal ("out of memory for host");
+    } else if (!strcmp (e->key, "port")) {
+      opts->port = strdup (e->value);
+      if (!opts->port)
+        fatal ("out of memory for port");
+    } else if (!strcmp (e->key, "proxy")) {
+      opts->proxy = strdup (e->value);
+      if (!opts->proxy)
+        fatal ("out of memory for proxy");
+    }
+  }
+}
+
+void
+check_conf(struct opts *opts)
+{
+  if (!opts->max_tries)
     fatal ("-t argument must be nonzero");
-  if (!wait_between_tries)
+  if (!opts->wait_between_tries)
     fatal ("-d argument must be nonzero");
-  if (!subprocess_tries)
+  if (!opts->subprocess_tries)
     fatal ("-T argument must be nonzero");
-  if (!subprocess_wait_between_tries)
+  if (!opts->subprocess_wait_between_tries)
     fatal ("-D argument must be nonzero");
-  if (!steady_state_interval)
+  if (!opts->steady_state_interval)
     fatal ("-a argument must be nonzero");
   if (snprintf (timestamp_path, sizeof (timestamp_path), "%s/timestamp",
-    base_path) >= sizeof (timestamp_path))
-    fatal ("supplied base path is too long: '%s'", base_path);
+    opts->base_path) >= sizeof (timestamp_path))
+    fatal ("supplied base path is too long: '%s'", opts->base_path);
   if (strlen (timestamp_path) + strlen (kTempSuffix) >= PATH_MAX)
-    fatal ("supplied base path is too long: '%s'", base_path);
-  if (jitter >= steady_state_interval)
+    fatal ("supplied base path is too long: '%s'", opts->base_path);
+  if (opts->jitter >= opts->steady_state_interval)
     fatal ("jitter must be less than steady state interval (%d >= %d)",
-           jitter, steady_state_interval);
+           opts->jitter, opts->steady_state_interval);
+}
+
+void
+build_argv(struct opts *opts)
+{
+  int argc;
+  char **new_argv;
+  for (argc = 0; opts->tlsdate_argv[argc]; argc++)
+    ;
+  argc++; /* uncounted null terminator */
+  argc += 6;  /* -H host -p port -x proxy */
+  new_argv = malloc (argc * sizeof(char *));
+  if (!new_argv)
+    fatal ("out of memory building argv");
+  for (argc = 0; opts->tlsdate_argv[argc]; argc++)
+    new_argv[argc] = opts->tlsdate_argv[argc];
+  new_argv[argc++] = "-H";
+  new_argv[argc++] = opts->host;
+  new_argv[argc++] = "-p";
+  new_argv[argc++] = opts->port;
+  new_argv[argc++] = "-x";
+  new_argv[argc++] = opts->proxy;
+  new_argv[argc++] = NULL;
+  opts->tlsdate_argv = new_argv;
+}
+
+int API
+main (int argc, char *argv[], char *envp[])
+{
+  struct routeup rtc;
+  int hwclock_fd = -1;
+  time_t last_success = 0;
+  struct opts opts;
+  int wait_time = 0;
+
+  set_conf_defaults(&opts);
+  parse_argv(&opts, argc, argv);
+  check_conf(&opts);
+  load_conf(&opts);
+  check_conf(&opts);
+  build_argv(&opts);
 
   /* grab a handle to /dev/rtc for sync_hwclock() */
-  if (should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
+  if (opts.should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
     {
       pinfo ("can't open hwclock fd");
-      should_sync_hwclock = 0;
+      opts.should_sync_hwclock = 0;
     }
 
   /* set up a netlink context if we need one */
-  if (should_netlink && routeup_setup (&rtc))
+  if (opts.should_netlink && routeup_setup (&rtc))
     pfatal ("Can't open netlink socket");
 
   if (!is_sane_time (time (NULL)))
@@ -433,21 +576,21 @@ main (int argc, char *argv[], char *envp[])
        * disk.
        */
       tv.tv_sec = RECENT_COMPILE_DATE;
-      if (should_load_disk &&
+      if (opts.should_load_disk &&
     load_disk_timestamp (timestamp_path, &tv.tv_sec))
   pinfo ("can't load disk timestamp");
-      if (!dry_run && settimeofday (&tv, NULL))
+      if (!opts.dry_run && settimeofday (&tv, NULL))
   pfatal ("settimeofday() failed");
       dbus_announce();
       /*
        * don't save here - we either just loaded this time or used the
        * default time, and neither of those are good to save
        */
-      sync_and_save (hwclock_fd, should_sync_hwclock, 0);
+      sync_and_save (hwclock_fd, opts.should_sync_hwclock, 0);
     }
 
   /* register a signal handler to save time at shutdown */
-  if (should_save_disk)
+  if (opts.should_save_disk)
     signal (SIGTERM, sigterm_handler);
 
   /*
@@ -455,10 +598,10 @@ main (int argc, char *argv[], char *envp[])
    * for a while; repeat whenever another route appears. Try until we
    * succeed.
    */
-  if (!tlsdate (tlsdate_argv, envp, subprocess_tries,
-    subprocess_wait_between_tries)) {
+  if (!tlsdate (opts.tlsdate_argv, envp, opts.subprocess_tries,
+    opts.subprocess_wait_between_tries)) {
     last_success = time (NULL);
-    sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
+    sync_and_save (hwclock_fd, opts.should_sync_hwclock, opts.should_save_disk);
     dbus_announce();
   }
 
@@ -468,8 +611,8 @@ main (int argc, char *argv[], char *envp[])
    * this should handle cases like a VPN being brought up and down
    * periodically.
    */
-  wait_time = add_jitter(steady_state_interval, jitter);
-  while (wait_for_event (&rtc, should_netlink, wait_time) >= 0)
+  wait_time = add_jitter(opts.steady_state_interval, opts.jitter);
+  while (wait_for_event (&rtc, opts.should_netlink, wait_time) >= 0)
     {
       /*
        * If a route just came up, run tlsdate; if it
@@ -477,24 +620,24 @@ main (int argc, char *argv[], char *envp[])
        * from now on.
        */
       int i;
-      int backoff = wait_between_tries;
-      wait_time = add_jitter(steady_state_interval, jitter);
-      if (time (NULL) - last_success < min_steady_state_interval)
+      int backoff = opts.wait_between_tries;
+      wait_time = add_jitter(opts.steady_state_interval, opts.jitter);
+      if (time (NULL) - last_success < opts.min_steady_state_interval)
         continue;
-      for (i = 0; i < max_tries &&
-           tlsdate (tlsdate_argv, envp, subprocess_tries,
-           subprocess_wait_between_tries); ++i) {
+      for (i = 0; i < opts.max_tries &&
+           tlsdate (opts.tlsdate_argv, envp, opts.subprocess_tries,
+           opts.subprocess_wait_between_tries); ++i) {
         if (backoff < 1)
           fatal ("backoff too small? %d", backoff);
         sleep (backoff);
         if (backoff < MAX_SANE_BACKOFF)
           backoff *= 2;
       }
-      if (i != max_tries)
+      if (i != opts.max_tries)
   {
     last_success = time (NULL);
     info ("tlsdate succeeded");
-    sync_and_save (hwclock_fd, should_sync_hwclock, should_save_disk);
+    sync_and_save (hwclock_fd, opts.should_sync_hwclock, opts.should_save_disk);
     dbus_announce();
   }
     }
