@@ -1,18 +1,21 @@
-0.0.5 XXX
+0.0.5 Fri 18 Jan, 2013
   Fix spelling error in tlsdate-helper
   Update man pages formatting
   Add Seccomp-BPF policies to be used with Minijail
   Update CA cert file to remove TÜRKTRUST
   Support both CA certificate files or directories full of CA certs
-    currently /etc/tlsdate/ca-roots/tlsdate-ca-roots.conf
+    Currently /etc/tlsdate/ca-roots/tlsdate-ca-roots.conf
   Support announcing time updates over DBus with --enable-dbus
+    This introduces the 'tlsdate-dbus-announce' utility
   Add support for lcov/gcov at build time
-    see ./configure --enable-code-coverage-checks and make lcov
+    See ./configure --enable-code-coverage-checks and make lcov
   Don't hardfail if DEFAULT_RTC_DEVICE cannot be opened, even if desired
+    Raspberry PI users rejoice (if the fix works)
   Support -j to add jitter to tlsdated time checks.
-  Exponential backoff when tls connections fail.
+  Exponential backoff when TLS connections fail.
   Add config file support (have a look at man/tlsdated.conf.5)
   Support multiple hosts for time fetches
+    Add multiple hosts to your tlsdated.conf file today
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!
