@@ -57,12 +57,16 @@ certdir =  @TLSDATE_CA_ROOTS@
 cert_DATA = ca-roots/tlsdate-ca-roots.conf
 EXTRA_DIST+= $(cert_DATA)
 
+confdir = @TLSDATE_CONF_DIR@
+conf_DATA = etc/tlsdated.conf
+EXTRA_DIST+= $(conf_DATA)
 
 # Our documentation
 man_MANS+= man/tlsdate.1
 man_MANS+= man/tlsdated.1
 man_MANS+= man/tlsdate-helper.1
 man_MANS+= man/tlsdate-routeup.1
+man_MANS+= man/tlsdated.conf.5
 EXTRA_DIST+= $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
@@ -82,6 +86,11 @@ git-push:
 
 deb: debian_orig
 	debuild -i'.*' -rfakeroot -uc -us -d
+
+# This generates code coverage data that is useful for continuous integration
+lcov:
+#  ./configure --enable-code-coverage-checks && make && # ... run everything and then...
+	lcov --directory src -b . --capture --output-file tlsdate.lcov && genhtml -o lcov/ tlsdate.lcov
 
 valgrind_test:
 	TESTS_ENVIRONMENT="./libtool --mode=execute valgrind  --trace-children=yes --leak-check=full" ./src/tlsdate -v -V -n -H encrypted.google.com
@@ -105,9 +114,11 @@ src/configmake.h: ${top_srcdir}/Makefile.in
 	@{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
 	  echo '#define TLSDATE_CONFIG "$(sysconfdir)/ca-roots/"'; \
 	  echo '#define TLSDATE_CERTFILE "$(sysconfdir)/tlsdate/ca-roots/tlsdate-ca-roots.conf"'; \
+	  echo '#define TLSDATE_CONF_DIR "$(sysconfdir)/tlsdate/"'; \
 	  echo '#define TLSDATE_HELPER "$(bindir)/tlsdate-helper"'; \
 	  echo '#define TLSDATE "$(bindir)/tlsdate"'; \
 	  echo '#define TLSDATED "$(bindir)/tlsdated"'; \
+	  echo '#define TLSDATE_DBUS_ANNOUNCE "$(bindir)/tlsdate-dbus-announce"'; \
 	  } | sed '/""/d' > $@-t
 	@if diff $@-t $@ >/dev/null 2>&1 ; then \
 	  rm @-t ; \

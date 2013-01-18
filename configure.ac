@@ -1,4 +1,4 @@
-AC_INIT([tlsdate],[0.0.4],[jacob at appelbaum.net])
+AC_INIT([tlsdate],[0.0.5],[jacob at appelbaum.net])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -12,6 +12,7 @@ AC_PREREQ([2.63])
 
 AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 
+PKG_PROG_PKG_CONFIG
 LT_PREREQ([2.2])
 LT_INIT
 LT_LANG([C])
@@ -32,6 +33,10 @@ AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
 dnl Build up the directory we will use to install certs
 TLSDATE_CA_ROOTS="${sysconfdir}/$PACKAGE_NAME/ca-roots"
 AC_SUBST([TLSDATE_CA_ROOTS])
+
+dnl Place we install our config file
+TLSDATE_CONF_DIR="${sysconfdir}/$PACKAGE_NAME/"
+AC_SUBST([TLSDATE_CONF_DIR])
 
 dnl Required headers
 dnl First check to see if openssl is installed
@@ -85,6 +90,37 @@ AC_CHECK_FUNC([clock_gettime], [:],
                             [AC_MSG_ERROR([Your system lacks clock_gettime])])])
 AC_SUBST(RT_LIB)
 
+AC_ARG_ENABLE([dbus],
+              [AS_HELP_STRING([--disable-dbus],
+                              [Disable automatically dbus support])])
+AS_IF([test "x$enable_dbus" = xyes], [
+    PKG_CHECK_MODULES([DBUS], [dbus-1], [
+            AC_DEFINE([HAVE_DBUS], [1], [Enable dbus support])
+            AC_MSG_CHECKING([user/group to use for dbus])
+            AC_ARG_WITH([dbus-user],
+                        [AS_HELP_STRING([--with-dbus-user=<user>],
+                                        [User to send dbus signals from @<:@default: nobody@:>@])])
+            AS_CASE([$with_dbus_user],
+                    [""|yes|no], [DBUS_USER="nobody"],
+                    [*], [DBUS_USER=$with_dbus_user])
+            AC_ARG_WITH([dbus-group],
+                        [AS_HELP_STRING([--with-dbus-group=<group>],
+                                        [Group to send dbus signals from @<:@default: nogroup@:>@])])
+            AS_CASE([$with_dbus_group],
+                    [""|yes|no], [DBUS_GROUP="nogroup"],
+                    [*], [DBUS_GROUP=$with_dbus_group])
+            AC_MSG_RESULT(${DBUS_USER}:${DBUS_GROUP})
+            AC_DEFINE_UNQUOTED([DBUS_USER], ["${DBUS_USER}"], [DBus user])
+            AC_DEFINE_UNQUOTED([DBUS_GROUP], ["${DBUS_GROUP}"], [DBus group])
+        ], [
+            AS_IF([test "x$enable_dbus" = xyes],
+                  [AC_MSG_ERROR([dbus requested but not found])])
+        ])
+    ])
+
+AC_SUBST(DBUS_CFLAGS)
+AC_SUBST(DBUS_LIBS)
+
 dnl Debug and hardening flags all in one shot
 dnl Always do this at the end, otherwise you end up filtering system/other libraries
 AC_ARG_ENABLE([hardened-checks],
@@ -112,6 +148,11 @@ AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AC_LANG_POP
           ])
 LOCAL_CHECK_FLAGS
+
+AC_ARG_ENABLE([code-coverage-checks],
+              [AS_HELP_STRING([--enable-code-coverage-checks],
+                              [Enable gcov/lcov compile time options])],
+              [AX_APPEND_COMPILE_FLAGS([-ftest-coverage -fprofile-arcs])])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -1,0 +1,75 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TLSDATED 5 "JANUARY 2013" "File Formats and Conversions"
+.SH NAME
+tlsdated.conf \- tlsdated config file
+.SH SYNTAX
+\fBtlsdated.conf\fR is the configuration file for the \fBtlsdated(1)\fR daemon.
+The config file is formatted as a list of key-value pairs, one per line,
+separated by whitespace. Whitespace inside values is preserved, so
+.RS
+foo   bar baz quxx
+.RE
+represents the key \fBfoo\fR mapping to the value \fBbar baz quxx\fR. Empty
+lines and lines beginning with \fB#\fR are ignored; leading whitespace on lines
+is stripped. For boolean options, the value \fByes\fR or no value at all
+indicates that the option should be switched on, and all other values indicate
+that the option should be switched off. \fINote that trailing whitespace is
+preserved in values.\fR
+.SH OPTIONS
+.IP base-path (string)
+Sets the path to tlsdated's cache directory.
+.IP dry-run (bool)
+If enabled, don't actually adjust the system time.
+.IP jitter (int)
+Add or subtract up to this many seconds from the steady-state interval when
+checking. This helps prevent correlation between sequential checks and smooth
+load on time hosts.
+.IP max-tries (int)
+How many times to try running the tlsdate subprocess.
+.IP min-steady-state-interval (int)
+Do not check more than once this many seconds when in steady state.
+.IP should-load-disk (bool)
+If enabled, try loading the current timestamp out of the cache directory.
+.IP should-netlink (bool)
+If enabled, use a netlink socket to get network events; otherwise, read network
+events from stdin.
+.IP should-save-disk (bool)
+If enabled, save the current timestamp to the cache directory every so often and
+at exit.
+.IP should-sync-hwclock (bool)
+If enabled, set the hwclock to the fetched time.
+.IP steady-state-interval (int)
+Check at least once this many seconds when in steady state.
+.IP subprocess-tries (int)
+How many times to try waiting for the subprocess.
+.IP subprocess-wait-between-tries (int)
+How many seconds to wait between each attempt to wait for the subprocess.
+.IP verbose (bool)
+If enabled, tlsdated will be annoyingly verbose in syslog and on stdout.
+.IP wait-between-tries (int)
+How long to wait between runs of the subprocess.
+.SH SOURCES
+You can list one or more sources to fetch time from. The format of these is:
+.RS 4
+source
+.RS 4
+host www.example.com
+.br
+port 443
+.br
+proxy socks5://127.0.0.1:9050
+.RE
+end
+.RE
+.SH BUGS
+It's likely! Let us know by contacting jacob@appelbaum.net
+
+Note that
+.B tlsdated(1)
+is still in Alpha, and may not work as expected.
+.SH AUTHOR
+Jacob Appelbaum <jacob at appelbaum dot net>
+.SH "SEE ALSO"
+.B tlsdated(1),

@@ -20,12 +20,15 @@
 
 #define DEFAULT_HOST "www.ptb.de"
 #define DEFAULT_PORT "443"
+#define DEFAULT_PROXY "none"
 #define DEFAULT_PROTOCOL "tlsv1"
 #define DEFAULT_CERTDIR "/etc/ssl/certs"
 #define DEFAULT_CERTFILE TLSDATE_CERTFILE
 #define DEFAULT_DAEMON_CACHEDIR "/var/cache/tlsdated"
 #define DEFAULT_DAEMON_TMPSUFFIX ".new"
 #define DEFAULT_TLSDATE TLSDATE
+#define DEFAULT_RTC_DEVICE "/dev/rtc"
+#define DEFAULT_CONF_FILE TLSDATE_CONF_DIR "tlsdated.conf"
 
 /* tlsdated magic numbers */
 #define MAX_TRIES 10
@@ -38,6 +41,7 @@
 #define DEFAULT_SAVE_TO_DISK 1
 #define DEFAULT_USE_NETLINK 1
 #define DEFAULT_DRY_RUN 0
+#define MAX_SANE_BACKOFF 600 /* exponential backoff should only go this far */
 
 #ifndef TLSDATED_MAX_DATE
 #define TLSDATED_MAX_DATE 1999991337 /* this'll be a great bug some day */
@@ -52,10 +56,39 @@ static const char kTestHost[] = { TEST_HOST, 0 };
 /** The current version of tlsdate. */
 #define tlsdate_version VERSION
 
+struct source {
+	struct source *next;
+	char *host;
+	char *port;
+	char *proxy;
+};
+
+struct opts {
+  int max_tries;
+  int min_steady_state_interval;
+  int wait_between_tries;
+  int subprocess_tries;
+  int subprocess_wait_between_tries;
+  int steady_state_interval;
+  const char *base_path;
+  char **base_argv;
+  char **argv;
+  int should_sync_hwclock;
+  int should_load_disk;
+  int should_save_disk;
+  int should_netlink;
+  int dry_run;
+  int jitter;
+  char *conf_file;
+  struct source *sources;
+  struct source *cur_source;
+};
+
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
 void save_disk_timestamp (const char *path, time_t t);
-int tlsdate (char *argv[], char *envp[], int tries, int wait_between_tries);
+int add_jitter (int base, int jitter);
+int tlsdate (struct opts *opts, char *argv[]);
 
 /** This is where we store parsed commandline options. */
 typedef struct {

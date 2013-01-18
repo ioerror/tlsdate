@@ -7,6 +7,12 @@ bin_PROGRAMS+= src/tlsdate-routeup
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
 bin_PROGRAMS+= src/tlsdated
+bin_PROGRAMS+= src/tlsdate-dbus-announce
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
 
 src_tlsdate_routeup_CFLAGS = -DROUTEUP_MAIN
 src_tlsdate_routeup_SOURCES = src/routeup.c
@@ -21,10 +27,17 @@ src_tlsdate_helper_SOURCES+= src/proxy-bio.c
 src_tlsdate_helper_SOURCES+= src/util.c
 
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN
-src_tlsdated_SOURCES = src/routeup.c
+src_tlsdated_LDADD = -lcrypto
+src_tlsdated_SOURCES = src/conf.c
+src_tlsdated_SOURCES+= src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
 src_tlsdated_SOURCES+= src/util.c
 
+src_tlsdate_dbus_announce_CFLAGS = @DBUS_CFLAGS@
+src_tlsdate_dbus_announce_LDADD = @DBUS_LIBS@
+src_tlsdate_dbus_announce_SOURCES = src/tlsdate-dbus-announce.c
+
+src_tlsdated_unittest_LDADD = -lcrypto
 src_tlsdated_unittest_SOURCES = src/routeup.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated-unittest.c
 src_tlsdated_unittest_SOURCES+= src/util.c
