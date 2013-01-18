@@ -56,11 +56,39 @@ static const char kTestHost[] = { TEST_HOST, 0 };
 /** The current version of tlsdate. */
 #define tlsdate_version VERSION
 
+struct source {
+	struct source *next;
+	char *host;
+	char *port;
+	char *proxy;
+};
+
+struct opts {
+  int max_tries;
+  int min_steady_state_interval;
+  int wait_between_tries;
+  int subprocess_tries;
+  int subprocess_wait_between_tries;
+  int steady_state_interval;
+  const char *base_path;
+  char **base_argv;
+  char **argv;
+  int should_sync_hwclock;
+  int should_load_disk;
+  int should_save_disk;
+  int should_netlink;
+  int dry_run;
+  int jitter;
+  char *conf_file;
+  struct source *sources;
+  struct source *cur_source;
+};
+
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
 void save_disk_timestamp (const char *path, time_t t);
 int add_jitter (int base, int jitter);
-int tlsdate (char *argv[], char *envp[], int tries, int wait_between_tries);
+int tlsdate (struct opts *opts, char *argv[]);
 
 /** This is where we store parsed commandline options. */
 typedef struct {

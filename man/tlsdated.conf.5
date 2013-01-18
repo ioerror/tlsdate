@@ -18,9 +18,6 @@ indicates that the option should be switched on, and all other values indicate
 that the option should be switched off. \fINote that trailing whitespace is
 preserved in values.\fR
 .SH OPTIONS
-.IP argv (string)
-Add an argument to the subprocess's argument vector. Use this option multiple
-times for multiple arguments.
 .IP base-path (string)
 Sets the path to tlsdated's cache directory.
 .IP dry-run (bool)
@@ -53,6 +50,19 @@ How many seconds to wait between each attempt to wait for the subprocess.
 If enabled, tlsdated will be annoyingly verbose in syslog and on stdout.
 .IP wait-between-tries (int)
 How long to wait between runs of the subprocess.
+.SH SOURCES
+You can list one or more sources to fetch time from. The format of these is:
+.RS 4
+source
+.RS 4
+host www.example.com
+.br
+port 443
+.br
+proxy socks5://127.0.0.1:9050
+.RE
+end
+.RE
 .SH BUGS
 It's likely! Let us know by contacting jacob@appelbaum.net
 

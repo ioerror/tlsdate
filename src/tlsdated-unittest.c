@@ -107,17 +107,30 @@ TEST_F(tempdir, save_time) {
 }
 
 TEST(tlsdate_tests) {
+  struct source source = {
+    .next = NULL,
+    .host = "<host>",
+    .port = "<port>",
+    .proxy = "<proxy>"
+  };
   char *args[] = { "/nonexistent", NULL, NULL };
+  struct opts opts;
+  memset(&opts, 0, sizeof(opts));
+  opts.sources = &source;
+  opts.base_argv = args;
+  opts.subprocess_tries = 2;
+  opts.subprocess_wait_between_tries = 1;
   extern char **environ;
-  EXPECT_EQ(1, tlsdate(args, environ, 2, 1));
+  EXPECT_EQ(1, tlsdate(&opts, environ));
   args[0] = "/bin/false";
-  EXPECT_EQ(1, tlsdate(args, environ, 2, 1));
+  EXPECT_EQ(1, tlsdate(&opts, environ));
   args[0] = "/bin/true";
-  EXPECT_EQ(0, tlsdate(args, environ, 2, 1));
-  args[0] = "/bin/sleep";
+  EXPECT_EQ(0, tlsdate(&opts, environ));
+  args[0] = "src/test/sleep-wrap.sh";
   args[1] = "3";
-  EXPECT_EQ(-1, tlsdate(args, environ, 2, 1));
-  EXPECT_EQ(0, tlsdate(args, environ, 2, 5));
+  EXPECT_EQ(-1, tlsdate(&opts, environ));
+  opts.subprocess_wait_between_tries = 5;
+  EXPECT_EQ(0, tlsdate(&opts, environ));
 }
 
 TEST(jitter) {
@@ -134,6 +147,33 @@ TEST(jitter) {
       nonequal++;
   }
   EXPECT_NE(nonequal, 0);
+}
+
+TEST(rotate_hosts) {
+  struct source s2 = {
+    .next = NULL,
+    .host = "host2",
+    .port = "port2",
+    .proxy = "proxy2"
+  };
+  struct source s1 = {
+    .next = &s2,
+    .host = "host1",
+    .port = "port1",
+    .proxy = "proxy1"
+  };
+  struct opts opts;
+  char *args[] = { "src/test/rotate.sh", NULL };
+  memset(&opts, 0, sizeof(opts));
+  opts.sources = &s1;
+  opts.base_argv = args;
+  opts.subprocess_tries = 2;
+  opts.subprocess_wait_between_tries = 1;
+  extern char **environ;
+  EXPECT_EQ(1, tlsdate(&opts, environ));
+  EXPECT_EQ(2, tlsdate(&opts, environ));
+  EXPECT_EQ(1, tlsdate(&opts, environ));
+  EXPECT_EQ(2, tlsdate(&opts, environ));
 }
 
 TEST_HARNESS_MAIN
