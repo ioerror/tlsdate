@@ -62,3 +62,4 @@ noinst_HEADERS+= src/util.h
 noinst_HEADERS+= src/visibility.h
 noinst_HEADERS+= src/proxy-bio.h
 noinst_HEADERS+= src/test-bio.h
+noinst_HEADERS+= src/conf.h
