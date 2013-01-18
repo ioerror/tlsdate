@@ -28,7 +28,7 @@
 #include <netdb.h>
 #include <stdint.h>
 
-#include "proxy-bio.h"
+#include "src/proxy-bio.h"
 
 struct proxy_ctx {
   char *host;

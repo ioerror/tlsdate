@@ -7,10 +7,10 @@
 
 #include <alloca.h>
 
-#include "proxy-bio.h"
-#include "test-bio.h"
-#include "test_harness.h"
-#include "tlsdate.h"
+#include "src/proxy-bio.h"
+#include "src/test-bio.h"
+#include "src/test_harness.h"
+#include "src/tlsdate.h"
 
 FIXTURE(test_bio) {
   BIO *test;
