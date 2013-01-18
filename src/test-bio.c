@@ -15,8 +15,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include "test-bio.h"
-#include "util.h"
+#include "src/test-bio.h"
+#include "src/util.h"
 
 int verbose;
 

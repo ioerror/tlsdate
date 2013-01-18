@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "conf.h"
-#include "test_harness.h"
+#include "src/conf.h"
+#include "src/test_harness.h"
 
 FILE *fopenstr(const char *str) {
   /* strlen(str) instead of strlen(str) + 1 because files shouldn't appear

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "conf.h"
+#include "src/conf.h"
 
 void strip_newlines(char *line)
 {

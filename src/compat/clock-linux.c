@@ -12,7 +12,7 @@
 
 #include <assert.h>
 
-#include "clock.h"
+#include "src/compat/clock.h"
 
 /**
  * Get current real time value and store it into time.
