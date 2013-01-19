@@ -126,7 +126,7 @@ TEST(tlsdate_tests) {
   EXPECT_EQ(1, tlsdate(&opts, environ));
   args[0] = "/bin/true";
   EXPECT_EQ(0, tlsdate(&opts, environ));
-  args[0] = "src/test/sleep-wrap.sh";
+  args[0] = "src/test/sleep-wrap";
   args[1] = "3";
   EXPECT_EQ(-1, tlsdate(&opts, environ));
   opts.subprocess_wait_between_tries = 5;
@@ -163,7 +163,7 @@ TEST(rotate_hosts) {
     .proxy = "proxy1"
   };
   struct opts opts;
-  char *args[] = { "src/test/rotate.sh", NULL };
+  char *args[] = { "src/test/rotate", NULL };
   memset(&opts, 0, sizeof(opts));
   opts.sources = &s1;
   opts.base_argv = args;
