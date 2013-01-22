@@ -1,4 +1,4 @@
-0.0.5 Fri 18 Jan, 2013
+0.0.5 Web 23 Jan, 2013
   Fix spelling error in tlsdate-helper
   Update man pages formatting
   Add Seccomp-BPF policies to be used with Minijail
@@ -17,6 +17,7 @@
   Support multiple hosts for time fetches
     Add multiple hosts to your tlsdated.conf file today
   Add simple AppArmor profile for /usr/bin/tlsdate-dbus-announce
+  Update AppArmor profile for tlsdated
 0.0.4 Wed 7 Nov, 2012
   Fixup CHANGELOG and properly tag
     Version Numbers Are Free! Hooray!
