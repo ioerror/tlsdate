@@ -1,0 +1,5 @@
+language: c
+before_script: ./autogen.sh
+compiler:
+  - clang
+  - gcc
