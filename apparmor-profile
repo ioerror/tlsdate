@@ -189,7 +189,8 @@
   # We'll allow tlsdated to cache the time here
   owner /var/cache/tlsdated/* rw,
 
-  # We'll allow tlsdate to exec tlsdate-helper
+  # We'll allow tlsdated to exec tlsdate-helper
+  /usr/bin/tlsdate-dbus-announce ixm,
   /usr/bin/tlsdate-routeup ixm,
   /usr/bin/tlsdate-helper ixm,
   /usr/bin/tlsdate ixm,
@@ -207,6 +208,23 @@
   # Random number generation requires these two
   /dev/random r,
   /dev/urandom r,
+
+  # Allow mapping of shared libraries
+  /lib/* rm,
+  /lib32/* rm,
+  /lib64/* rm,
+  /usr/lib/* rm,
+  /lib/x86_64-linux-gnu/* rm,
+}
+
+/usr/bin/tlsdate-dbus-announce {
+  #include <abstractions/consoles>
+
+  # Allow reading of /etc/tlsdate/
+  /etc/tlsdate/*/** r,
+
+  # Allow reading of libs and /tmp
+  /etc/ld.so.cache r,
 
   # Allow mapping of shared libraries
   /lib/* rm,
