@@ -18,37 +18,37 @@ indicates that the option should be switched on, and all other values indicate
 that the option should be switched off. \fINote that trailing whitespace is
 preserved in values.\fR
 .SH OPTIONS
-.IP base-path (string)
+.IP "base-path [string]"
 Sets the path to tlsdated's cache directory.
-.IP dry-run (bool)
+.IP "dry-run [bool]"
 If enabled, don't actually adjust the system time.
-.IP jitter (int)
+.IP "jitter [int]"
 Add or subtract up to this many seconds from the steady-state interval when
 checking. This helps prevent correlation between sequential checks and smooth
 load on time hosts.
-.IP max-tries (int)
+.IP "max-tries [int]"
 How many times to try running the tlsdate subprocess.
-.IP min-steady-state-interval (int)
+.IP "min-steady-state-interval [int]"
 Do not check more than once this many seconds when in steady state.
-.IP should-load-disk (bool)
+.IP "should-load-disk [bool]"
 If enabled, try loading the current timestamp out of the cache directory.
-.IP should-netlink (bool)
+.IP "should-netlink [bool]"
 If enabled, use a netlink socket to get network events; otherwise, read network
 events from stdin.
-.IP should-save-disk (bool)
+.IP "should-save-disk [bool]"
 If enabled, save the current timestamp to the cache directory every so often and
 at exit.
-.IP should-sync-hwclock (bool)
+.IP "should-sync-hwclock [bool]"
 If enabled, set the hwclock to the fetched time.
-.IP steady-state-interval (int)
+.IP "steady-state-interval [int]"
 Check at least once this many seconds when in steady state.
-.IP subprocess-tries (int)
+.IP "subprocess-tries [int]"
 How many times to try waiting for the subprocess.
-.IP subprocess-wait-between-tries (int)
+.IP "subprocess-wait-between-tries [int]"
 How many seconds to wait between each attempt to wait for the subprocess.
-.IP verbose (bool)
+.IP "verbose [bool]"
 If enabled, tlsdated will be annoyingly verbose in syslog and on stdout.
-.IP wait-between-tries (int)
+.IP "wait-between-tries [int]"
 How long to wait between runs of the subprocess.
 .SH SOURCES
 You can list one or more sources to fetch time from. The format of these is:
