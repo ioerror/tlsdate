@@ -67,6 +67,7 @@ man_MANS+= man/tlsdated.1
 man_MANS+= man/tlsdate-helper.1
 man_MANS+= man/tlsdate-routeup.1
 man_MANS+= man/tlsdated.conf.5
+man_MANS+= man/tlsdate-dbus-announce.1
 EXTRA_DIST+= $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
