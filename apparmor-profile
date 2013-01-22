@@ -158,11 +158,15 @@
 
   # Allow reading of /etc/tlsdate/
   /etc/tlsdate/*/** r,
+  /etc/tlsdate/tlsdated.conf r,
 
   # Required for getpwnam
   /etc/passwd r,
   /etc/group r,
   /proc/sys/kernel/ngroups_max r,
+
+  # tlsdated looks into proc for answers
+  /proc/meminfo r,
 
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
