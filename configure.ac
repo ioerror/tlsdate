@@ -38,16 +38,98 @@ dnl Place we install our config file
 TLSDATE_CONF_DIR="${sysconfdir}/$PACKAGE_NAME/"
 AC_SUBST([TLSDATE_CONF_DIR])
 
+dnl check for PolarSSL
+OPT_POLARSSL=yes
+
+AC_MSG_CHECKING([PolarSSL])
+AC_ARG_WITH([polarssl],
+            [AS_HELP_STRING([--with-polarssl=DIR],
+                            [where to look for PolarSSL, DIR points to the installation root])])
+
+AS_CASE([$with_polarssl],
+        [""|yes|no], [POLARSSL_DIR=""],
+        [*], [POLARSSL_DIR=$with_polarssl])
+OPT_POLARSSL=$with_polarssl
+
+SSL_FLAGS=""
+SSL_LDFLAGS=""
+SSL_LIBS="-lssl -lcrypto"
+
+AS_IF([test "x${OPT_POLARSSL}" != "xno"], [
+  AS_IF([test -z "${POLARSSL_DIR}"], [
+    dnl check for lib first without setting any new path
+    AC_CHECK_LIB(polarssl, ssl_init,
+    dnl libpolarssl found, set the variable
+     [
+       AC_DEFINE(USE_POLARSSL, 1, [if PolarSSL is enabled])
+       AC_SUBST(USE_POLARSSL, [1])
+       POLARSSL_ENABLED=1
+       USE_POLARSSL="yes"
+     ])
+  ])
+
+  addld=""
+  addlib=""
+  addcflags=""
+  polarssllib=""
+
+  AS_IF([test "x${USE_POLARSSL}" != "xyes"], [
+    dnl add the path and test again
+    addld=-L${POLARSSL_DIR}/lib$libsuff
+    addcflags=-I${POLARSSL_DIR}/include
+    polarssllib=${POLARSSL_DIR}/lib$libsuff
+
+    LDFLAGS="$LDFLAGS $addld"
+    AS_IF([test "$addcflags" != "-I/usr/include"], [
+        AX_APPEND_COMPILE_FLAGS(["$addcflags"])
+       CPPFLAGS="$CPPFLAGS $addcflags"
+    ])
+
+    AC_CHECK_LIB(polarssl, ssl_init,
+     [
+       AC_DEFINE(USE_POLARSSL, 1, [if PolarSSL is enabled])
+       AC_SUBST(USE_POLARSSL, [1])
+       POLARSSL_ENABLED=1
+       USE_POLARSSL="yes"
+       SSL_CFLAGS=$addcflags
+       SSL_LDFLAGS=$addld
+     ])
+  ])
+
+  AS_IF([test "x${USE_POLARSSL}" = "xyes"], [
+    AC_MSG_NOTICE([detected PolarSSL])
+    SSL_LIBS="-lpolarssl"
+
+    AS_IF([test -n "$polarssllib"], [
+      dnl when shared libs were found in a path that the run-time
+      dnl linker doesn't search through, we need to add it to
+      dnl LD_LIBRARY_PATH to prevent further configure tests to fail
+      dnl due to this
+      AS_IF([test "x$cross_compiling" != "xyes"], [
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$polarssllib"
+        export LD_LIBRARY_PATH
+        AC_MSG_NOTICE([Added $polarssllib to LD_LIBRARY_PATH])
+      ])
+    ])
+  ])
+])
+AC_SUBST(SSL_CFLAGS)
+AC_SUBST(SSL_LDFLAGS)
+AC_SUBST(SSL_LIBS)
+AM_CONDITIONAL(POLARSSL, test "x${USE_POLARSSL}" = "xyes")
+
 dnl Required headers
-dnl First check to see if openssl is installed
-AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
+AS_IF([test "x${USE_POLARSSL}" != "xyes"], [
+  dnl First check to see if openssl is installed
+  AC_CHECK_HEADERS([openssl/ssl.h], ,[AC_MSG_ERROR([OpenSSL is not installed, openssl/sslh is missing])])
+  AC_CHECK_HEADERS([openssl/bio.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+  AC_CHECK_HEADERS([openssl/err.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+  AC_CHECK_HEADERS([openssl/evp.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+])
 
 AC_CHECK_HEADERS([arpa/inet.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([getopt.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([grp.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
-AC_CHECK_HEADERS([openssl/bio.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
-AC_CHECK_HEADERS([openssl/err.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
-AC_CHECK_HEADERS([openssl/evp.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([pwd.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([stdint.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([stdio.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])

@@ -20,14 +20,17 @@ src_tlsdate_routeup_SOURCES+= src/util.c
 
 src_tlsdate_SOURCES = src/tlsdate.c
 
-src_tlsdate_helper_LDADD = -lssl -lcrypto
+src_tlsdate_helper_CFLAGS = @SSL_CFLAGS@
+src_tlsdate_helper_LDADD = @SSL_LIBS@
 src_tlsdate_helper_LDADD+= src/compat/libtlsdate_compat.la
 src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
+if !POLARSSL
 src_tlsdate_helper_SOURCES+= src/proxy-bio.c
+endif
 src_tlsdate_helper_SOURCES+= src/util.c
 
-src_tlsdated_CFLAGS = -DTLSDATED_MAIN
-src_tlsdated_LDADD = -lcrypto
+src_tlsdated_CFLAGS = -DTLSDATED_MAIN @SSL_CFLAGS@
+src_tlsdated_LDADD = @SSL_LIBS@
 src_tlsdated_SOURCES = src/conf.c
 src_tlsdated_SOURCES+= src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
@@ -37,7 +40,7 @@ src_tlsdate_dbus_announce_CFLAGS = @DBUS_CFLAGS@
 src_tlsdate_dbus_announce_LDADD = @DBUS_LIBS@
 src_tlsdate_dbus_announce_SOURCES = src/tlsdate-dbus-announce.c
 
-src_tlsdated_unittest_LDADD = -lcrypto
+src_tlsdated_unittest_LDADD = @SSL_LIBS@
 src_tlsdated_unittest_SOURCES = src/routeup.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated-unittest.c
 src_tlsdated_unittest_SOURCES+= src/util.c
@@ -45,13 +48,15 @@ src_tlsdated_unittest_SOURCES+= src/tlsdated.c
 check_PROGRAMS+= src/tlsdated_unittest
 noinst_PROGRAMS+= src/tlsdated_unittest
 
-src_proxy_bio_unittest_LDADD = -lssl -lcrypto
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
 src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
 src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
 src_proxy_bio_unittest_SOURCES+= src/test-bio.c
 src_proxy_bio_unittest_SOURCES+= src/util.c
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
 
 # We're not shipping headers
 noinst_HEADERS+= src/routeup.h
