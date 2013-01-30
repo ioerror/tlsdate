@@ -1,4 +1,2 @@
 version=3
-
-# We will eventually want to put up new releases on github
-http://githubredir.debian.net/github/ioerror/tlsdate/archive/ tlsdate-(.*).tar.gz
+https://github.com/ioerror/tlsdate/tags .*/tlsdate-(\d[^n]*)\.(?:tgz|tbz2|txz|tar\.(?:gz|bz2|xz))

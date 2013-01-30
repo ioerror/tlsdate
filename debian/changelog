@@ -1,3 +1,16 @@
+tlsdate (0.0.5-2) unstable; urgency=low
+
+  [Kartik Mistry]
+  * debian/control:
+    + Added Suggests: apparmor, as package ships an AppArmor profile.
+      Thanks to intrigeri@debian.org for report (Closes: #699181)
+    + Bumped Standards-Version to 3.9.4
+    + Added myself as Uploaders.
+  * debian/watch:
+    + Updated as per suggestion from Bart Martens <bartm@debian.org>.
+
+ -- Kartik Mistry <kartik@debian.org>  Wed, 30 Jan 2013 08:21:34 +0530
+
 tlsdate (0.0.5-1) unstable; urgency=low
 
   * New upstream version.
