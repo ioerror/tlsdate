@@ -24,7 +24,9 @@ src_tlsdate_helper_CFLAGS = @SSL_CFLAGS@
 src_tlsdate_helper_LDADD = @SSL_LIBS@
 src_tlsdate_helper_LDADD+= src/compat/libtlsdate_compat.la
 src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
-if !POLARSSL
+if POLARSSL
+src_tlsdate_helper_SOURCES+= src/proxy-polarssl.c
+else
 src_tlsdate_helper_SOURCES+= src/proxy-bio.c
 endif
 src_tlsdate_helper_SOURCES+= src/util.c
@@ -66,6 +68,7 @@ noinst_HEADERS+= src/tlsdate.h
 noinst_HEADERS+= src/util.h
 noinst_HEADERS+= src/visibility.h
 noinst_HEADERS+= src/proxy-bio.h
+noinst_HEADERS+= src/proxy-polarssl.h
 noinst_HEADERS+= src/test-bio.h
 noinst_HEADERS+= src/conf.h
 

@@ -79,6 +79,8 @@ know:
 
 #ifndef USE_POLARSSL
 #include "src/proxy-bio.h"
+#else
+#include "src/proxy-polarssl.h"
 #endif
 
 #include "src/compat/clock.h"
@@ -89,7 +91,6 @@ know:
 #include "polarssl/ssl.h"
 #endif
 
-#ifndef USE_POLARSSL
 static void
 validate_proxy_scheme(const char *scheme)
 {
@@ -145,6 +146,7 @@ parse_proxy_uri(char *proxy, char **scheme, char **host, char **port)
   validate_proxy_port(*port);
 }
 
+#ifndef USE_POLARSSL
 static void
 setup_proxy(BIO *ssl)
 {
@@ -679,11 +681,17 @@ check_key_length (ssl_context *ssl)
   uint32_t key_bits;
   const x509_cert *certificate;
   const rsa_context *public_key;
+  char buf[1024];
+
   certificate = ssl_get_peer_cert (ssl);
   if (NULL == certificate)
   {
     die ("Getting certificate failed\n");
   }
+
+  x509parse_dn_gets(buf, 1024, &certificate->subject);
+  verb ("V: Certificate for subject '%s'\n", buf);
+
   public_key = &certificate->rsa;
   if (NULL == public_key)
   {
@@ -764,7 +772,6 @@ check_timestamp (uint32_t server_time)
 {
   uint32_t compiled_time = RECENT_COMPILE_DATE;
   uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
-  verb("V: freezing time for x509 verification\n");
   if (compiled_time < server_time
       &&
       server_time < max_reasonable_time)
@@ -812,6 +819,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   entropy_context entropy;
   ctr_drbg_context ctr_drbg;
   ssl_context ssl;
+  proxy_polarssl_ctx proxy_ctx;
   x509_cert cacert;
   struct stat statbuf;
   int ret = 0, server_fd = 0;
@@ -820,6 +828,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   memset (&ssl, 0, sizeof(ssl_context));
   memset (&cacert, 0, sizeof(x509_cert));
 
+  verb("V: Using PolarSSL for SSL\n");
   if (ca_racket)
   {
     if (-1 == stat (ca_cert_container, &statbuf))
@@ -851,24 +860,55 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
     die("Failed to initialize CTR_DRBG\n");
   }
 
-  verb("V: opening socket to %s:%s\n", host, port);
-  if (0 != net_connect (&server_fd, host, atoi(port)))
-  {
-    die ("SSL connection failed\n");
-  }
   if (0 != ssl_init (&ssl))
   {
     die("SSL initialization failed\n");
   }
   ssl_set_endpoint (&ssl, SSL_IS_CLIENT);
   ssl_set_rng (&ssl, ctr_drbg_random, &ctr_drbg);
-  ssl_set_bio (&ssl, net_recv, &server_fd, net_send, &server_fd);
   ssl_set_ca_chain (&ssl, &cacert, NULL, hostname_to_verify);
   if (ca_racket)
   {
       // You can do SSL_VERIFY_REQUIRED here, but then the check in
       // inspect_key() never happens as the ssl_handshake() will fail.
       ssl_set_authmode (&ssl, SSL_VERIFY_OPTIONAL);
+  }
+
+  if (proxy)
+  {
+    char *scheme;
+    char *proxy_host;
+    char *proxy_port;
+
+    parse_proxy_uri (proxy, &scheme, &proxy_host, &proxy_port);
+
+    verb("V: opening socket to proxy %s:%s\n", proxy_host, proxy_port);
+    if (0 != net_connect (&server_fd, proxy_host, atoi(proxy_port)))
+    {
+      die ("SSL connection failed\n");
+    }
+
+    proxy_polarssl_init (&proxy_ctx);
+    proxy_polarssl_set_bio (&proxy_ctx, net_recv, &server_fd, net_send, &server_fd);
+    proxy_polarssl_set_host (&proxy_ctx, host);
+    proxy_polarssl_set_port (&proxy_ctx, atoi(port));
+    proxy_polarssl_set_scheme (&proxy_ctx, scheme);
+
+    ssl_set_bio (&ssl, proxy_polarssl_recv, &proxy_ctx, proxy_polarssl_send, &proxy_ctx);
+
+    verb("V: Handle proxy connection\n");
+    if (0 == proxy_ctx.f_connect (&proxy_ctx))
+      die("Proxy connection failed\n");
+  }
+  else
+  {
+    verb("V: opening socket to %s:%s\n", host, port);
+    if (0 != net_connect (&server_fd, host, atoi(port)))
+    {
+      die ("SSL connection failed\n");
+    }
+
+    ssl_set_bio (&ssl, net_recv, &server_fd, net_send, &server_fd);
   }
 
   verb("V: starting handshake\n");
@@ -901,6 +941,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   check_key_length (&ssl);
 
   memcpy (time_map, &timestamp, sizeof(uint32_t));
+  proxy_polarssl_free (&proxy_ctx);
   ssl_free (&ssl);
   x509_free (&cacert);
 }
@@ -941,6 +982,7 @@ run_ssl_ssl (uint32_t *time_map, int time_is_an_illusion)
   if (ctx == NULL)
     die("OpenSSL failed to support protocol `%s'\n", protocol);
 
+  verb("V: Using OpenSSL for SSL\n");
   if (ca_racket)
   {
     if (-1 == stat(ca_cert_container, &statbuf))
@@ -1035,12 +1077,6 @@ main(int argc, char **argv)
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
   proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
-#ifdef USE_POLARSSL
-  if (proxy)
-  {
-    die ("PolarSSL proxy support not yet implemented\n");
-  }
-#endif
 
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 

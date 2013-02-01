@@ -518,9 +518,6 @@ parse_source(struct opts *opts, struct conf_entry *conf)
       port = conf->value;
     else if (!strcmp(conf->key, "proxy"))
     {
-#ifdef USE_POLARSSL
-      fatal ("PolarSSL proxy support not yet implemented");
-#endif
       proxy = conf->value;
     }
     else
