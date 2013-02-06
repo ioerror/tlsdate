@@ -1,6 +1,8 @@
 /* conf.c - config file parser */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* strchrnul */
+#endif
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +49,7 @@ struct conf_entry *conf_parse(FILE *f)
     val = strtok(NULL, "");
     if (val)
       val = eat_whitespace(val);
-    e = malloc(sizeof *e);
+    e = (struct conf_entry *) malloc(sizeof *e);
     if (!e)
       goto fail;
     e->next = NULL;

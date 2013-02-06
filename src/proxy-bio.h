@@ -15,6 +15,13 @@
 
 #include "util.h"
 
+struct proxy_ctx {
+  char *host;
+  uint16_t port;
+  int connected;
+  int (*connect)(BIO *b);
+};
+
 BIO *BIO_new_proxy();
 
 /* These do not take ownership of their string arguments. */

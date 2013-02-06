@@ -1,5 +1,7 @@
 # vim:ft=automake
 
+CFLAGS="-D__STDC_LIMIT_MACROS"
+
 BUILT_SOURCES=
 EXTRA_DIST=
 TESTS=
