@@ -447,12 +447,14 @@ uint32_t
 check_cn (SSL *ssl, const char *hostname)
 {
   int ok = 0;
-  uint32_t ret;
+  int ret;
   char *cn_buf;
   X509 *certificate;
   X509_NAME *xname;
 
-  cn_buf = xmalloc(TLSDATE_HOST_NAME_MAX + 1);
+  // We cast this to cast away g++ complaining about the following:
+  // error: invalid conversion from ‘void*’ to ‘char*’
+  cn_buf = (char *) xmalloc(TLSDATE_HOST_NAME_MAX + 1);
 
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
@@ -465,7 +467,7 @@ check_cn (SSL *ssl, const char *hostname)
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
                                   cn_buf, TLSDATE_HOST_NAME_MAX);
 
-  if (-1 == ret && ret != strlen(hostname))
+  if (-1 == ret && ret != (int) strlen(hostname))
   {
     die ("Unable to extract commonName\n");
   }
@@ -817,10 +819,13 @@ main(int argc, char **argv)
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
   }
 
-  time_map = mmap (NULL, sizeof (uint32_t),
+  // We cast the mmap value to remove this error when compiling with g++:
+  // src/tlsdate-helper.c: In function ‘int main(int, char**)’:
+  // src/tlsdate-helper.c:822:41: error: invalid conversion from ‘void*’ to ‘uint32_t
+  time_map = (uint32_t *) mmap (NULL, sizeof (uint32_t),
        PROT_READ | PROT_WRITE,
        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-  if (MAP_FAILED == time_map)
+   if (MAP_FAILED == time_map)
   {
     fprintf (stderr, "mmap failed: %s\n",
              strerror (errno));
