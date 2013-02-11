@@ -467,7 +467,7 @@ check_cn (SSL *ssl, const char *hostname)
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
                                   cn_buf, TLSDATE_HOST_NAME_MAX);
 
-  if (-1 == ret && ret != (int) strlen(hostname))
+  if (-1 == ret || ret != (int) strlen(hostname))
   {
     die ("Unable to extract commonName\n");
   }
