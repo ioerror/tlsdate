@@ -2,6 +2,8 @@
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
   Fix a logic bug in CN parsing caught by Ryan Sleevi
+  Add PolarSSL support (We no longer require OpenSSL to function!)
+    Thanks to Paul Bakker and the PolarSSL team!
 0.0.5 Web 23 Jan, 2013
   Fix spelling error in tlsdate-helper
   Update man pages formatting
