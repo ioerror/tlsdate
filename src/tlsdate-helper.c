@@ -955,7 +955,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
  * @param time_map where to store the current time
  */
 static void
-run_ssl_ssl (uint32_t *time_map, int time_is_an_illusion)
+run_ssl (uint32_t *time_map, int time_is_an_illusion)
 {
   BIO *s_bio;
   SSL_CTX *ctx;
