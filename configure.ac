@@ -1,4 +1,4 @@
-AC_INIT([tlsdate],[0.0.5],[jacob at appelbaum.net])
+AC_INIT([tlsdate],[0.0.6],[jacob at appelbaum.net])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -20,6 +20,7 @@ gl_VISIBILITY
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 CONFIG_EXTRA
+AX_PLATFORM
 
 dnl Here we should build a small program to fetch the build system time in a portable
 dnl manner. We have no Win32 users, we can fix this if we ever find one that
@@ -144,6 +145,39 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
+
+case "$host" in
+  *-darwin*)
+    dnl This is for Mac OS X (10.8.2)
+    AC_CHECK_HEADERS([mach/clock.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+    AC_CHECK_HEADERS([mach/mach.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-linux*)
+    dnl This is for GNU/Linux
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+esac
+
 AC_MSG_CHECKING([user/group to drop privs to])
 
 AC_ARG_WITH([unpriv-user],
@@ -153,53 +187,35 @@ AS_CASE([$with_unpriv_user],
         [""|yes|no], [UNPRIV_USER="nobody"],
         [*], [UNPRIV_USER=$with_unpriv_user])
 AC_DEFINE_UNQUOTED([UNPRIV_USER], ["${UNPRIV_USER}"], [Unprivileged user])
-
-AC_ARG_WITH([unpriv-group],
-            [AS_HELP_STRING([--with-unpriv-group=<group>],
-                            [Group to drop privs to @<:@default: nogroup@:>@])])
-AS_CASE([$with_unpriv_group],
-        [""|yes|no], [UNPRIV_GROUP="nogroup"],
-        [*], [UNPRIV_GROUP=$with_unpriv_group])
-AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
-
 AC_MSG_RESULT(${UNPRIV_USER}:${UNPRIV_GROUP})
 
-dnl Check for clock_gettime.  Some systems put it into -lc, while
-dnl others use -lrt.  Try the first and fallback to the latter.
-RT_LIB=
-AC_CHECK_FUNC([clock_gettime], [:],
-              [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
-                            [AC_MSG_ERROR([Your system lacks clock_gettime])])])
-AC_SUBST(RT_LIB)
-
 AC_ARG_ENABLE([dbus],
-              [AS_HELP_STRING([--disable-dbus],
-                              [Disable automatically dbus support])])
+	      [AS_HELP_STRING([--disable-dbus],
+			      [Disable automatically dbus support])])
 AS_IF([test "x$enable_dbus" = xyes], [
     PKG_CHECK_MODULES([DBUS], [dbus-1], [
-            AC_DEFINE([HAVE_DBUS], [1], [Enable dbus support])
-            AC_MSG_CHECKING([user/group to use for dbus])
-            AC_ARG_WITH([dbus-user],
-                        [AS_HELP_STRING([--with-dbus-user=<user>],
-                                        [User to send dbus signals from @<:@default: nobody@:>@])])
-            AS_CASE([$with_dbus_user],
-                    [""|yes|no], [DBUS_USER="nobody"],
-                    [*], [DBUS_USER=$with_dbus_user])
-            AC_ARG_WITH([dbus-group],
-                        [AS_HELP_STRING([--with-dbus-group=<group>],
-                                        [Group to send dbus signals from @<:@default: nogroup@:>@])])
-            AS_CASE([$with_dbus_group],
-                    [""|yes|no], [DBUS_GROUP="nogroup"],
-                    [*], [DBUS_GROUP=$with_dbus_group])
-            AC_MSG_RESULT(${DBUS_USER}:${DBUS_GROUP})
-            AC_DEFINE_UNQUOTED([DBUS_USER], ["${DBUS_USER}"], [DBus user])
-            AC_DEFINE_UNQUOTED([DBUS_GROUP], ["${DBUS_GROUP}"], [DBus group])
-        ], [
-            AS_IF([test "x$enable_dbus" = xyes],
-                  [AC_MSG_ERROR([dbus requested but not found])])
-        ])
+	    AC_DEFINE([HAVE_DBUS], [1], [Enable dbus support])
+	    AC_MSG_CHECKING([user/group to use for dbus])
+	    AC_ARG_WITH([dbus-user],
+			[AS_HELP_STRING([--with-dbus-user=<user>],
+					[User to send dbus signals from @<:@default: nobody@:>@])])
+	    AS_CASE([$with_dbus_user],
+		    [""|yes|no], [DBUS_USER="nobody"],
+		    [*], [DBUS_USER=$with_dbus_user])
+	    AC_ARG_WITH([dbus-group],
+			[AS_HELP_STRING([--with-dbus-group=<group>],
+					[Group to send dbus signals from @<:@default: nogroup@:>@])])
+	    AS_CASE([$with_dbus_group],
+		    [""|yes|no], [DBUS_GROUP="nogroup"],
+		    [*], [DBUS_GROUP=$with_dbus_group])
+	    AC_MSG_RESULT(${DBUS_USER}:${DBUS_GROUP})
+	    AC_DEFINE_UNQUOTED([DBUS_USER], ["${DBUS_USER}"], [DBus user])
+	    AC_DEFINE_UNQUOTED([DBUS_GROUP], ["${DBUS_GROUP}"], [DBus group])
+	], [
+	    AS_IF([test "x$enable_dbus" = xyes],
+		  [AC_MSG_ERROR([dbus requested but not found])])
+	])
     ])
-
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 

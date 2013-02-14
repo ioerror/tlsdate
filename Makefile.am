@@ -1,6 +1,6 @@
 # vim:ft=automake
 
-CFLAGS="-D__STDC_LIMIT_MACROS"
+AM_CFLAGS="-D__STDC_LIMIT_MACROS"
 
 BUILT_SOURCES=
 EXTRA_DIST=
@@ -52,7 +52,7 @@ maintainer-clean-local:
 	@rm m4/ltversion.m4
 	@rm m4/lt~obsolete.m4
 	@rm -f tlsdate-*.tar.gz
-	@rm src/configmake.h
+	-rm src/configmake.h
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 certdir =  @TLSDATE_CA_ROOTS@

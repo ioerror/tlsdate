@@ -1,8 +1,16 @@
 # vim:ft=automake
 
+src_tlsdate_SOURCES=
+src_tlsdate_LDADD=
+
+src_tlsdate_helper_CFLAGS=
+src_tlsdate_helper_SOURCES=
+src_tlsdate_helper_LDADD=
+
 include src/compat/include.am
 
 # Our main program
+if TARGET_LINUX
 bin_PROGRAMS+= src/tlsdate-routeup
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
@@ -13,24 +21,38 @@ src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
 check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
+endif
 
+if TARGET_OSX
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+endif
+
+# This doesn't work on Mac OS X
+if TARGET_LINUX
 src_tlsdate_routeup_CFLAGS = -DROUTEUP_MAIN
 src_tlsdate_routeup_SOURCES = src/routeup.c
 src_tlsdate_routeup_SOURCES+= src/util.c
+endif
 
-src_tlsdate_SOURCES = src/tlsdate.c
+src_tlsdate_SOURCES+= src/tlsdate.c
+src_tlsdate_CFLAGS = -DBUILDING_TLSDATE
 
-src_tlsdate_helper_CFLAGS = @SSL_CFLAGS@
-src_tlsdate_helper_LDADD = @SSL_LIBS@
+src_tlsdate_helper_CFLAGS+= @SSL_CFLAGS@
+src_tlsdate_helper_LDADD+= @SSL_LIBS@
 src_tlsdate_helper_LDADD+= src/compat/libtlsdate_compat.la
-src_tlsdate_helper_SOURCES = src/tlsdate-helper.c
+src_tlsdate_helper_SOURCES+= src/tlsdate-helper.c
+
 if POLARSSL
 src_tlsdate_helper_SOURCES+= src/proxy-polarssl.c
 else
+# OpenSSL is our default if we're not using PolarSSL
 src_tlsdate_helper_SOURCES+= src/proxy-bio.c
 endif
 src_tlsdate_helper_SOURCES+= src/util.c
 
+# This doesn't work on Mac OS X
+if TARGET_LINUX
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN @SSL_CFLAGS@
 src_tlsdated_LDADD = @SSL_LIBS@
 src_tlsdated_SOURCES = src/conf.c
@@ -49,7 +71,10 @@ src_tlsdated_unittest_SOURCES+= src/util.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated.c
 check_PROGRAMS+= src/tlsdated_unittest
 noinst_PROGRAMS+= src/tlsdated_unittest
+endif
 
+# This doesn't work on Mac OS X
+if TARGET_LINUX
 if !POLARSSL
 src_proxy_bio_unittest_LDADD = @SSL_LIBS@
 src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
@@ -58,6 +83,7 @@ src_proxy_bio_unittest_SOURCES+= src/test-bio.c
 src_proxy_bio_unittest_SOURCES+= src/util.c
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
 endif
 
 # We're not shipping headers

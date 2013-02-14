@@ -85,6 +85,10 @@ know:
 
 #include "src/compat/clock.h"
 
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 #ifdef USE_POLARSSL
 #include "polarssl/entropy.h"
 #include "polarssl/ctr_drbg.h"
@@ -1003,7 +1007,11 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
           fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
         break;
       default:
-        die("Unable to load CA certficate container\n");
+        if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
+        {
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+          die("Unable to load CA certficate container\n");
+        }
       }
     }
   }
