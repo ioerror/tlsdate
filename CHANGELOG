@@ -5,6 +5,7 @@
   Add PolarSSL support (We no longer require OpenSSL to function!)
     Thanks to Paul Bakker and the PolarSSL team!
   Experimental Mac OS X (10.8.2) support
+    Thanks to Brian Aker and Ingy döt Net for pair programming time
 0.0.5 Web 23 Jan, 2013
   Fix spelling error in tlsdate-helper
   Update man pages formatting
