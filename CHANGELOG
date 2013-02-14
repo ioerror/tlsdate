@@ -4,6 +4,7 @@
   Fix a logic bug in CN parsing caught by Ryan Sleevi of the Google Chrome Team
   Add PolarSSL support (We no longer require OpenSSL to function!)
     Thanks to Paul Bakker and the PolarSSL team!
+  Experimental Mac OS X (10.8.2) support
 0.0.5 Web 23 Jan, 2013
   Fix spelling error in tlsdate-helper
   Update man pages formatting
