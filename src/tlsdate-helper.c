@@ -483,7 +483,7 @@ check_cn (SSL *ssl, const char *hostname)
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
                                   cn_buf, TLSDATE_HOST_NAME_MAX);
 
-  if (-1 == ret || ret != (int) strlen(hostname))
+  if (-1 == ret || ret != (int) strlen(cn_buf))
   {
     die ("Unable to extract commonName\n");
   }
@@ -579,7 +579,10 @@ check_san (SSL *ssl, const char *hostname)
             if (!strcasecmp(nval->name, "DNS"))
             {
               ok = check_wildcard_match_rfc2595(host, nval->value);
-              break;
+              if (ok)
+              {
+                break;
+              }
             }
             verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
