@@ -1,4 +1,4 @@
-0.0.6 XXX
+0.0.6 Mon 18 Feb, 2013
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
   Fix a logic bug in CN parsing caught by Ryan Sleevi of the Google Chrome Team
