@@ -2,6 +2,7 @@
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
   Fix a logic bug in CN parsing caught by Ryan Sleevi of the Google Chrome Team
+    Further fixes by Thijs Alkemade
   Add PolarSSL support (We no longer require OpenSSL to function!)
     Thanks to Paul Bakker and the PolarSSL team!
   Experimental Mac OS X (10.8.2) support
