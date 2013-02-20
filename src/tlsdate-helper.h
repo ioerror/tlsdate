@@ -26,6 +26,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 
+#ifndef USE_POLARSSL
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -33,6 +34,7 @@
 #include <openssl/x509.h>
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
+#endif
 
 int verbose;
 
@@ -96,6 +98,7 @@ static const char *protocol;
 static char *proxy;
 
 static const char *ca_cert_container;
+#ifndef USE_POLARSSL
 void openssl_time_callback (const SSL* ssl, int where, int ret);
 uint32_t get_certificate_keybits (EVP_PKEY *public_key);
 uint32_t check_cn (SSL *ssl, const char *hostname);
@@ -105,12 +108,12 @@ uint32_t check_name (SSL *ssl, const char *hostname);
 uint32_t verify_signature (SSL *ssl, const char *hostname);
 void check_key_length (SSL *ssl);
 void inspect_key (SSL *ssl, const char *hostname);
-static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
 void check_key_length (SSL *ssl);
+void inspect_key (SSL *ssl, const char *hostname);
+#endif
 uint32_t dns_label_count (char *label, char *delim);
 uint32_t check_wildcard_match_rfc2595 (const char *orig_hostname,
                                        const char *orig_cert_wild_card);
-void inspect_key (SSL *ssl, const char *hostname);
 static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
 
 #endif

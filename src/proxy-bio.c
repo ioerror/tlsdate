@@ -26,16 +26,10 @@
 #define __USE_POSIX
 #endif
 #include <netdb.h>
+
 #include <stdint.h>
 
 #include "src/proxy-bio.h"
-
-struct proxy_ctx {
-  char *host;
-  uint16_t port;
-  int connected;
-  int (*connect)(BIO *b);
-};
 
 int socks4a_connect(BIO *b);
 int socks5_connect(BIO *b);
@@ -43,7 +37,7 @@ int http_connect(BIO *b);
 
 int proxy_new(BIO *b)
 {
-  struct proxy_ctx *ctx = malloc(sizeof *ctx);
+  struct proxy_ctx *ctx = (struct proxy_ctx *) malloc(sizeof *ctx);
   if (!ctx)
     return 0;
   ctx->connected = 0;
@@ -61,7 +55,7 @@ int proxy_free(BIO *b)
   struct proxy_ctx *c;
   if (!b || !b->ptr)
     return 1;
-  c = b->ptr;
+  c = (struct proxy_ctx *) b->ptr;
   if (c->host)
     free(c->host);
   c->host = NULL;
@@ -72,7 +66,7 @@ int proxy_free(BIO *b)
 
 int socks4a_connect(BIO *b)
 {
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
   int r;
   unsigned char buf[NI_MAXHOST + 16];
   uint16_t port_n = htons(ctx->port);
@@ -109,12 +103,16 @@ int socks4a_connect(BIO *b)
   sz += strlen(ctx->host) + 1;
 
   r = BIO_write(b->next_bio, buf, sz);
-  if (r != sz)
+  if ( -1 == r )
+    return -1;
+  if ( (size_t) r != sz)
     return 0;
 
   /* server reply: 1 + 1 + 2 + 4 */
   r = BIO_read(b->next_bio, buf, 8);
-  if (r != 8)
+  if ( -1 == r )
+    return -1;
+  if ( (size_t) r != 8)
     return 0;
   if (buf[1] == 0x5a) {
     verb("V: proxy4: connected\n");
@@ -128,7 +126,7 @@ int socks5_connect(BIO *b)
 {
   unsigned char buf[NI_MAXHOST + 16];
   int r;
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
   uint16_t port_n = htons(ctx->port);
   size_t sz = 0;
 
@@ -185,7 +183,9 @@ int socks5_connect(BIO *b)
   sz += sizeof(port_n);
 
   r = BIO_write(b->next_bio, buf, sz);
-  if (r != sz)
+  if ( -1 == r )
+    return -1;
+  if ( (size_t) r != sz)
     return 0;
 
   /*
@@ -200,6 +200,8 @@ int socks5_connect(BIO *b)
 
   /* grab up through the addr type */
   r = BIO_read(b->next_bio, buf, 4);
+  if ( -1 == r )
+    return -1;
   if (r != 4)
     return 0;
 
@@ -251,23 +253,29 @@ int sock_gets(BIO *b, char *buf, size_t sz)
 int http_connect(BIO *b)
 {
   int r;
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
   char buf[4096];
   int retcode;
 
   snprintf(buf, sizeof(buf), "CONNECT %s:%d HTTP/1.1\r\n",
            ctx->host, ctx->port);
   r = BIO_write(b->next_bio, buf, strlen(buf));
-  if (r != strlen(buf))
+  if ( -1 == r )
+    return -1;
+  if ( (size_t) r != strlen(buf))
     return 0;
   /* required by RFC 2616 14.23 */
   snprintf(buf, sizeof(buf), "Host: %s:%d\r\n", ctx->host, ctx->port);
   r = BIO_write(b->next_bio, buf, strlen(buf));
-  if (r != strlen(buf))
+  if ( -1 == r )
+    return -1;
+  if ( (size_t) r != strlen(buf))
     return 0;
   strcpy(buf, "\r\n");
   r = BIO_write(b->next_bio, buf, strlen(buf));
-  if (r != strlen(buf))
+  if ( -1 == r )
+    return -1;
+  if ( (size_t) r != strlen(buf))
     return 0;
 
   r = sock_gets(b->next_bio, buf, sizeof(buf));
@@ -292,7 +300,7 @@ int http_connect(BIO *b)
 int proxy_write(BIO *b, const char *buf, int sz)
 {
   int r;
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
 
   assert(buf);
 
@@ -317,7 +325,7 @@ int proxy_write(BIO *b, const char *buf, int sz)
 int proxy_read(BIO *b, char *buf, int sz)
 {
   int r;
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
 
   assert(buf);
 
@@ -342,7 +350,7 @@ long proxy_ctrl(BIO *b, int cmd, long num, void *ptr)
   struct proxy_ctx *ctx;
   if (!b->next_bio)
     return 0;
-  ctx = b->ptr;
+  ctx = (struct proxy_ctx *) b->ptr;
   assert(ctx);
 
   switch (cmd) {
@@ -404,7 +412,7 @@ BIO API *BIO_new_proxy()
 
 int API BIO_proxy_set_type(BIO *b, const char *type)
 {
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
   if (!strcmp(type, "socks5"))
     ctx->connect = socks5_connect;
   else if (!strcmp(type, "socks4a"))
@@ -418,7 +426,7 @@ int API BIO_proxy_set_type(BIO *b, const char *type)
 
 int API BIO_proxy_set_host(BIO *b, const char *host)
 {
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
   if (strnlen(host, NI_MAXHOST) == NI_MAXHOST)
     return 1;
   ctx->host = strdup(host);
@@ -427,6 +435,6 @@ int API BIO_proxy_set_host(BIO *b, const char *host)
 
 void API BIO_proxy_set_port(BIO *b, uint16_t port)
 {
-  struct proxy_ctx *ctx = b->ptr;
+  struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
   ctx->port = port;
 }

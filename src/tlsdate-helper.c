@@ -77,9 +77,23 @@ know:
 #include "config.h"
 #include "src/tlsdate-helper.h"
 
+#ifndef USE_POLARSSL
 #include "src/proxy-bio.h"
+#else
+#include "src/proxy-polarssl.h"
+#endif
 
 #include "src/compat/clock.h"
+
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
+#ifdef USE_POLARSSL
+#include "polarssl/entropy.h"
+#include "polarssl/ctr_drbg.h"
+#include "polarssl/ssl.h"
+#endif
 
 static void
 validate_proxy_scheme(const char *scheme)
@@ -136,6 +150,7 @@ parse_proxy_uri(char *proxy, char **scheme, char **host, char **port)
   validate_proxy_port(*port);
 }
 
+#ifndef USE_POLARSSL
 static void
 setup_proxy(BIO *ssl)
 {
@@ -204,7 +219,6 @@ xfree (void *ptr)
 
   free(ptr);
 }
-
 
 void
 openssl_time_callback (const SSL* ssl, int where, int ret)
@@ -439,7 +453,9 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
     return 0;
   }
 }
+#endif
 
+#ifndef USE_POLARSSL
 /**
  This extracts the first commonName and checks it against hostname.
 */
@@ -467,7 +483,7 @@ check_cn (SSL *ssl, const char *hostname)
   ret = X509_NAME_get_text_by_NID(xname, NID_commonName,
                                   cn_buf, TLSDATE_HOST_NAME_MAX);
 
-  if (-1 == ret && ret != (int) strlen(hostname))
+  if (-1 == ret || ret != (int) strlen(cn_buf))
   {
     die ("Unable to extract commonName\n");
   }
@@ -563,7 +579,10 @@ check_san (SSL *ssl, const char *hostname)
             if (!strcasecmp(nval->name, "DNS"))
             {
               ok = check_wildcard_match_rfc2595(host, nval->value);
-              break;
+              if (ok)
+              {
+                break;
+              }
             }
             verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
@@ -598,7 +617,43 @@ check_name (SSL *ssl, const char *hostname)
   }
   return ret;
 }
+#endif
 
+#ifdef USE_POLARSSL
+uint32_t
+verify_signature (ssl_context *ssl, const char *hostname)
+{
+  int ssl_verify_result;
+
+  ssl_verify_result = ssl_get_verify_result (ssl);
+  if (ssl_verify_result & BADCERT_EXPIRED)
+  {
+    die ("certificate has expired\n");
+  }
+  if (ssl_verify_result & BADCERT_REVOKED)
+  {
+    die ("certificate has been revoked\n");
+  }
+  if (ssl_verify_result & BADCERT_CN_MISMATCH)
+  {
+    die ("CN and subject AltName mismatch for certificate\n");
+  }
+  if (ssl_verify_result & BADCERT_NOT_TRUSTED)
+  {
+    die ("certificate is self-signed or not signed by a trusted CA\n");
+  }
+
+  if (0 == ssl_verify_result)
+  {
+    verb ("V: verify success\n");
+  }
+  else
+  {
+    die ("certificate verification error: -0x%04x\n", -ssl_verify_result);
+  }
+  return 0;
+}
+#else
 uint32_t
 verify_signature (SSL *ssl, const char *hostname)
 {
@@ -626,7 +681,42 @@ verify_signature (SSL *ssl, const char *hostname)
   }
  return 0;
 }
+#endif
 
+#ifdef USE_POLARSSL
+void
+check_key_length (ssl_context *ssl)
+{
+  uint32_t key_bits;
+  const x509_cert *certificate;
+  const rsa_context *public_key;
+  char buf[1024];
+
+  certificate = ssl_get_peer_cert (ssl);
+  if (NULL == certificate)
+  {
+    die ("Getting certificate failed\n");
+  }
+
+  x509parse_dn_gets(buf, 1024, &certificate->subject);
+  verb ("V: Certificate for subject '%s'\n", buf);
+
+  public_key = &certificate->rsa;
+  if (NULL == public_key)
+  {
+    die ("public key extraction failure\n");
+  } else {
+    verb ("V: public key is ready for inspection\n");
+  }
+  key_bits = mpi_msb (&public_key->N);
+  if (MIN_PUB_KEY_LEN >= key_bits)
+  {
+    die ("Unsafe public key size: %d bits\n", key_bits);
+  } else {
+    verb ("V: key length appears safe\n");
+  }
+}
+#else
 void
 check_key_length (SSL *ssl)
 {
@@ -664,7 +754,18 @@ check_key_length (SSL *ssl)
   }
   EVP_PKEY_free (public_key);
 }
+#endif
 
+#ifdef USE_POLARSSL
+void
+inspect_key (ssl_context *ssl, const char *hostname)
+{
+  verify_signature (ssl, hostname);
+
+  // ssl_get_verify_result() already checks for CN / subjectAltName match
+  // and reports the mismatch as error. So check_name() is not called
+}
+#else
 void
 inspect_key (SSL *ssl, const char *hostname)
 {
@@ -672,7 +773,188 @@ inspect_key (SSL *ssl, const char *hostname)
     verify_signature (ssl, hostname);
     check_name (ssl, hostname);
 }
+#endif
 
+#ifdef USE_POLARSSL
+void
+check_timestamp (uint32_t server_time)
+{
+  uint32_t compiled_time = RECENT_COMPILE_DATE;
+  uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
+  if (compiled_time < server_time
+      &&
+      server_time < max_reasonable_time)
+  {
+    verb("V: remote peer provided: %d, preferred over compile time: %d\n",
+          server_time, compiled_time);
+  } else {
+    die("V: the remote server is a false ticker! server: %d compile: %d\n",
+         server_time, compiled_time);
+  }
+}
+
+static int ssl_do_handshake_part(ssl_context *ssl)
+{
+  int ret = 0;
+
+  /* Only do steps till ServerHello is received */
+  while (ssl->state != SSL_SERVER_HELLO)
+  {
+    ret = ssl_handshake_step (ssl);
+    if (0 != ret)
+    {
+      die("SSL handshake failed\n");
+    }
+  }
+  /* Do ServerHello so we can skim the timestamp */
+  ret = ssl_handshake_step (ssl);
+  if (0 != ret)
+  {
+    die("SSL handshake failed\n");
+  }
+
+  return 0;
+}
+
+/**
+ * Run SSL handshake and store the resulting time value in the
+ * 'time_map'.
+ *
+ * @param time_map where to store the current time
+ */
+static void
+run_ssl (uint32_t *time_map, int time_is_an_illusion)
+{
+  entropy_context entropy;
+  ctr_drbg_context ctr_drbg;
+  ssl_context ssl;
+  proxy_polarssl_ctx proxy_ctx;
+  x509_cert cacert;
+  struct stat statbuf;
+  int ret = 0, server_fd = 0;
+  char *pers = "tlsdate-helper";
+
+  memset (&ssl, 0, sizeof(ssl_context));
+  memset (&cacert, 0, sizeof(x509_cert));
+
+  verb("V: Using PolarSSL for SSL\n");
+  if (ca_racket)
+  {
+    if (-1 == stat (ca_cert_container, &statbuf))
+    {
+      die("Unable to stat CA certficate container\n");
+    }
+    else
+    {
+      switch (statbuf.st_mode & S_IFMT)
+      {
+      case S_IFREG:
+        if (0 > x509parse_crtfile(&cacert, ca_cert_container))
+          fprintf(stderr, "x509parse_crtfile failed\n");
+        break;
+      case S_IFDIR:
+        if (0 > x509parse_crtpath(&cacert, ca_cert_container))
+          fprintf(stderr, "x509parse_crtpath failed\n");
+        break;
+      default:
+        die("Unable to load CA certficate container\n");
+      }
+    }
+  }
+
+  entropy_init (&entropy);
+  if (0 != ctr_drbg_init (&ctr_drbg, entropy_func, &entropy,
+                         (unsigned char *) pers, strlen(pers)))
+  {
+    die("Failed to initialize CTR_DRBG\n");
+  }
+
+  if (0 != ssl_init (&ssl))
+  {
+    die("SSL initialization failed\n");
+  }
+  ssl_set_endpoint (&ssl, SSL_IS_CLIENT);
+  ssl_set_rng (&ssl, ctr_drbg_random, &ctr_drbg);
+  ssl_set_ca_chain (&ssl, &cacert, NULL, hostname_to_verify);
+  if (ca_racket)
+  {
+      // You can do SSL_VERIFY_REQUIRED here, but then the check in
+      // inspect_key() never happens as the ssl_handshake() will fail.
+      ssl_set_authmode (&ssl, SSL_VERIFY_OPTIONAL);
+  }
+
+  if (proxy)
+  {
+    char *scheme;
+    char *proxy_host;
+    char *proxy_port;
+
+    parse_proxy_uri (proxy, &scheme, &proxy_host, &proxy_port);
+
+    verb("V: opening socket to proxy %s:%s\n", proxy_host, proxy_port);
+    if (0 != net_connect (&server_fd, proxy_host, atoi(proxy_port)))
+    {
+      die ("SSL connection failed\n");
+    }
+
+    proxy_polarssl_init (&proxy_ctx);
+    proxy_polarssl_set_bio (&proxy_ctx, net_recv, &server_fd, net_send, &server_fd);
+    proxy_polarssl_set_host (&proxy_ctx, host);
+    proxy_polarssl_set_port (&proxy_ctx, atoi(port));
+    proxy_polarssl_set_scheme (&proxy_ctx, scheme);
+
+    ssl_set_bio (&ssl, proxy_polarssl_recv, &proxy_ctx, proxy_polarssl_send, &proxy_ctx);
+
+    verb("V: Handle proxy connection\n");
+    if (0 == proxy_ctx.f_connect (&proxy_ctx))
+      die("Proxy connection failed\n");
+  }
+  else
+  {
+    verb("V: opening socket to %s:%s\n", host, port);
+    if (0 != net_connect (&server_fd, host, atoi(port)))
+    {
+      die ("SSL connection failed\n");
+    }
+
+    ssl_set_bio (&ssl, net_recv, &server_fd, net_send, &server_fd);
+  }
+
+  verb("V: starting handshake\n");
+  if (0 != ssl_do_handshake_part (&ssl))
+    die("SSL handshake first part failed\n");
+
+  uint32_t timestamp = ( (uint32_t) ssl.in_msg[6] << 24 )
+                     | ( (uint32_t) ssl.in_msg[7] << 16 )
+                     | ( (uint32_t) ssl.in_msg[8] <<  8 )
+                     | ( (uint32_t) ssl.in_msg[9]       );
+  check_timestamp (timestamp);
+
+  verb("V: continuing handshake\n");
+  /* Continue with handshake */
+  while (0 != (ret = ssl_handshake (&ssl)))
+  {
+    if (POLARSSL_ERR_NET_WANT_READ  != ret &&
+        POLARSSL_ERR_NET_WANT_WRITE != ret)
+    {
+      die("SSL handshake failed\n");
+    }
+  }
+
+  // Verify the peer certificate against the CA certs on the local system
+  if (ca_racket) {
+    inspect_key (&ssl, hostname_to_verify);
+  } else {
+    verb ("V: Certificate verification skipped!\n");
+  }
+  check_key_length (&ssl);
+
+  memcpy (time_map, &timestamp, sizeof(uint32_t));
+  proxy_polarssl_free (&proxy_ctx);
+  ssl_free (&ssl);
+  x509_free (&cacert);
+}
+#else /* USE_POLARSSL */
 /**
  * Run SSL handshake and store the resulting time value in the
  * 'time_map'.
@@ -709,6 +991,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   if (ctx == NULL)
     die("OpenSSL failed to support protocol `%s'\n", protocol);
 
+  verb("V: Using OpenSSL for SSL\n");
   if (ca_racket)
   {
     if (-1 == stat(ca_cert_container, &statbuf))
@@ -727,7 +1010,11 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
           fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
         break;
       default:
-        die("Unable to load CA certficate container\n");
+        if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
+        {
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+          die("Unable to load CA certficate container\n");
+        }
       }
     }
   }
@@ -772,7 +1059,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   SSL_free(ssl);
   SSL_CTX_free(ctx);
 }
-
+#endif /* USE_POLARSSL */
 /** drop root rights and become 'nobody' */
 
 int
@@ -894,7 +1181,11 @@ main(int argc, char **argv)
   rt_time_ms = (CLOCK_SEC(&end_time) - CLOCK_SEC(&start_time)) * 1000 + (CLOCK_USEC(&end_time) - CLOCK_USEC(&start_time)) / 1000;
   if (rt_time_ms < 0)
     rt_time_ms = 0; /* non-linear time... */
+#ifdef USE_POLARSSL
+  server_time_s = *time_map;
+#else
   server_time_s = ntohl (*time_map);
+#endif
   munmap (time_map, sizeof (uint32_t));
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",

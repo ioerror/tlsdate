@@ -18,7 +18,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <linux/rtc.h>
-#include <openssl/rand.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -30,6 +29,13 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifdef USE_POLARSSL
+#include <polarssl/entropy.h>
+#include <polarssl/ctr_drbg.h>
+#else
+#include <openssl/rand.h>
+#endif
 
 #include "src/conf.h"
 #include "src/routeup.h"
@@ -67,16 +73,16 @@ build_argv(struct opts *opts)
     ;
   argc++; /* uncounted null terminator */
   argc += 6;  /* -H host -p port -x proxy */
-  new_argv = malloc (argc * sizeof(char *));
+  new_argv = (char **) malloc (argc * sizeof(char *));
   if (!new_argv)
     fatal ("out of memory building argv");
   for (argc = 0; opts->base_argv[argc]; argc++)
     new_argv[argc] = opts->base_argv[argc];
-  new_argv[argc++] = "-H";
+  new_argv[argc++] = (char *) "-H";
   new_argv[argc++] = opts->cur_source->host;
-  new_argv[argc++] = "-p";
+  new_argv[argc++] = (char *) "-p";
   new_argv[argc++] = opts->cur_source->port;
-  new_argv[argc++] = "-x";
+  new_argv[argc++] = (char *) "-x";
   new_argv[argc++] = opts->cur_source->proxy;
   new_argv[argc++] = NULL;
   opts->argv = new_argv;
@@ -283,14 +289,36 @@ sync_and_save (int hwclock_fd, int should_sync, int should_save)
     }
 }
 
+#ifdef USE_POLARSSL
+static int random_init = 0;
+static entropy_context entropy;
+static ctr_drbg_context ctr_drbg;
+static char *pers = "tlsdated";
+#endif
+
 int
 add_jitter (int base, int jitter)
 {
   int n = 0;
   if (!jitter)
     return base;
+#ifdef USE_POLARSSL
+  if (0 == random_init)
+  {
+    entropy_init(&entropy);
+    if (0 > ctr_drbg_init(&ctr_drbg, entropy_func, &entropy,
+                          (unsigned char *) pers, strlen(pers)))
+    {
+      pfatal ("Failed to initialize random source");
+    }
+    random_init = 1;
+  }
+  if (0 != ctr_drbg_random(&ctr_drbg, (unsigned char *)&n, sizeof(n)))
+    fatal ("ctr_drbg_random() failed");
+#else
   if (RAND_bytes((unsigned char *)&n, sizeof(n)) != 1)
     fatal ("RAND_bytes() failed");
+#endif
   return base + (abs(n) % (2 * jitter)) - jitter;
 }
 
@@ -354,7 +382,7 @@ void
 set_conf_defaults(struct opts *opts)
 {
   static char *kDefaultArgv[] = {
-    DEFAULT_TLSDATE, "-H", DEFAULT_HOST, NULL
+    (char *) DEFAULT_TLSDATE, (char *) "-H", (char *) DEFAULT_HOST, NULL
   };
   opts->max_tries = MAX_TRIES;
   opts->min_steady_state_interval = STEADY_STATE_INTERVAL;
@@ -447,7 +475,7 @@ static
 void add_source_to_conf(struct opts *opts, char *host, char *port, char *proxy)
 {
   struct source *s;
-  struct source *source = malloc (sizeof *source);
+  struct source *source = (struct source *) malloc (sizeof *source);
   if (!source)
     fatal ("out of memory for source");
   source->host = strdup (host);
@@ -489,7 +517,9 @@ parse_source(struct opts *opts, struct conf_entry *conf)
     else if (!strcmp(conf->key, "port"))
       port = conf->value;
     else if (!strcmp(conf->key, "proxy"))
+    {
       proxy = conf->value;
+    }
     else
       fatal ("malformed config: '%s' in source stanza", conf->key);
     conf = conf->next;
@@ -509,7 +539,7 @@ load_conf(struct opts *opts)
   struct conf_entry *conf, *e;
   char *conf_file = opts->conf_file;
   if (!opts->conf_file)
-    conf_file = DEFAULT_CONF_FILE;
+    conf_file = (char *) DEFAULT_CONF_FILE;
   f = fopen (conf_file, "r");
   if (!f) {
     if (opts->conf_file) {
@@ -598,7 +628,8 @@ main (int argc, char *argv[], char *envp[])
   load_conf(&opts);
   check_conf(&opts);
   if (!opts.sources)
-    add_source_to_conf(&opts, DEFAULT_HOST, DEFAULT_PORT, DEFAULT_PROXY);
+    add_source_to_conf(&opts, (char *) DEFAULT_HOST, (char *) DEFAULT_PORT,
+                              (char *) DEFAULT_PROXY);
 
   /* grab a handle to /dev/rtc for sync_hwclock() */
   if (opts.should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
