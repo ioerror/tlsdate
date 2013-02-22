@@ -64,4 +64,4 @@ noinst_HEADERS+= src/proxy-bio.h
 noinst_HEADERS+= src/test-bio.h
 noinst_HEADERS+= src/conf.h
 
-check_PROGRAMS+= src/test/rotate src/test/sleep-wrap
+check_PROGRAMS+= src/test/proxy-override src/test/rotate src/test/sleep-wrap
