@@ -82,6 +82,7 @@ struct opts {
   char *conf_file;
   struct source *sources;
   struct source *cur_source;
+  char *proxy;
 };
 
 int is_sane_time (time_t ts);

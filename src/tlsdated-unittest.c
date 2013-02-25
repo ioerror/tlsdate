@@ -176,4 +176,26 @@ TEST(rotate_hosts) {
   EXPECT_EQ(2, tlsdate(&opts, environ));
 }
 
+TEST(proxy_override) {
+  struct source s1 = {
+    .next = NULL,
+    .host = "host",
+    .port = "port",
+    .proxy = NULL,
+  };
+  struct opts opts;
+  char *args[] = { "src/test/proxy-override", NULL };
+  memset(&opts, 0, sizeof(opts));
+  opts.sources = &s1;
+  opts.base_argv = args;
+  opts.subprocess_tries = 2;
+  opts.subprocess_wait_between_tries = 1;
+  extern char **environ;
+  EXPECT_EQ(1, tlsdate(&opts, environ));
+  s1.proxy = "socks5://bad.proxy";
+  EXPECT_EQ(2, tlsdate(&opts, environ));
+  opts.proxy = "socks5://good.proxy";
+  EXPECT_EQ(0, tlsdate(&opts, environ));
+}
+
 TEST_HARNESS_MAIN
