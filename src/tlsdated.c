@@ -82,8 +82,10 @@ build_argv(struct opts *opts)
   new_argv[argc++] = opts->cur_source->host;
   new_argv[argc++] = (char *) "-p";
   new_argv[argc++] = opts->cur_source->port;
-  new_argv[argc++] = (char *) "-x";
-  new_argv[argc++] = opts->cur_source->proxy;
+  if (opts->cur_source->proxy || opts->proxy) {
+    new_argv[argc++] = (char *) "-x";
+    new_argv[argc++] = opts->proxy ? opts->proxy : opts->cur_source->proxy;
+  }
   new_argv[argc++] = NULL;
   opts->argv = new_argv;
 }
@@ -375,6 +377,7 @@ usage (const char *progn)
   printf ("  -l        don't load disk timestamps\n");
   printf ("  -s        don't save disk timestamps\n");
   printf ("  -v        be verbose\n");
+  printf ("  -x <h>    set proxy for subprocs to h\n");
   printf ("  -h        this\n");
 }
 
@@ -402,6 +405,7 @@ set_conf_defaults(struct opts *opts)
   opts->conf_file = NULL;
   opts->sources = NULL;
   opts->cur_source = NULL;
+  opts->proxy = NULL;
 }
 
 void
@@ -409,7 +413,7 @@ parse_argv(struct opts *opts, int argc, char *argv[])
 {
   int opt;
 
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:")) != -1)
     {
       switch (opt)
   {
@@ -458,6 +462,9 @@ parse_argv(struct opts *opts, int argc, char *argv[])
   case 'f':
     opts->conf_file = optarg;
     break;
+  case 'x':
+    opts->proxy = optarg;
+    break;
   case 'h':
   default:
     usage (argv[0]);
@@ -484,9 +491,11 @@ void add_source_to_conf(struct opts *opts, char *host, char *port, char *proxy)
   source->port = strdup (port);
   if (!source->port)
     fatal ("out of memory for port");
-  source->proxy = strdup (proxy);
-  if (!source->proxy)
-    fatal ("out of memory for proxy");
+  if (proxy) {
+    source->proxy = strdup (proxy);
+    if (!source->proxy)
+      fatal ("out of memory for proxy");
+  }
   if (!opts->sources) {
     opts->sources = source;
   } else {
@@ -506,7 +515,7 @@ parse_source(struct opts *opts, struct conf_entry *conf)
    * source
    *   host <host>
    *   port <port>
-   *   proxy <proxy>
+   *   [proxy <proxy>]
    * end
    */
   assert(!strcmp(conf->key, "source"));
@@ -517,17 +526,15 @@ parse_source(struct opts *opts, struct conf_entry *conf)
     else if (!strcmp(conf->key, "port"))
       port = conf->value;
     else if (!strcmp(conf->key, "proxy"))
-    {
       proxy = conf->value;
-    }
     else
       fatal ("malformed config: '%s' in source stanza", conf->key);
     conf = conf->next;
   }
   if (!conf)
     fatal ("unclosed source stanza");
-  if (!host || !port || !proxy)
-    fatal ("incomplete source stanza (needs host, port, proxy)");
+  if (!host || !port)
+    fatal ("incomplete source stanza (needs host, port)");
   add_source_to_conf(opts, host, port, proxy);
   return conf;
 }
