@@ -567,9 +567,9 @@ check_san (SSL *ssl, const char *hostname)
           {
             nval = sk_CONF_VALUE_value(val, j);
             if ((!strcasecmp(nval->name, "DNS") &&
-                !strcasecmp(nval->value, host) ) ||
+                !strcasecmp(nval->value, hostname) ) ||
                 (!strcasecmp(nval->name, "iPAddress") &&
-                !strcasecmp(nval->value, host)))
+                !strcasecmp(nval->value, hostname)))
             {
               verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); // We matched this; so it's safe to print
               ok = 1;
@@ -578,7 +578,7 @@ check_san (SSL *ssl, const char *hostname)
             // Attempt to match subjectAltName DNS names
             if (!strcasecmp(nval->name, "DNS"))
             {
-              ok = check_wildcard_match_rfc2595(host, nval->value);
+              ok = check_wildcard_match_rfc2595(hostname, nval->value);
               if (ok)
               {
                 break;
