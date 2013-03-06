@@ -72,8 +72,8 @@ build_argv(struct opts *opts)
   for (argc = 0; opts->base_argv[argc]; argc++)
     ;
   argc++; /* uncounted null terminator */
-  argc += 6;  /* -H host -p port -x proxy */
-  new_argv = (char **) malloc (argc * sizeof(char *));
+  argc += 8;  /* -H host -p port -x proxy -v -l */
+  new_argv = malloc (argc * sizeof(char *));
   if (!new_argv)
     fatal ("out of memory building argv");
   for (argc = 0; opts->base_argv[argc]; argc++)
@@ -86,6 +86,10 @@ build_argv(struct opts *opts)
     new_argv[argc++] = (char *) "-x";
     new_argv[argc++] = opts->proxy ? opts->proxy : opts->cur_source->proxy;
   }
+  if (verbose)
+    new_argv[argc++] = "-v";
+  if (opts->leap)
+    new_argv[argc++] = "-l";
   new_argv[argc++] = NULL;
   opts->argv = new_argv;
 }
@@ -406,6 +410,7 @@ set_conf_defaults(struct opts *opts)
   opts->sources = NULL;
   opts->cur_source = NULL;
   opts->proxy = NULL;
+  opts->leap = 0;
 }
 
 void
@@ -593,6 +598,8 @@ load_conf(struct opts *opts)
       verbose = e->value ? !strcmp(e->value, "yes") : 1;
     } else if (!strcmp (e->key, "source")) {
       e = parse_source(opts, e);
+    } else if (!strcmp (e->key, "leap")) {
+      opts->leap = e->value ? !strcmp(e->value, "yes") : 1;
     }
   }
 }
