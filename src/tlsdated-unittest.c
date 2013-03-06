@@ -9,6 +9,7 @@
 
 #include "src/test_harness.h"
 #include "src/tlsdate.h"
+#include "src/util.h"
 
 #include <fcntl.h>
 #include <limits.h>
@@ -196,6 +197,25 @@ TEST(proxy_override) {
   EXPECT_EQ(2, tlsdate(&opts, environ));
   opts.proxy = "socks5://good.proxy";
   EXPECT_EQ(0, tlsdate(&opts, environ));
+}
+
+TEST(tlsdate_args) {
+  struct source s1 = {
+    .next = NULL,
+    .host = "host",
+    .port = "port",
+    .proxy = "proxy",
+  };
+  struct opts opts;
+  char *args[] = { "src/test/return-argc", NULL };
+  memset(&opts, 0, sizeof(opts));
+  opts.sources = &s1;
+  opts.base_argv = args;
+  opts.subprocess_tries = 2;
+  opts.subprocess_wait_between_tries = 1;
+  opts.leap = 1;
+  verbose = 1;
+  EXPECT_EQ(9, tlsdate(&opts, environ));
 }
 
 TEST_HARNESS_MAIN
