@@ -83,6 +83,7 @@ struct opts {
   struct source *sources;
   struct source *cur_source;
   char *proxy;
+  int leap;
 };
 
 int is_sane_time (time_t ts);
