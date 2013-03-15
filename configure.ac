@@ -159,6 +159,19 @@ case "$host" in
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
     ;;
+  *-freebsd*)
+    dnl This is for FreeBSD
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
   *-linux*)
     dnl This is for GNU/Linux
     dnl Check for clock_gettime.  Some systems put it into -lc, while

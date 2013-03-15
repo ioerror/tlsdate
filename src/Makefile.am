@@ -8,6 +8,10 @@ bin_PROGRAMS = tlsdate-routeup tlsdate tlsdate-helper \
                tlsdated tlsdated_unittest
 endif
 
+if TARGET_FREEBSD
+bin_PROGRAMS = tlsdate tlsdate-helper
+endif
+
 if TARGET_OSX
 bin_PROGRAMS = tlsdate tlsdate-helper
 endif
@@ -33,6 +37,11 @@ tlsdate_SOURCES = tlsdate.c
 tlsdate_helper_SOURCES = proxy-bio.c util.c tlsdate-helper.c
 
 if TARGET_LINUX
+tlsdate_helper_LDADD = @SSL_LIBS@ @SSL_LDFLAGS@ -lrt \
+                       $(top_builddir)/src/compat/libtlsdate_compat.la
+endif
+
+if TARGET_FREEBSD
 tlsdate_helper_LDADD = @SSL_LIBS@ @SSL_LDFLAGS@ -lrt \
                        $(top_builddir)/src/compat/libtlsdate_compat.la
 endif

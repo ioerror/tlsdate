@@ -1,4 +1,4 @@
-Building and install of tlsdate on GNU/Linux should be as easy as:
+Building and install of tlsdate on GNU/Linux and FreeBSD should be as easy as:
 
   ./autogen.sh
   ./configure

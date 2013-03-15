@@ -46,8 +46,9 @@
 # define SHUT_RDWR SD_BOTH
 #endif
           ])],
-        [*freebsd*],[AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])
-        AC_DEFINE([__APPLE_CC__],[1],[Workaround for bug in FreeBSD headers])],
+        [*freebsd*],
+        [TARGET_OS_FREEBSD="true"
+        AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])],
         [*solaris*],[AC_DEFINE([TARGET_OS_SOLARIS],[1],[Whether we are building for Solaris])],
         [*darwin*],
 	[TARGET_OSX="true"
@@ -59,4 +60,5 @@
   AM_CONDITIONAL([BUILD_WIN32],[test "x${TARGET_WINDOWS}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OSX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_LINUX}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
   ])
