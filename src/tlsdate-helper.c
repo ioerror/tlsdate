@@ -842,7 +842,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   {
     if (-1 == stat (ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container\n");
+      die("Unable to stat CA certficate container %s\n", ca_cert_container);
     }
     else
     {
@@ -857,7 +857,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
           fprintf(stderr, "x509parse_crtpath failed\n");
         break;
       default:
-        die("Unable to load CA certficate container\n");
+        die("Unable to load CA certficate container %s\n", ca_cert_container);
       }
     }
   }
@@ -996,7 +996,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   {
     if (-1 == stat(ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container\n");
+      die("Unable to stat CA certficate container %s\n", ca_cert_container);
     } else
     {
       switch (statbuf.st_mode & S_IFMT)
@@ -1013,7 +1013,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
         if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
         {
           fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
-          die("Unable to load CA certficate container\n");
+          die("Unable to load CA certficate container %s\n", ca_cert_container);
         }
       }
     }
