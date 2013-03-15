@@ -58,6 +58,7 @@ struct conf_entry *conf_parse(FILE *f)
     if (!e->key || (val && !e->value)) {
       free(e->key);
       free(e->value);
+      free(e);
       goto fail;
     }
     if (!head) {
