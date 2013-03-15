@@ -606,7 +606,6 @@ uint32_t
 check_name (SSL *ssl, const char *hostname)
 {
   uint32_t ret;
-  ret = 0;
   ret = check_cn(ssl, hostname);
   ret += check_san(ssl, hostname);
   if (0 != ret && 0 < ret)
