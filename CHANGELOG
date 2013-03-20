@@ -5,6 +5,7 @@
   Support -l argument to tlsdated.
   Pass -l and -v arguments from tlsdated to tlsdate.
   Add FreeBSD support for tlsdate and tlsdate-helper.
+  Log more verbosely at tlsdated startup.
 0.0.6 Mon 18 Feb, 2013
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
