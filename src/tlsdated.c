@@ -635,12 +635,21 @@ main (int argc, char *argv[], char *envp[])
   time_t last_success = 0;
   struct opts opts;
   int wait_time = 0;
+  struct timeval tv = { 0, 0 };
 
   set_conf_defaults(&opts);
   parse_argv(&opts, argc, argv);
   check_conf(&opts);
   load_conf(&opts);
   check_conf(&opts);
+
+  info ("started up, loaded config file");
+
+  if (!opts.should_load_disk || load_disk_timestamp (timestamp_path, &tv.tv_sec))
+    info ("sysclock %lu, no cached time", time(NULL));
+  else
+    info ("sysclock %lu, cached time %lu", time(NULL), tv.tv_sec);
+
   if (!opts.sources)
     add_source_to_conf(&opts, (char *) DEFAULT_HOST, (char *) DEFAULT_PORT,
                               (char *) DEFAULT_PROXY);
@@ -658,7 +667,6 @@ main (int argc, char *argv[], char *envp[])
 
   if (!is_sane_time (time (NULL)))
     {
-      struct timeval tv = { 0, 0 };
       /*
        * If the time is before the build timestamp, we're probably on
        * a system with a broken rtc. Try loading the timestamp off
@@ -728,6 +736,7 @@ main (int argc, char *argv[], char *envp[])
       }
     }
 
+  info ("exiting");
   return 1;
 }
 #endif /* !TLSDATED_MAIN */
