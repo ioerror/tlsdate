@@ -7,7 +7,7 @@
 
 #if defined(__linux__)
 #include <alloca.h>
-#elseif defined(__FreeBSD__)
+#elif defined(__FreeBSD__)
 #include <stdlib.h>
 #endif
 
