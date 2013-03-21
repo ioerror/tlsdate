@@ -7,8 +7,6 @@
 
 #if defined(__linux__)
 #include <alloca.h>
-#elif defined(__FreeBSD__)
-#include <stdlib.h>
 #endif
 
 #include "src/proxy-bio.h"
