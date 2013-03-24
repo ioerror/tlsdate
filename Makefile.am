@@ -3,6 +3,7 @@
 AM_CFLAGS="-D__STDC_LIMIT_MACROS"
 
 BUILT_SOURCES=
+doc_DATA=
 EXTRA_DIST=
 TESTS=
 bin_PROGRAMS=
@@ -25,12 +26,14 @@ ACLOCAL_AMFLAGS= -I m4
 # Our Debian version
 DEBIAN_VERSION := $(shell if [ -e debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi)
 
-EXTRA_DIST+= AUTHORS
-EXTRA_DIST+= README
-EXTRA_DIST+= LICENSE
-EXTRA_DIST+= TODO
+doc_DATA+= AUTHORS
+doc_DATA+= CHANGELOG
+doc_DATA+= LICENSE
+doc_DATA+= README
+doc_DATA+= TODO
+
+EXTRA_DIST+= $(doc_DATA)
 EXTRA_DIST+= apparmor-profile
-EXTRA_DIST+= CHANGELOG
 EXTRA_DIST+= autogen.sh 
 
 include src/include.am
