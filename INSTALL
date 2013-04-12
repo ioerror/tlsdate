@@ -9,12 +9,12 @@ tlsdate should build and work on the following Operating Systems:
   FreeBSD 10-CURRENT
   Mac OS X 10.8.2, 10.8.3
   ChromeOS 26.0.x.x, 27.0.x.x (tlsdate is part of the ChromeOS TCB!)
+  Android with the Android NDK (use Makefile.android)
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
 ports of tlsdate or for tlsdate integration on the following Operating Systems:
 
-  Android 2.x or later
   NetBSD 6.0.2
   Win32 (MinGW or otherwise)
   Plan9

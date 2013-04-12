@@ -3,6 +3,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* strchrnul */
 #endif
+#include "config.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 
 #include "src/conf.h"
 
-#include "config.h"
 #ifdef HAVE_ANDROID
 #include "src/android/android.h"
 #endif
