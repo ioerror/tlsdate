@@ -70,7 +70,7 @@ src_tlsdate_helper_SOURCES+= src/util.c
 if TARGET_LINUX
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN @SSL_CFLAGS@
 src_tlsdated_LDADD = @SSL_LIBS@
-src_tlsdated_SOURCES = 
+src_tlsdated_SOURCES =
 
 if HAVE_ANDROID
 src_tlsdated_SOURCES+= src/android/android.c
