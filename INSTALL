@@ -10,6 +10,7 @@ tlsdate should build and work on the following Operating Systems:
   Mac OS X 10.8.2, 10.8.3
   ChromeOS 26.0.x.x, 27.0.x.x (tlsdate is part of the ChromeOS TCB!)
   Android with the Android NDK (use Makefile.android)
+  Arch Linux (Don't forget to symlink to /dev/rtc to /dev/rtc0)
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
