@@ -70,3 +70,27 @@ Example of how to upload it (after a Debian sponsor signs off on it):
   dget http://www.example.com/tlsdate_0.0.1-1_amd64.changes
   dput tlsdate_0.0.1-1_amd64.changes
 
+For Android:
+
+To cross compile tlsdate for Android (tested on Linux) you must have the
+Android NDK (>=r8) installed somewhere on your system, and define the
+environment variable NDK_BASE to be the path to the NDK's root dir.
+
+    export NDK_BASE=/home/user/src/android-ndk-r8d
+
+The Android build also requires a cross-compiled OpenSSL. The Android Makefile
+will attempt to build openssl, if you provide the path via the OPENSSL_ANDROID
+env var.
+
+    git clone https://github.com/guardianproject/openssl-android.git /path/to/android-openssl
+    export OPENSSL_ANDROID=/path/to/android-openssl
+
+Once NDK_BASE and OPENSSL_ANDROID are set properly, you can cross compile tlsdate with:
+
+    make distclean # clean any previous builds
+    rm configure   # distclean doesn't remove this file
+    make -f Makefile.android
+
+Android NDK: https://developer.android.com/tools/sdk/ndk/index.html
+OpenSSL for Android: https://github.com/guardianproject/openssl-android
+
