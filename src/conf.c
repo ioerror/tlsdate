@@ -10,6 +10,11 @@
 
 #include "src/conf.h"
 
+#include "config.h"
+#ifdef HAVE_ANDROID
+#include "src/android/android.h"
+#endif
+
 void strip_newlines(char *line)
 {
   *strchrnul(line, '\n') = '\0';

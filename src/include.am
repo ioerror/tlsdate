@@ -19,6 +19,11 @@ bin_PROGRAMS+= src/tlsdate-dbus-announce
 
 src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
+
+if HAVE_ANDROID
+src_conf_unittest_SOURCES+= src/android/android.c src/android/fmemopen.c
+endif
+
 check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
 endif
@@ -65,7 +70,13 @@ src_tlsdate_helper_SOURCES+= src/util.c
 if TARGET_LINUX
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN @SSL_CFLAGS@
 src_tlsdated_LDADD = @SSL_LIBS@
-src_tlsdated_SOURCES = src/conf.c
+src_tlsdated_SOURCES = 
+
+if HAVE_ANDROID
+src_tlsdated_SOURCES+= src/android/android.c
+endif
+
+src_tlsdated_SOURCES+= src/conf.c
 src_tlsdated_SOURCES+= src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
 src_tlsdated_SOURCES+= src/util.c
@@ -119,6 +130,10 @@ noinst_HEADERS+= src/proxy-bio.h
 noinst_HEADERS+= src/proxy-polarssl.h
 noinst_HEADERS+= src/test-bio.h
 noinst_HEADERS+= src/conf.h
+
+if HAVE_ANDROID
+noinst_HEADERS+= src/android/android.h
+endif
 
 check_PROGRAMS+= src/test/proxy-override src/test/return-argc \
                  src/test/rotate src/test/sleep-wrap

@@ -57,6 +57,11 @@ tlsdated_CFLAGS = $(AM_CFLAGS) -DTLSDATED_MAIN
 tlsdated_unittest_SOURCES = routeup.c tlsdated-unittest.c util.c
 endif
 
+if HAVE_ANDROID_SYSTEM
+tlsdated_unittest_SOURCES += android/android.c android/fmemopen.c
+endif
+
+
 if TARGET_OSX
 tlsdated_SOURCES = routeup.c tlsdated.c util.c
 tlsdated_CFLAGS = $(AM_CFLAGS) -DTLSDATED_MAIN
@@ -70,3 +75,8 @@ endif
 
 # We're not shipping headers
 noinst_HEADERS = tlsdate.h
+
+if HAVE_ANDROID_SYSTEM
+noinst_HEADERS+= android/android.h
+noinst_HEADERS+= android/fmemopen.h
+endif

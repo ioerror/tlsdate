@@ -13,6 +13,10 @@
 #include "src/conf.h"
 #include "src/test_harness.h"
 
+#ifdef HAVE_ANDROID_SYSTEM
+#include "src/android/fmemopen.h"
+#endif
+
 FILE *fopenstr(const char *str) {
   /* strlen(str) instead of strlen(str) + 1 because files shouldn't appear
    * null-terminated. Cast away constness because we're in read mode, but the
