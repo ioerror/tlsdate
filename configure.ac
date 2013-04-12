@@ -193,8 +193,19 @@ case "$host" in
             [""|yes|no], [UNPRIV_GROUP="nogroup"],
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    case "$host" in
+      *-linux-androideabi)
+        dnl This is for Android NDK as it is a special case of linux
+        AC_DEFINE(HAVE_ANDROID,1, [Defined if we are to build for an Android system])
+        AC_SUBST(HAVE_ANDROID, [1])
+        HAVE_ANDROID="yes"
+        ;;
+    esac
     ;;
 esac
+
+dnl Android conditional
+AM_CONDITIONAL(HAVE_ANDROID, test "x${HAVE_ANDROID}" = "xyes")
 
 AC_MSG_CHECKING([user/group to drop privs to])
 

@@ -20,6 +20,7 @@ stamp-h1
 config/
 src/.dirstamp
 src/compat/.dirstamp
+src/android/.dirstamp
 src/configmake.h
 src/tlsdate-helper.o
 src/tlsdate-helper
