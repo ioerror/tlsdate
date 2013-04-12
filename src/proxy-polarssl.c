@@ -31,13 +31,15 @@ int socks4a_connect(proxy_polarssl_ctx *ctx)
 {
   int r;
   unsigned char buf[NI_MAXHOST + 16];
-  uint16_t port_n = htons(ctx->port);
+  uint16_t port_n;
   size_t sz = 0;
 
   if (!ctx)
     return 0;
 
   verb("V: proxy4: connecting %s:%d\n", ctx->host, ctx->port);
+
+  port_n = htons(ctx->port);
 
   /*
    * Packet layout:
@@ -88,7 +90,7 @@ int socks5_connect(proxy_polarssl_ctx *ctx)
 {
   unsigned char buf[NI_MAXHOST + 16];
   int r;
-  uint16_t port_n = htons(ctx->port);
+  uint16_t port_n;
   size_t sz = 0;
 
   if (!ctx)
@@ -99,6 +101,8 @@ int socks5_connect(proxy_polarssl_ctx *ctx)
     return 0;
 
   verb("V: proxy5: connecting %s:%d\n", ctx->host, ctx->port);
+
+  port_n = htons(ctx->port);
 
   /*
    * Hello packet layout:
