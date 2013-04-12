@@ -1,0 +1,76 @@
+#
+## Cross-compile env for Android
+# Requires Android NDK >= r8
+# Requires the following env variables:
+#
+#    NDK_BASE         -  path to your NDK's root directory
+#                        e.g., /home/user/android-ndk
+#    OPENSSL_ANDROID  -  path to NDK built openssl
+#                        e.g., /home/user/src/openssl-android
+#
+
+# Android NDK setup
+NDK_COMPILER_VERSION=4.6
+NDK_ABI=arm
+NDK_BASE ?=  /usr/local/android-ndk
+#platform level >= 8 required for dladdr()
+NDK_PLATFORM_LEVEL ?= 8
+NDK_SYSROOT=$(NDK_BASE)/platforms/android-$(NDK_PLATFORM_LEVEL)/arch-arm
+NDK_UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
+NDK_TOOLCHAIN=$(NDK_BASE)/toolchains/$(NDK_ABI)-linux-androideabi-$(NDK_COMPILER_VERSION)/prebuilt/$(NDK_UNAME)-x86
+
+# to use the real HOST tag, you need the latest libtool files:
+# http://stackoverflow.com/questions/4594736/configure-does-not-recognize-androideabi
+NDK_UNAME := `uname -s | tr '[A-Z]' '[a-z]'`
+HOST := arm-linux-androideabi
+
+LOCAL_LDFLAGS   = -L$(OPENSSL_ANDROID)/obj/local/armeabi/ -ldl -lcrypto -lssl -lz
+LOCAL_LDFLAGS += -L$(NDK_TOOLCHAIN)/lib/gcc/arm-linux-androideabi/$($NDK_COMPILER_VERSION) -lgcc
+CFLAGS = -I$(OPENSSL_ANDROID)/include
+CC := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-gcc --sysroot=$(NDK_SYSROOT)
+CXX := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-g++
+CPP := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-cpp
+LD := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-ld
+AR := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-ar
+RANLIB := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-ranlib
+STRIP := $(NDK_TOOLCHAIN)/bin/arm-linux-androideabi-strip \
+
+all: $(OPENSSL_ANDROID)/libs/armeabi/libcrypto.so tlsdate-build
+
+$(OPENSSL_ANDROID)/libs/armeabi/libcrypto.so:
+	cd $(OPENSSL_ANDROID) && ndk-build -j4
+
+openssl-clean:
+	-cd $(OPENSSL_ANDROID) && ndk-build clean
+
+openssl-distclean:
+	-cd $(OPENSSL_ANDROID) && ndk-build distclean
+
+configure: configure.ac
+	./autogen.sh && \
+	CFLAGS="$(CFLAGS)" ./configure \
+			CC="$(CC)" \
+			AR=$(AR) \
+			RANLIB=$(RANLIB) \
+			CFLAGS="$(CFLAGS)" \
+			--disable-static \
+			--disable-languages \
+			--disable-dbus \
+			--host=$(HOST)
+			#--prefix=$(prefix) \
+			#--exec-prefix=$(prefix)
+
+tlsdate-build: configure
+	make -f Makefile CFLAGS="$(CFLAGS)" LDFLAGS="$(LOCAL_LDFLAGS)"
+
+tlsdate-clean:
+	-make -f Makefile clean
+
+tlsdate-distclean:
+	-make -f Makefile distclean && rm configure
+
+
+clean: openssl-clean tlsdate-clean
+distclean: openssl-distclean tlsdate-distclean
+
+.PHONY: clean openssl-clean tlsdate-clean
