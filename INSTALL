@@ -33,6 +33,12 @@ Cleaning is the usual:
 
   make clean
 
+On FreeBSD one may also use the ports system:
+
+  cd /usr/ports/sysutils/tlsdate
+  make
+  make install
+
 On Mac OS X, we require that you have XCode installed. You may also need brew
 for autoconf and automake packages:
 
