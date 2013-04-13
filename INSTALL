@@ -54,6 +54,11 @@ To make an unsigned Debian package:
   git checkout debian-master
   make deb
 
+On Arch Linux there is a PKGBUILD in the Arch User Repository:
+
+  https://aur.archlinux.org/packages/tlsdate
+  https://aur.archlinux.org/packages/tl/tlsdate/PKGBUILD
+
 To make a Debian source package:
 
   git checkout master
