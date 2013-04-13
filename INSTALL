@@ -54,6 +54,15 @@ To make an unsigned Debian package:
   git checkout debian-master
   make deb
 
+On Fedora:
+
+  yum install tlsdate
+
+To run tlsdated as a service on Fedora:
+
+  systemctl enable tlsdate.service
+  systemctl start tlsdate.service
+
 On Arch Linux there is a PKGBUILD in the Arch User Repository:
 
   https://aur.archlinux.org/packages/tlsdate
