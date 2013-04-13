@@ -17,6 +17,7 @@ use tlsdate on a platform that is not listed. We are specifically looking for
 ports of tlsdate or for tlsdate integration on the following Operating Systems:
 
   NetBSD 6.0.2
+  OpenBSD
   Win32 (MinGW or otherwise)
   Plan9
   OpenWRT
