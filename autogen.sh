@@ -10,9 +10,16 @@ if [ ! -d config ];
 then
   mkdir config;
 fi
+
 if [ $(uname) != FreeBSD ];
 then
   WARNINGS="all,error"
+  export WARNINGS
+fi
+
+if [ $(uname) = NetBSD ];
+then
+  WARNINGS=""
   export WARNINGS
 fi
 
