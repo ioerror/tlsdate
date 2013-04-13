@@ -49,6 +49,12 @@
         [*freebsd*],
         [TARGET_OS_FREEBSD="true"
         AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])],
+        [*netbsd*],
+        [TARGET_OS_NETBSD="true"
+        AC_DEFINE([TARGET_OS_NETBSD],[1],[Whether we are building for NetBSD])],
+        [*bsd*],
+        [TARGET_OS_BSD="true"
+        AC_DEFINE([TARGET_OS_BSD],[1],[Whether we are building for some other *BSD])],
         [*solaris*],[AC_DEFINE([TARGET_OS_SOLARIS],[1],[Whether we are building for Solaris])],
         [*darwin*],
 	[TARGET_OSX="true"
@@ -61,4 +67,6 @@
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OSX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_NETBSD],[test "x${TARGET_OS_NETBSD}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_BSD],[test "x${TARGET_OS_BSD}" = "xtrue"])
   ])

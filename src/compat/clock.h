@@ -26,7 +26,7 @@
 #endif
 
 struct tlsdate_time {
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined (__NetBSD__)
     struct timespec tp;
 #elif defined(__APPLE__)
     mach_timespec_t tp;

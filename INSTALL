@@ -11,12 +11,12 @@ tlsdate should build and work on the following Operating Systems:
   ChromeOS 26.0.x.x, 27.0.x.x (tlsdate is part of the ChromeOS TCB!)
   Android with the Android NDK (use Makefile.android)
   Arch Linux (Don't forget to symlink to /dev/rtc to /dev/rtc0)
+  NetBSD 6.0.2
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
 ports of tlsdate or for tlsdate integration on the following Operating Systems:
 
-  NetBSD 6.0.2
   OpenBSD
   Win32 (MinGW or otherwise)
   Plan9

@@ -20,4 +20,16 @@ if TARGET_FREEBSD
 src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
 endif
 
+if TARGET_NETBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_BSD
+if !TARGET_NETBSD
+if !TARGET_FREEBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+endif
+endif
+
 src_compat_libtlsdate_compat_la_LIBADD+= @RT_LIB@

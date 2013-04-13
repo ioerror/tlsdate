@@ -14,7 +14,7 @@
 #include "src/test_harness.h"
 
 #ifdef HAVE_ANDROID_SYSTEM
-#include "src/android/fmemopen.h"
+#include "src/common/fmemopen.h"
 #endif
 
 FILE *fopenstr(const char *str) {

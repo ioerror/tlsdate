@@ -21,7 +21,7 @@ src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
 
 if HAVE_ANDROID
-src_conf_unittest_SOURCES+= src/android/android.c src/android/fmemopen.c
+src_conf_unittest_SOURCES+= src/common/android.c src/common/fmemopen.c
 endif
 
 check_PROGRAMS+= src/conf_unittest
@@ -36,6 +36,31 @@ src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
 check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_NETBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_BSD
+if !TARGET_FREEBSD
+if !TARGET_NETBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+endif
 endif
 
 if TARGET_OSX
@@ -73,7 +98,7 @@ src_tlsdated_LDADD = @SSL_LIBS@
 src_tlsdated_SOURCES =
 
 if HAVE_ANDROID
-src_tlsdated_SOURCES+= src/android/android.c
+src_tlsdated_SOURCES+= src/common/android.c
 endif
 
 src_tlsdated_SOURCES+= src/conf.c
@@ -119,6 +144,35 @@ noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
 endif
 
+if TARGET_NETBSD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_BSD
+if !POLARSSL
+if !TARGET_FREEBSD
+if !TARGET_NETBSD
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+endif
+endif
+
 # We're not shipping headers
 noinst_HEADERS+= src/routeup.h
 noinst_HEADERS+= src/test_harness.h
@@ -132,7 +186,7 @@ noinst_HEADERS+= src/test-bio.h
 noinst_HEADERS+= src/conf.h
 
 if HAVE_ANDROID
-noinst_HEADERS+= src/android/android.h
+noinst_HEADERS+= src/common/android.h
 endif
 
 check_PROGRAMS+= src/test/proxy-override src/test/return-argc \

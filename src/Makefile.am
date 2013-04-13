@@ -12,6 +12,18 @@ if TARGET_FREEBSD
 bin_PROGRAMS = tlsdate tlsdate-helper
 endif
 
+if TARGET_NETBSD
+bin_PROGRAMS = tlsdate tlsdate-helper
+endif
+
+if TARGET_BSD
+if !TARGET_FREEBSD
+if !TARGET_NETBSD
+bin_PROGRAMS = tlsdate tlsdate-helper
+endif
+endif
+endif
+
 if TARGET_OSX
 bin_PROGRAMS = tlsdate tlsdate-helper
 endif
@@ -46,6 +58,20 @@ tlsdate_helper_LDADD = @SSL_LIBS@ @SSL_LDFLAGS@ -lrt \
                        $(top_builddir)/src/compat/libtlsdate_compat.la
 endif
 
+if TARGET_NETBSD
+tlsdate_helper_LDADD = @SSL_LIBS@ @SSL_LDFLAGS@ -lrt \
+                       $(top_builddir)/src/compat/libtlsdate_compat.la
+endif
+
+if TARGET_BSD
+if !TARGET_FREEBSD
+if !TARGET_NETBSD
+tlsdate_helper_LDADD = @SSL_LIBS@ @SSL_LDFLAGS@ -lrt \
+                       $(top_builddir)/src/compat/libtlsdate_compat.la
+endif
+endif
+endif
+
 if TARGET_OSX
 tlsdate_helper_LDADD = @SSL_LIBS@ @SSL_LDFLAGS@ -lrt \
                        $(top_builddir)/src/compat/.libs/libtlsdate_compat.dylib
@@ -58,9 +84,12 @@ tlsdated_unittest_SOURCES = routeup.c tlsdated-unittest.c util.c
 endif
 
 if HAVE_ANDROID_SYSTEM
-tlsdated_unittest_SOURCES += android/android.c android/fmemopen.c
+tlsdated_unittest_SOURCES += common/android.c common/fmemopen.c
 endif
 
+if TARGET_NETBSD
+tlsdated_unittest_SOURCES += common/android.c common/fmemopen.c
+endif
 
 if TARGET_OSX
 tlsdated_SOURCES = routeup.c tlsdated.c util.c
@@ -77,6 +106,11 @@ endif
 noinst_HEADERS = tlsdate.h
 
 if HAVE_ANDROID_SYSTEM
-noinst_HEADERS+= android/android.h
-noinst_HEADERS+= android/fmemopen.h
+noinst_HEADERS+= common/android.h
+noinst_HEADERS+= common/fmemopen.h
+endif
+
+if TARGET_NETBSD
+noinst_HEADERS+= common/android.h
+noinst_HEADERS+= common/fmemopen.h
 endif
