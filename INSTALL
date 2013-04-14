@@ -82,6 +82,9 @@ On Plan9 the start of building might look something like this:
 
 OpenBSD builds from source and is not yet in the port system:
 
+  export AUTOCONF_VERSION=<your installed version>
+  export AUTOMAKE_VERSION=<your installed version>
+  ./autogen.sh
   ./configure
   make
   make install
