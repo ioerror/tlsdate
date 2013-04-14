@@ -83,6 +83,9 @@ On Plan9 the start of building might look something like this:
 OpenBSD porting has started and feedback is welcome. It may Just Work with the
 following:
 
+  export AUTOCONF_VERSION=<your installed version>
+  export AUTOMAKE_VERSION=<your installed version>
+  ./autogen.sh
   ./configure
   make
   make install
