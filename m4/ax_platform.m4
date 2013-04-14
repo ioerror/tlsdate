@@ -13,6 +13,7 @@
 # LICENSE
 #
 #   Copyright (c) 2012 Brian Aker <brian@tangent.org>
+#   Copyleft  (ↄ) 2013 Jacob Appelbaum <jacob@appelbaum.net>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
@@ -52,6 +53,9 @@
         [*netbsd*],
         [TARGET_OS_NETBSD="true"
         AC_DEFINE([TARGET_OS_NETBSD],[1],[Whether we are building for NetBSD])],
+        [*openbsd*],
+        [TARGET_OS_OPENBSD="true"
+        AC_DEFINE([TARGET_OS_OPENBSD],[1],[Whether we are building for OpenBSD])],
         [*bsd*],
         [TARGET_OS_BSD="true"
         AC_DEFINE([TARGET_OS_BSD],[1],[Whether we are building for some other *BSD])],
@@ -68,5 +72,6 @@
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_NETBSD],[test "x${TARGET_OS_NETBSD}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_OPENBSD],[test "x${TARGET_OS_OPENBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_BSD],[test "x${TARGET_OS_BSD}" = "xtrue"])
   ])
