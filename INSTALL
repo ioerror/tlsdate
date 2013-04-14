@@ -12,6 +12,7 @@ tlsdate should build and work on the following Operating Systems:
   Android with the Android NDK (use Makefile.android)
   Arch Linux (Don't forget to symlink to /dev/rtc to /dev/rtc0)
   NetBSD 6.0.1
+  OpenBSD 5.2
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
@@ -25,7 +26,6 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
 
 Currently porting is in progress or partially documented for:
 
-  OpenBSD
   Plan9 (with APE)
 
 Building and install of tlsdate on GNU/Linux and FreeBSD should be as easy as:
@@ -80,8 +80,7 @@ On Plan9 the start of building might look something like this:
   9fs sources
   /n/sources/contrib/fgb/root/rc/bin/contrib/install fgb/openssl
 
-OpenBSD porting has started and feedback is welcome. It may Just Work with the
-following:
+OpenBSD builds from source and is not yet in the port system:
 
   ./configure
   make
