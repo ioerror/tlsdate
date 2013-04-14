@@ -18,6 +18,10 @@
 #include <time.h>
 #endif
 
+#ifdef TARGET_OS_OPENBSD
+#include <sys/time.h>
+#endif
+
 #ifdef HAVE_MACH_CLOCK_H
 #include <mach/clock.h>
 #endif
