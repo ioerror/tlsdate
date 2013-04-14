@@ -17,11 +17,16 @@ Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
 ports of tlsdate or for tlsdate integration on the following Operating Systems:
 
-  OpenBSD
   Win32 (MinGW or otherwise)
-  Plan9
   OpenWRT
   pfsense
+  DragonFly BSD
+  OpenVMS
+
+Currently porting is in progress or partially documented for:
+
+  OpenBSD
+  Plan9 (with APE)
 
 Building and install of tlsdate on GNU/Linux and FreeBSD should be as easy as:
 
@@ -67,6 +72,20 @@ On Arch Linux there is a PKGBUILD in the Arch User Repository:
 
   https://aur.archlinux.org/packages/tlsdate
   https://aur.archlinux.org/packages/tl/tlsdate/PKGBUILD
+
+On Plan9 the start of building might look something like this:
+
+  ip/ipconfig
+  ndb/dns -r
+  9fs sources
+  /n/sources/contrib/fgb/root/rc/bin/contrib/install fgb/openssl
+
+OpenBSD porting has started and feedback is welcome. It may Just Work with the
+following:
+
+  ./configure
+  make
+  make install
 
 To make a Debian source package:
 
