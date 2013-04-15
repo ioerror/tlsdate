@@ -18,7 +18,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <linux/rtc.h>
-#include <openssl/rand.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -30,6 +29,13 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifdef USE_POLARSSL
+#include <polarssl/entropy.h>
+#include <polarssl/ctr_drbg.h>
+#else
+#include <openssl/rand.h>
+#endif
 
 #include "src/conf.h"
 #include "src/routeup.h"
@@ -66,18 +72,24 @@ build_argv(struct opts *opts)
   for (argc = 0; opts->base_argv[argc]; argc++)
     ;
   argc++; /* uncounted null terminator */
-  argc += 6;  /* -H host -p port -x proxy */
+  argc += 8;  /* -H host -p port -x proxy -v -l */
   new_argv = malloc (argc * sizeof(char *));
   if (!new_argv)
     fatal ("out of memory building argv");
   for (argc = 0; opts->base_argv[argc]; argc++)
     new_argv[argc] = opts->base_argv[argc];
-  new_argv[argc++] = "-H";
+  new_argv[argc++] = (char *) "-H";
   new_argv[argc++] = opts->cur_source->host;
-  new_argv[argc++] = "-p";
+  new_argv[argc++] = (char *) "-p";
   new_argv[argc++] = opts->cur_source->port;
-  new_argv[argc++] = "-x";
-  new_argv[argc++] = opts->cur_source->proxy;
+  if (opts->cur_source->proxy || opts->proxy) {
+    new_argv[argc++] = (char *) "-x";
+    new_argv[argc++] = opts->proxy ? opts->proxy : opts->cur_source->proxy;
+  }
+  if (verbose)
+    new_argv[argc++] = "-v";
+  if (opts->leap)
+    new_argv[argc++] = "-l";
   new_argv[argc++] = NULL;
   opts->argv = new_argv;
 }
@@ -283,14 +295,36 @@ sync_and_save (int hwclock_fd, int should_sync, int should_save)
     }
 }
 
+#ifdef USE_POLARSSL
+static int random_init = 0;
+static entropy_context entropy;
+static ctr_drbg_context ctr_drbg;
+static char *pers = "tlsdated";
+#endif
+
 int
 add_jitter (int base, int jitter)
 {
   int n = 0;
   if (!jitter)
     return base;
+#ifdef USE_POLARSSL
+  if (0 == random_init)
+  {
+    entropy_init(&entropy);
+    if (0 > ctr_drbg_init(&ctr_drbg, entropy_func, &entropy,
+                          (unsigned char *) pers, strlen(pers)))
+    {
+      pfatal ("Failed to initialize random source");
+    }
+    random_init = 1;
+  }
+  if (0 != ctr_drbg_random(&ctr_drbg, (unsigned char *)&n, sizeof(n)))
+    fatal ("ctr_drbg_random() failed");
+#else
   if (RAND_bytes((unsigned char *)&n, sizeof(n)) != 1)
     fatal ("RAND_bytes() failed");
+#endif
   return base + (abs(n) % (2 * jitter)) - jitter;
 }
 
@@ -347,6 +381,7 @@ usage (const char *progn)
   printf ("  -l        don't load disk timestamps\n");
   printf ("  -s        don't save disk timestamps\n");
   printf ("  -v        be verbose\n");
+  printf ("  -x <h>    set proxy for subprocs to h\n");
   printf ("  -h        this\n");
 }
 
@@ -354,7 +389,7 @@ void
 set_conf_defaults(struct opts *opts)
 {
   static char *kDefaultArgv[] = {
-    DEFAULT_TLSDATE, "-H", DEFAULT_HOST, NULL
+    (char *) DEFAULT_TLSDATE, (char *) "-H", (char *) DEFAULT_HOST, NULL
   };
   opts->max_tries = MAX_TRIES;
   opts->min_steady_state_interval = STEADY_STATE_INTERVAL;
@@ -374,6 +409,8 @@ set_conf_defaults(struct opts *opts)
   opts->conf_file = NULL;
   opts->sources = NULL;
   opts->cur_source = NULL;
+  opts->proxy = NULL;
+  opts->leap = 0;
 }
 
 void
@@ -381,7 +418,7 @@ parse_argv(struct opts *opts, int argc, char *argv[])
 {
   int opt;
 
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:")) != -1)
     {
       switch (opt)
   {
@@ -430,6 +467,9 @@ parse_argv(struct opts *opts, int argc, char *argv[])
   case 'f':
     opts->conf_file = optarg;
     break;
+  case 'x':
+    opts->proxy = optarg;
+    break;
   case 'h':
   default:
     usage (argv[0]);
@@ -447,7 +487,7 @@ static
 void add_source_to_conf(struct opts *opts, char *host, char *port, char *proxy)
 {
   struct source *s;
-  struct source *source = malloc (sizeof *source);
+  struct source *source = (struct source *) malloc (sizeof *source);
   if (!source)
     fatal ("out of memory for source");
   source->host = strdup (host);
@@ -456,9 +496,11 @@ void add_source_to_conf(struct opts *opts, char *host, char *port, char *proxy)
   source->port = strdup (port);
   if (!source->port)
     fatal ("out of memory for port");
-  source->proxy = strdup (proxy);
-  if (!source->proxy)
-    fatal ("out of memory for proxy");
+  if (proxy) {
+    source->proxy = strdup (proxy);
+    if (!source->proxy)
+      fatal ("out of memory for proxy");
+  }
   if (!opts->sources) {
     opts->sources = source;
   } else {
@@ -478,7 +520,7 @@ parse_source(struct opts *opts, struct conf_entry *conf)
    * source
    *   host <host>
    *   port <port>
-   *   proxy <proxy>
+   *   [proxy <proxy>]
    * end
    */
   assert(!strcmp(conf->key, "source"));
@@ -496,8 +538,8 @@ parse_source(struct opts *opts, struct conf_entry *conf)
   }
   if (!conf)
     fatal ("unclosed source stanza");
-  if (!host || !port || !proxy)
-    fatal ("incomplete source stanza (needs host, port, proxy)");
+  if (!host || !port)
+    fatal ("incomplete source stanza (needs host, port)");
   add_source_to_conf(opts, host, port, proxy);
   return conf;
 }
@@ -509,7 +551,7 @@ load_conf(struct opts *opts)
   struct conf_entry *conf, *e;
   char *conf_file = opts->conf_file;
   if (!opts->conf_file)
-    conf_file = DEFAULT_CONF_FILE;
+    conf_file = (char *) DEFAULT_CONF_FILE;
   f = fopen (conf_file, "r");
   if (!f) {
     if (opts->conf_file) {
@@ -556,6 +598,8 @@ load_conf(struct opts *opts)
       verbose = e->value ? !strcmp(e->value, "yes") : 1;
     } else if (!strcmp (e->key, "source")) {
       e = parse_source(opts, e);
+    } else if (!strcmp (e->key, "leap")) {
+      opts->leap = e->value ? !strcmp(e->value, "yes") : 1;
     }
   }
 }
@@ -591,14 +635,24 @@ main (int argc, char *argv[], char *envp[])
   time_t last_success = 0;
   struct opts opts;
   int wait_time = 0;
+  struct timeval tv = { 0, 0 };
 
   set_conf_defaults(&opts);
   parse_argv(&opts, argc, argv);
   check_conf(&opts);
   load_conf(&opts);
   check_conf(&opts);
+
+  info ("started up, loaded config file");
+
+  if (!opts.should_load_disk || load_disk_timestamp (timestamp_path, &tv.tv_sec))
+    info ("sysclock %lu, no cached time", time(NULL));
+  else
+    info ("sysclock %lu, cached time %lu", time(NULL), tv.tv_sec);
+
   if (!opts.sources)
-    add_source_to_conf(&opts, DEFAULT_HOST, DEFAULT_PORT, DEFAULT_PROXY);
+    add_source_to_conf(&opts, (char *) DEFAULT_HOST, (char *) DEFAULT_PORT,
+                              (char *) DEFAULT_PROXY);
 
   /* grab a handle to /dev/rtc for sync_hwclock() */
   if (opts.should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
@@ -613,7 +667,6 @@ main (int argc, char *argv[], char *envp[])
 
   if (!is_sane_time (time (NULL)))
     {
-      struct timeval tv = { 0, 0 };
       /*
        * If the time is before the build timestamp, we're probably on
        * a system with a broken rtc. Try loading the timestamp off
@@ -683,6 +736,7 @@ main (int argc, char *argv[], char *envp[])
       }
     }
 
+  info ("exiting");
   return 1;
 }
 #endif /* !TLSDATED_MAIN */

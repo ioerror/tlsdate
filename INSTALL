@@ -1,4 +1,34 @@
-Building and install of tlsdate should be as easy as:
+tlsdate should build and work on the following Operating Systems:
+
+  Debian Gnu/Linux 6.0.7 (apt-get install tlsdate for Debian unstable)
+  Ubuntu 11.04, 12.04, 12.10
+  CentOS 6.2, 6.3, 6.4
+  Fedora 17, 18
+  RedHat Enterprise Server 6.4
+  OpenSUSE 11.2, 12.3
+  FreeBSD 10-CURRENT
+  Mac OS X 10.8.2, 10.8.3
+  ChromeOS 26.0.x.x, 27.0.x.x (tlsdate is part of the ChromeOS TCB!)
+  Android with the Android NDK (use Makefile.android)
+  Arch Linux (Don't forget to symlink to /dev/rtc to /dev/rtc0)
+  NetBSD 6.0.1
+  OpenBSD 5.2
+
+Please file a bug or email the tlsdate team if you have successfully built or
+use tlsdate on a platform that is not listed. We are specifically looking for
+ports of tlsdate or for tlsdate integration on the following Operating Systems:
+
+  Win32 (MinGW or otherwise)
+  OpenWRT
+  pfsense
+  DragonFly BSD
+  OpenVMS
+
+Currently porting is in progress or partially documented for:
+
+  Plan9 (with APE)
+
+Building and install of tlsdate on GNU/Linux and FreeBSD should be as easy as:
 
   ./autogen.sh
   ./configure
@@ -9,10 +39,56 @@ Cleaning is the usual:
 
   make clean
 
+On FreeBSD one may also use the ports system:
+
+  cd /usr/ports/sysutils/tlsdate
+  make
+  make install
+
+On Mac OS X, we require that you have XCode installed. You may also need brew
+for autoconf and automake packages:
+
+  brew install autoconf automake libtool pkg-config
+
+It should also be possible to install tlsdate on OS X 10.8.x with brew directly:
+
+  brew install tlsdate
+
 To make an unsigned Debian package:
 
   git checkout debian-master
   make deb
+
+On Fedora:
+
+  yum install tlsdate
+
+To run tlsdated as a service on Fedora:
+
+  systemctl enable tlsdate.service
+  systemctl start tlsdate.service
+
+On Arch Linux there is a PKGBUILD in the Arch User Repository:
+
+  https://aur.archlinux.org/packages/tlsdate
+  https://aur.archlinux.org/packages/tl/tlsdate/PKGBUILD
+
+On Plan9 the start of building might look something like this:
+
+  ip/ipconfig
+  ndb/dns -r
+  9fs sources
+  /n/sources/contrib/fgb/root/rc/bin/contrib/install fgb/openssl
+  mk install
+
+OpenBSD builds from source and is not yet in the port system:
+
+  export AUTOCONF_VERSION=<your installed version>
+  export AUTOMAKE_VERSION=<your installed version>
+  ./autogen.sh
+  ./configure
+  make
+  make install
 
 To make a Debian source package:
 
@@ -34,6 +110,31 @@ Example of how to build a package for Debian:
   debsign -k0xD81D840E tlsdate_0.0.1-1.dsc 
 
 Example of how to upload it (after a Debian sponsor signs off on it):
+
   dget http://www.example.com/tlsdate_0.0.1-1_amd64.changes
   dput tlsdate_0.0.1-1_amd64.changes
+
+For Android:
+
+To cross compile tlsdate for Android (tested on Linux) you must have the
+Android NDK (>=r8) installed somewhere on your system, and define the
+environment variable NDK_BASE to be the path to the NDK's root dir.
+
+    export NDK_BASE=/home/user/src/android-ndk-r8d
+
+The Android build also requires a cross-compiled OpenSSL. The Android Makefile
+will attempt to build openssl, if you provide the path via the OPENSSL_ANDROID
+env var.
+
+    git clone https://github.com/guardianproject/openssl-android.git /path/to/android-openssl
+    export OPENSSL_ANDROID=/path/to/android-openssl
+
+Once NDK_BASE and OPENSSL_ANDROID are set properly, you can cross compile tlsdate with:
+
+    make distclean # clean any previous builds
+    rm configure   # distclean doesn't remove this file
+    make -f Makefile.android
+
+Android NDK: https://developer.android.com/tools/sdk/ndk/index.html
+OpenSSL for Android: https://github.com/guardianproject/openssl-android
 

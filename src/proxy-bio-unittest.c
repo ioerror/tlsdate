@@ -5,7 +5,9 @@
  * found in the LICENSE file.
  */
 
+#if defined(__linux__)
 #include <alloca.h>
+#endif
 
 #include "src/proxy-bio.h"
 #include "src/test-bio.h"

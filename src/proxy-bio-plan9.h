@@ -9,11 +9,11 @@
 #ifndef PROXY_BIO_H
 #define PROXY_BIO_H
 
-#include <stdint.h>
+#include <inttypes.h>
 
 #include <openssl/bio.h>
 
-#include "util.h"
+#include "util-plan9.h"
 
 struct proxy_ctx {
   char *host;

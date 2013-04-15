@@ -1,3 +1,28 @@
+0.0.7 TBD
+  Add tentative -plan9.[ch] versions of tlsdate-helper.
+  Add -x option to tlsdated to override source proxies.
+  Correctly check SANs against target host when using proxies.
+  Fix a race in tlsdate-dbus-announce that can cause signal drops.
+  Support -l argument to tlsdated.
+  Pass -l and -v arguments from tlsdated to tlsdate.
+  Log more verbosely at tlsdated startup.
+  Add FreeBSD support for tlsdate and tlsdate-helper.
+  Add Android build support with Android NDK for tlsdate.
+  Add NetBSD 6.0.1 support for tlsdate and tlsdate-helper.
+  Add OpenBSD 5.2 support for tldate and tlsdate-helper.
+  Add official support for Debian, Ubuntu, CentOS, Fedora, RHEL, OpenSUSE,
+    and Arch GNU/Linux distros.
+  Add Mac OS X 10.8.3 support
+  Extensive setup/install documentation is now present in INSTALL for most OSes
+0.0.6 Mon 18 Feb, 2013
+  Ensure that tlsdate compiles with g++ by explicit casting rather than
+  implicit casting by whatever compiler is compiling tlsdate.
+  Fix a logic bug in CN parsing caught by Ryan Sleevi of the Google Chrome Team
+    Further fixes by Thijs Alkemade
+  Add PolarSSL support (We no longer require OpenSSL to function!)
+    Thanks to Paul Bakker and the PolarSSL team!
+  Experimental Mac OS X (10.8.2) support
+    Thanks to Brian Aker and Ingy döt Net for pair programming time
 0.0.5 Web 23 Jan, 2013
   Fix spelling error in tlsdate-helper
   Update man pages formatting

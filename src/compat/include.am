@@ -1,8 +1,39 @@
 # vim:ft=automake
 
-lib_LTLIBRARIES+= src/compat/libtlsdate_compat.la
+noinst_LTLIBRARIES+= src/compat/libtlsdate_compat.la
 
-src_compat_libtlsdate_compat_la_SOURCES = src/compat/clock-linux.c
-src_compat_libtlsdate_compat_la_CFLAGS = -DBUILDING_TLSDATE
-src_compat_libtlsdate_compat_la_LIBADD = @RT_LIB@
 noinst_HEADERS+= src/compat/clock.h
+
+src_compat_libtlsdate_compat_la_SOURCES =
+src_compat_libtlsdate_compat_la_CFLAGS = -DBUILDING_TLSDATE
+src_compat_libtlsdate_compat_la_LIBADD =
+
+if TARGET_OSX
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-darwin.c
+endif
+
+if TARGET_LINUX
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_FREEBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_NETBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_OPENBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_BSD
+if !TARGET_NETBSD
+if !TARGET_FREEBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+endif
+endif
+
+src_compat_libtlsdate_compat_la_LIBADD+= @RT_LIB@

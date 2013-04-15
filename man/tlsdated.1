@@ -13,7 +13,7 @@ tlsdated \- secure parasitic rdate replacement daemon
 [\-c /path/to ] \
 [\-a seconds ] \
 [\-\-] \
-[tlsdate command]
+[commands to be passed to tlsdate]
 .SH DESCRIPTION
 .B tlsdated
 is a daemon that runs tlsdate. It must be run as root or otherwise have the
@@ -50,7 +50,9 @@ be verbose
 print help message
 .IP "\-f [/path/to/config/file]"
 use alternate config file
-.IP "[tlsdate command]"
+.IP "\-x [proxy]"
+override the proxy supplied to sources in the config file
+.IP "[tlsdate command arguments]"
 arguments to be passed to tlsdate at launch time
 
 .SH BUGS

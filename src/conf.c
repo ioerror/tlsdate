@@ -1,12 +1,27 @@
 /* conf.c - config file parser */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* strchrnul */
+#endif
+#include "config.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "src/conf.h"
+
+#ifdef TARGET_OS_NETBSD
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
+#ifdef TARGET_OS_OPENBSD
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
+#ifdef HAVE_ANDROID
+#include "src/common/android.h"
+#endif
 
 void strip_newlines(char *line)
 {
@@ -47,7 +62,7 @@ struct conf_entry *conf_parse(FILE *f)
     val = strtok(NULL, "");
     if (val)
       val = eat_whitespace(val);
-    e = malloc(sizeof *e);
+    e = (struct conf_entry *) malloc(sizeof *e);
     if (!e)
       goto fail;
     e->next = NULL;
@@ -56,6 +71,7 @@ struct conf_entry *conf_parse(FILE *f)
     if (!e->key || (val && !e->value)) {
       free(e->key);
       free(e->value);
+      free(e);
       goto fail;
     }
     if (!head) {

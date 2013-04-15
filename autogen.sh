@@ -11,7 +11,16 @@ then
   mkdir config;
 fi
 
-WARNINGS="all,error"
-export WARNINGS
+if [ $(uname) != FreeBSD ];
+then
+  WARNINGS="all,error"
+  export WARNINGS
+fi
+
+if [ $(uname) = NetBSD ];
+then
+  WARNINGS=""
+  export WARNINGS
+fi
 
 autoreconf --install --verbose --force

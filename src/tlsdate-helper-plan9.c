@@ -75,15 +75,15 @@ know:
  */
 
 #include "config.h"
-#include "src/tlsdate-helper.h"
+#include "src/tlsdate-helper-plan9.h"
 
 #ifndef USE_POLARSSL
-#include "src/proxy-bio.h"
+#include "src/proxy-bio-plan9.h"
 #else
 #include "src/proxy-polarssl.h"
 #endif
 
-#include "src/compat/clock.h"
+#include "src/compat/clock-plan9.h"
 
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
@@ -226,6 +226,7 @@ openssl_time_callback (const SSL* ssl, int where, int ret)
   if (where == SSL_CB_CONNECT_LOOP &&
       (ssl->state == SSL3_ST_CR_SRVR_HELLO_A || ssl->state == SSL3_ST_CR_SRVR_HELLO_B))
   {
+  /*
     // XXX TODO: If we want to trust the remote system for time,
     // can we just read that time out of the remote system and if the
     // cert verifies, decide that the time is reasonable?
@@ -233,6 +234,7 @@ openssl_time_callback (const SSL* ssl, int where, int ret)
     // forever valid - we stopgap that by ensuring it isn't less than
     // the latest compiled_time and isn't above max_reasonable_time...
     // XXX TODO: Solve eternal question about the Chicken and the Egg...
+   */
     uint32_t compiled_time = RECENT_COMPILE_DATE;
     uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
     uint32_t server_time;
@@ -364,8 +366,8 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   uint32_t label_count;
 
   // First we copy the original strings
-  hostname = strndup(orig_hostname, strlen(orig_hostname));
-  cert_wild_card = strndup(orig_cert_wild_card, strlen(orig_cert_wild_card));
+  hostname = strdup(orig_hostname);
+  cert_wild_card = strdup(orig_cert_wild_card);
   hostname_to_free = hostname;
   cert_wild_card_to_free = cert_wild_card;
   delim = strdup(".");
@@ -391,8 +393,8 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
       do
       {
         // Skip over the bytes between the first char and until the next label
-        wildcard_label = strsep(&cert_wild_card, delim);
-        expected_label = strsep(&hostname, delim);
+        wildcard_label = strtok(cert_wild_card, delim);
+        expected_label = strtok(hostname, delim);
         if (NULL != wildcard_label &&
             NULL != expected_label &&
             NULL != hostname &&
@@ -571,7 +573,7 @@ check_san (SSL *ssl, const char *hostname)
                 (!strcasecmp(nval->name, "iPAddress") &&
                 !strcasecmp(nval->value, hostname)))
             {
-              verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); // We matched this; so it's safe to print
+              verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); /* We matched this; so it's safe to print */
               ok = 1;
               break;
             }
@@ -1040,7 +1042,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
 
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
-  if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
+  if (1 != BIO_do_connect(s_bio)) /* XXX TODO: BIO_should_retry() later? */
     die ("SSL connection failed\n");
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
@@ -1109,7 +1111,8 @@ main(int argc, char **argv)
   {
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
   }
-
+/*
+	XXX: KILL ME
   // We cast the mmap value to remove this error when compiling with g++:
   // src/tlsdate-helper.c: In function ‘int main(int, char**)’:
   // src/tlsdate-helper.c:822:41: error: invalid conversion from ‘void*’ to ‘uint32_t
@@ -1122,7 +1125,7 @@ main(int argc, char **argv)
              strerror (errno));
     return 1;
   }
-
+*/
   /* Get the current time from the system clock. */
   if (0 != clock_get_real_time(&start_time))
   {
@@ -1170,7 +1173,10 @@ main(int argc, char **argv)
   {
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
     run_ssl (time_map, leap);
+    /*
+    XXX: should be a pipe close
     (void) munmap (time_map, sizeof (uint32_t));
+    */
     _exit (0);
   }
   if (ssl_child != waitpid (ssl_child, &status, 0))
@@ -1190,8 +1196,10 @@ main(int argc, char **argv)
 #else
   server_time_s = ntohl (*time_map);
 #endif
+  /*
+  XXX: should be a pipe close
   munmap (time_map, sizeof (uint32_t));
-
+  */
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
   (unsigned int) server_time_s,
   CLOCK_SEC(&start_time) - server_time_s,

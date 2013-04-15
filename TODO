@@ -10,7 +10,7 @@ Here is a nice list of things to do to improve tlsdate:
  7)  drop privs earlier
 11)  verification of remote certificate for Tor nodes
 13)  account for servers that do not send UTC (Microsoft sends local time)
-14)  port to nss, gnutls, yassl, polarssl and other libraries
+14)  port to nss, gnutls, yassl, and other libraries
 15)  starttls support (smtp, pop, imap, ftp, xmpp)
 16)  ensure that 32bit time isn't near wrapping time on 32bit systems
 17)  find others to audit it - we need more eyes!
@@ -32,14 +32,12 @@ Here is a nice list of things to do to improve tlsdate:
 36)  SELinux policy for GNU/Linux platforms
 37)  Port to some Windows operating system that anyone actually uses
 38)  Add seccomp suport
-39) Add file loading of CA list
-40) Add tlsdated support for machines without a RTC
-     Explicitly support Raspberry pi use case
-41) Port to Mac OS X 10.8.2
-     This work has started in a private branch
+40)  Add tlsdated support for machines without a RTC
+      Explicitly support Raspberry pi use case
 42) Unit-test everything
 45) Drop root from tlsdated
-46) Support multiple fetch hosts
+47) Review cert validation and compare it with Chrome:
+      https://code.google.com/p/chromium/codesearch#chrome/src/net/base/x509_certificate.cc&l=500
 
 Patches welcome!
 

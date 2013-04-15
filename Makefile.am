@@ -1,6 +1,9 @@
 # vim:ft=automake
 
+AM_CFLAGS="-D__STDC_LIMIT_MACROS"
+
 BUILT_SOURCES=
+doc_DATA=
 EXTRA_DIST=
 TESTS=
 bin_PROGRAMS=
@@ -11,21 +14,28 @@ noinst_HEADERS=
 noinst_LTLIBRARIES=
 noinst_PROGRAMS=
 
+if !TARGET_OSX
 # GNU style is "make check", this will make check and test work
-TESTS+= src/conf_unittest src/tlsdated_unittest src/proxy-bio_unittest
+TESTS+= src/conf_unittest src/proxy-bio_unittest
+if TARGET_LINUX
+TESTS+= src/tlsdated_unittest
+endif
 test: check
+endif
 
 ACLOCAL_AMFLAGS= -I m4
 
 # Our Debian version
 DEBIAN_VERSION := $(shell if [ -e debian/changelog ]; then cat debian/changelog|head -n1|cut -d\- -f2| head -c 1; else echo "unknown"; fi)
 
-EXTRA_DIST+= AUTHORS
-EXTRA_DIST+= README
-EXTRA_DIST+= LICENSE
-EXTRA_DIST+= TODO
+doc_DATA+= AUTHORS
+doc_DATA+= CHANGELOG
+doc_DATA+= LICENSE
+doc_DATA+= README
+doc_DATA+= TODO
+
+EXTRA_DIST+= $(doc_DATA)
 EXTRA_DIST+= apparmor-profile
-EXTRA_DIST+= CHANGELOG
 EXTRA_DIST+= autogen.sh 
 
 include src/include.am
@@ -50,7 +60,7 @@ maintainer-clean-local:
 	@rm m4/ltversion.m4
 	@rm m4/lt~obsolete.m4
 	@rm -f tlsdate-*.tar.gz
-	@rm src/configmake.h
+	-rm src/configmake.h
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 certdir =  @TLSDATE_CA_ROOTS@
@@ -58,16 +68,22 @@ cert_DATA = ca-roots/tlsdate-ca-roots.conf
 EXTRA_DIST+= $(cert_DATA)
 
 confdir = @TLSDATE_CONF_DIR@
+if TARGET_LINUX
 conf_DATA = etc/tlsdated.conf
 EXTRA_DIST+= $(conf_DATA)
+endif
 
 # Our documentation
 man_MANS+= man/tlsdate.1
-man_MANS+= man/tlsdated.1
 man_MANS+= man/tlsdate-helper.1
+
+if TARGET_LINUX
+man_MANS+= man/tlsdated.1
 man_MANS+= man/tlsdate-routeup.1
 man_MANS+= man/tlsdated.conf.5
 man_MANS+= man/tlsdate-dbus-announce.1
+endif
+
 EXTRA_DIST+= $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test

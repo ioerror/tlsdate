@@ -25,11 +25,20 @@
 #ifndef __USE_POSIX
 #define __USE_POSIX
 #endif
+
+#ifndef NI_MAXHOST
+#define NI_MAXHOST 1025
+#endif
+
+#ifndef UINT8_MAX
+#define UINT8_MAX (255)
+#endif
+
 #include <netdb.h>
 
-#include <stdint.h>
+#include <inttypes.h>
 
-#include "src/proxy-bio.h"
+#include "src/proxy-bio-plan9.h"
 
 int socks4a_connect(BIO *b);
 int socks5_connect(BIO *b);
@@ -131,7 +140,7 @@ int socks5_connect(BIO *b)
   size_t sz = 0;
 
   /* the length for SOCKS addresses is only one byte. */
-  if (strnlen(ctx->host, UINT8_MAX + 1) == UINT8_MAX + 1)
+  if (strlen(ctx->host) == UINT8_MAX + 1)
     return 0;
 
   verb("V: proxy5: connecting %s:%d\n", ctx->host, ctx->port);
@@ -427,7 +436,7 @@ int API BIO_proxy_set_type(BIO *b, const char *type)
 int API BIO_proxy_set_host(BIO *b, const char *host)
 {
   struct proxy_ctx *ctx = (struct proxy_ctx *) b->ptr;
-  if (strnlen(host, NI_MAXHOST) == NI_MAXHOST)
+  if (strlen(host) == NI_MAXHOST)
     return 1;
   ctx->host = strdup(host);
   return 0;

@@ -4,8 +4,8 @@
 /* See LICENSE for licensing information */
 
 /**
-  * \file clock.c
-  * \brief Contains clock primitives for Linux OS
+  * \file clock-linux.c
+  * \brief Contains clock primitives for GNU/Linux OS
   **/
 
 #include "config.h"
@@ -20,7 +20,7 @@
  * @param time where the current time is stored
  * @return clock_gettime syscall return value
  */
-int clock_get_real_time_linux(struct tlsdate_time *time)
+int clock_get_real_time(struct tlsdate_time *time)
 {
   /* Safety net */
   assert(time);
@@ -34,7 +34,7 @@ int clock_get_real_time_linux(struct tlsdate_time *time)
  * @param time where the current time to set is stored
  * @return clock_settime syscall return value
  */
-int clock_set_real_time_linux(const struct tlsdate_time *time)
+int clock_set_real_time(const struct tlsdate_time *time)
 {
   /* Safety net */
   assert(time);
@@ -48,7 +48,7 @@ int clock_set_real_time_linux(const struct tlsdate_time *time)
  * @param sec is the seconds
  * @param nsec is the nanoseconds
  */
-void clock_init_time_linux(struct tlsdate_time *time, time_t sec,
+void clock_init_time(struct tlsdate_time *time, time_t sec,
                            long nsec)
 {
   /* Safety net */
