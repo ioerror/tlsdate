@@ -1,4 +1,5 @@
 0.0.7 TBD
+  Add tentative -plan9.[ch] versions of tlsdate-helper.
   Add -x option to tlsdated to override source proxies.
   Correctly check SANs against target host when using proxies.
   Fix a race in tlsdate-dbus-announce that can cause signal drops.
