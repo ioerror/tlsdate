@@ -186,7 +186,7 @@ case "$host" in
     dnl the fmemopen prototype is hidden causing the unit tests to segfault.
     dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
     AC_CHECK_FUNC([fmemopen], ,
-                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+                  [AC_MSG_WARN([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
     AC_ARG_WITH([unpriv-group],
                 [AS_HELP_STRING([--with-unpriv-group=<group>],
                 [Group to drop privs to @<:@default: nobody@:>@])])
