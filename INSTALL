@@ -79,6 +79,7 @@ On Plan9 the start of building might look something like this:
   ndb/dns -r
   9fs sources
   /n/sources/contrib/fgb/root/rc/bin/contrib/install fgb/openssl
+  mk install
 
 OpenBSD builds from source and is not yet in the port system:
 
