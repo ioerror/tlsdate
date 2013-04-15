@@ -215,5 +215,7 @@ if HAVE_ANDROID
 noinst_HEADERS+= src/common/android.h
 endif
 
+if !TARGET_OSX
 check_PROGRAMS+= src/test/proxy-override src/test/return-argc \
                  src/test/rotate src/test/sleep-wrap
+endif
