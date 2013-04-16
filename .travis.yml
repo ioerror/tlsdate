@@ -3,3 +3,4 @@ before_script: ./autogen.sh
 compiler:
   - clang
   - gcc
+script: ./configure && make && make test
