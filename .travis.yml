@@ -3,4 +3,10 @@ before_script: ./autogen.sh
 compiler:
   - clang
   - gcc
+branches:
+  only:
+    - master
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq autotools-dev debhelper dh-apparmor hardening-wrapper libssl-dev
 script: ./configure && make && make test
