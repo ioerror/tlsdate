@@ -145,6 +145,10 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
+AC_CHECK_FUNCS([fmemopen funopen strnlen])
+AM_CONDITIONAL(HAVE_FMEMOPEN, [test "x${ac_cv_func_fmemopen}" = xyes])
+AM_CONDITIONAL(HAVE_FUNOPEN, [test "x${ac_cv_func_funopen}" = xyes])
+AM_CONDITIONAL(HAVE_STRNLEN, [test "x${ac_cv_func_strnlen}" = xyes])
 
 case "$host" in
   *-darwin*)
