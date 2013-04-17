@@ -15,6 +15,7 @@ Continuous integration is available for a number of platforms:
 
   https://jenkins.torproject.org/job/tlsdate-ci-linux/
   https://travis-ci.org/ioerror/tlsdate
+  http://build.chromium.org/p/chromiumos/waterfall
 
 White Space:
 
