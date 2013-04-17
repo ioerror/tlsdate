@@ -103,6 +103,10 @@ src_tlsdate_helper_SOURCES+= src/proxy-bio.c
 endif
 src_tlsdate_helper_SOURCES+= src/util.c
 
+if !HAVE_STRNLEN
+src_tlsdate_helper_SOURCES+= src/common/strnlen.c
+endif
+
 # This doesn't work on Mac OS X
 if TARGET_LINUX
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN @SSL_CFLAGS@
@@ -164,6 +168,13 @@ src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
 src_proxy_bio_unittest_SOURCES+= src/test-bio.c
 src_proxy_bio_unittest_SOURCES+= src/util.c
 src_proxy_bio_unittest_SOURCES+= src/common/android.c
+
+# XXX This conditional should apply for any system where we're building
+# proxy_bio_unittest, but I don't know how to tell that to automake.
+if !HAVE_STRNLEN
+src_proxy_bio_unittest_SOURCES+= src/common/strnlen.c
+endif
+
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
