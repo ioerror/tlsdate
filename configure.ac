@@ -145,6 +145,9 @@ AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
+AC_CHECK_FUNCS([fmemopen funopen])
+AM_CONDITIONAL(HAVE_FMEMOPEN, [test "x${ac_cv_func_fmemopen}" = xyes])
+AM_CONDITIONAL(HAVE_FUNOPEN, [test "x${ac_cv_func_funopen}" = xyes])
 
 case "$host" in
   *-darwin*)
@@ -182,11 +185,11 @@ case "$host" in
     dnl clock_gettime is either part of libc or unavailable.
     AC_CHECK_FUNC([clock_gettime], ,
                   [AC_MSG_ERROR([Your system lacks clock_gettime])])
-    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
-    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
-    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
-    AC_CHECK_FUNC([fmemopen], ,
-                  [AC_MSG_WARN([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    if test "x${ac_cv_func_fmemopen}" != xyes; then
+        if test "x${ac_cv_func_funopen}" != xyes; then
+            AC_MSG_ERROR([We need fmemopen or funopen for unit tests.])
+        fi
+    fi
     AC_ARG_WITH([unpriv-group],
                 [AS_HELP_STRING([--with-unpriv-group=<group>],
                 [Group to drop privs to @<:@default: nobody@:>@])])
