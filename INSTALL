@@ -13,6 +13,7 @@ tlsdate should build and work on the following Operating Systems:
   Arch Linux (Don't forget to symlink to /dev/rtc to /dev/rtc0)
   NetBSD 6.0.1
   OpenBSD 5.2
+  Gentoo 20130413
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
@@ -39,9 +40,13 @@ Cleaning is the usual:
 
   make clean
 
-On Debian Gnu/Linux sid/unstable
+On Debian Gnu/Linux sid/unstable:
 
   apt-get install tlsdate
+
+On Gentoo:
+
+  emerge net-misc/tlsdate
 
 On FreeBSD one may also use the ports system:
 
