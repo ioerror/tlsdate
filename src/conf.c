@@ -31,7 +31,7 @@ void strip_newlines(char *line)
 
 char *eat_whitespace(char *line)
 {
-  while (isspace(*line))
+  while (isspace((int)(unsigned char)*line))
     line++;
   return line;
 }
