@@ -1,7 +1,7 @@
 tlsdate should build and work on the following Operating Systems:
 
-  Debian Gnu/Linux 6.0.7 (apt-get install tlsdate for Debian unstable)
-  Ubuntu 11.04, 12.04, 12.10
+  Debian Gnu/Linux squeeze, wheezy, sid
+  Ubuntu lucid, natty, oneiric, precise, quantal
   CentOS 6.2, 6.3, 6.4
   Fedora 17, 18
   RedHat Enterprise Server 6.4
@@ -28,7 +28,7 @@ Currently porting is in progress or partially documented for:
 
   Plan9 (with APE)
 
-Building and install of tlsdate on GNU/Linux and FreeBSD should be as easy as:
+Building and install of tlsdate on GNU/Linux and FreeBSD:
 
   ./autogen.sh
   ./configure
@@ -38,6 +38,10 @@ Building and install of tlsdate on GNU/Linux and FreeBSD should be as easy as:
 Cleaning is the usual:
 
   make clean
+
+On Debian Gnu/Linux sid/unstable
+
+  apt-get install tlsdate
 
 On FreeBSD one may also use the ports system:
 
