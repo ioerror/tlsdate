@@ -122,7 +122,7 @@ static void
 validate_proxy_port(const char *port)
 {
   while (*port)
-    if (!isdigit(*port++))
+    if (!isdigit((int)(unsigned char)*port++))
       die("invalid char in port\n");
 }
 
