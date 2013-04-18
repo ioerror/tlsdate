@@ -45,6 +45,15 @@ bin_PROGRAMS+= src/tlsdate-helper
 src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
 src_conf_unittest_SOURCES+= src/common/android.c
+
+# XXX This conditional should apply for any system where we're building
+# conf_unittest, but I don't know how to tell that to automake.
+if !HAVE_FMEMOPEN
+if HAVE_FUNOPEN
+src_conf_unittest_SOURCES+= src/common/fmemopen-funopen.c
+endif
+endif
+
 check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
 endif
