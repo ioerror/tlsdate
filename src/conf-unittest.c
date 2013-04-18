@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "config.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +16,10 @@
 #include "src/test_harness.h"
 
 #ifdef HAVE_ANDROID_SYSTEM
+#include "src/common/fmemopen.h"
+#endif
+
+#ifndef HAVE_FMEMOPEN
 #include "src/common/fmemopen.h"
 #endif
 
