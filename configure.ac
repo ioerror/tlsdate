@@ -313,8 +313,6 @@ AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AC_REQUIRE([AX_APPEND_COMPILE_FLAGS])
           AC_LANG_PUSH([C])
           AS_IF([test "x$enable_hardened_checks" != xno], [
-              CFLAGS=
-              LIBS=
               AX_APPEND_COMPILE_FLAGS([-g -O1])
           ], [
               AC_MSG_WARN([using hardened flags is HIGHLY RECOMMENDED and disabling them is a BAD IDEA])
