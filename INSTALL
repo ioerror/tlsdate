@@ -14,6 +14,7 @@ tlsdate should build and work on the following Operating Systems:
   NetBSD 6.0.1
   OpenBSD 5.2
   Gentoo 20130413
+  DragonFly BSD 3.3-DEVELOPMENT
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
@@ -22,7 +23,6 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
   Win32 (MinGW or otherwise)
   OpenWRT
   pfsense
-  DragonFly BSD
   OpenVMS
 
 Currently porting is in progress or partially documented for:
