@@ -8,5 +8,5 @@ branches:
     - master
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq autotools-dev dh-apparmor hardening-wrapper libssl-dev autoconf automake pkg-config
+  - sudo apt-get install -qq autotools-dev dh-apparmor hardening-wrapper libssl-dev autoconf automake pkg-config libtool
 script: ./configure && make && make test
