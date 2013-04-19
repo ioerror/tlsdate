@@ -17,7 +17,7 @@ then
   export WARNINGS
 fi
 
-if [ $(uname) = NetBSD ];
+if [ $(uname) = NetBSD ] || [ $(uname) = DragonFly ];
 then
   WARNINGS=""
   export WARNINGS
