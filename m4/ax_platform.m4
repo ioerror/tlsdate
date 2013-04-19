@@ -56,6 +56,9 @@
         [*openbsd*],
         [TARGET_OS_OPENBSD="true"
         AC_DEFINE([TARGET_OS_OPENBSD],[1],[Whether we are building for OpenBSD])],
+        [*dragonfly*],
+        [TARGET_OS_DRAGONFLYBSD="true"
+        AC_DEFINE([TARGET_OS_DRAGONFLYBSD],[1],[Whether we are building for DragonFly BSD])],
         [*bsd*],
         [TARGET_OS_BSD="true"
         AC_DEFINE([TARGET_OS_BSD],[1],[Whether we are building for some other *BSD])],
@@ -73,5 +76,6 @@
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_NETBSD],[test "x${TARGET_OS_NETBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OPENBSD],[test "x${TARGET_OS_OPENBSD}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_DRAGONFLYBSD],[test "x${TARGET_OS_DRAGONFLYBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_BSD],[test "x${TARGET_OS_BSD}" = "xtrue"])
   ])
