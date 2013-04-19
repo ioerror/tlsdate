@@ -24,6 +24,7 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
   OpenWRT
   pfsense
   OpenVMS
+  Irix
   Any of the classic unix systems
 
 Currently porting is in progress or partially documented for:
