@@ -49,7 +49,9 @@ On FreeBSD, we'd like to support jails, chroot, and Capsicum.
 
 On OpenBSD, we'd like to support chroot and systrace.
 
-On NetBSD and DragonFly BSD, we'd like to chroot.
+On NetBSD, we'd like to chroot.
+
+On DragonFly BSD, we'd like to support chroot and jails.
 
 On Mac OS X, we'd like to support chroot and seatbelt.
 
