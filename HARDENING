@@ -3,9 +3,21 @@ Platforms offer varying security features; we'd like to support the best.
 This is a document that notes which security hardening we have implemented and
 which things we'd like to see implemented for various platforms. We
 specifically address exploitation mitigation and containment; security issues
-such as x509 certification validation are not addressed here. Patches,
+such as x509 certification validation are not addressed here, yet. Patches,
 suggestions and improvements are welcome! We always want the strongest set of
 options by default on each supported platform.
+
+We attempt to use the C programming language correctly and in a standard way.
+We do however use some compiler specific options such as defining integer
+wrapping because we believe the practical benefit outweights the implied risks.
+As such, we prefer to be explicit rather than implicit in our casting or other
+possible ambiguity.
+
+We should treat all compiler and linker warnings as fatal errors. Currently,
+consider autotools warnings to be an exception as we would like to support
+platforms imperfectly rather than not at all. We generally wish to support
+autotools bootstrapping on all of our supported platforms. This is not possible
+on Plan 9. Currently autotools will complain on the BSD systems.
 
 On all platforms we attempt to support available compiler hardening and linking
 options. Please do not disable these options. Additional compiler and linker
@@ -18,7 +30,8 @@ On all platforms, we attempt to switch from the administrative user to an
 unimportant role account which shares data with no other processes. If we start
 as any user other than an administrative user, we will likely be unable to
 switch to our normal unprivileged account. These users are defined at
-`configure` time.
+`configure` time. It is most effective if such a user is not the traditional
+'nobody' or group 'nogroup' as is often the tradition.
 
 In addition to the above hardening options, we have tried to extend our
 hardening when the platform supports it. Each additional security measure that
