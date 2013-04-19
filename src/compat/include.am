@@ -28,6 +28,10 @@ if TARGET_OPENBSD
 src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
 endif
 
+if TARGET_DRAGONFLYBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
 if TARGET_BSD
 if !TARGET_NETBSD
 if !TARGET_FREEBSD

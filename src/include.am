@@ -70,6 +70,16 @@ check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
 endif
 
+if TARGET_DRAGONFLYBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
 if TARGET_BSD
 if !TARGET_FREEBSD
 if !TARGET_NETBSD
@@ -198,6 +208,18 @@ src_proxy_bio_unittest_SOURCES+= src/test-bio.c
 src_proxy_bio_unittest_SOURCES+= src/util.c
 src_proxy_bio_unittest_SOURCES+= src/common/android.c
 src_proxy_bio_unittest_SOURCES+= src/common/fmemopen.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_DRAGONFLYBSD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
