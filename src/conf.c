@@ -19,6 +19,10 @@
 #include "src/common/android.h" // XXX: Dirty hack - make this more generic later
 #endif
 
+#ifdef TARGET_OS_DRAGONFLYBSD
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
 #ifdef HAVE_ANDROID
 #include "src/common/android.h"
 #endif
