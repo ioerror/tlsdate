@@ -11,6 +11,10 @@ Please file bugs on the tlsdate issue tracker:
 
 Please use the github pull request feature when possible.
 
+The current build status is available as a handy image:
+
+[![Build Status](https://secure.travis-ci.org/ioerror/tlsdate.png?branch=master)](http://travis-ci.org/ioerror/tlsdate)
+
 Continuous integration is available for a number of platforms:
 
   https://jenkins.torproject.org/job/tlsdate-ci-linux/
