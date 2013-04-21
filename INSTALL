@@ -34,6 +34,12 @@ Currently porting is in progress or partially documented for:
 
   Plan9 (with APE)
 
+On Debian GNU/Linux and related systems, we provide an init.d script that
+controls the tlsdated daemon. It will notice network changes and regularly
+invoke tlsdate to keep the clock in sync. Start it like so:
+
+  /etc/init.d/tlsdate start
+
 ======================================== BINARY DISTRIBUTIONS AND 'ports'-LIKE SYSTEMS
 
 Fedora:
