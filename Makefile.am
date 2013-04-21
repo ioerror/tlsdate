@@ -7,6 +7,7 @@ doc_DATA=
 EXTRA_DIST=
 TESTS=
 bin_PROGRAMS=
+sbin_PROGRAMS=
 check_PROGRAMS=
 lib_LTLIBRARIES=
 man_MANS=
