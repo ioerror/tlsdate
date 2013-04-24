@@ -27,6 +27,7 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
   OpenVMS
   Irix
   GNU/Hurd
+  Minix
   Any of the classic unix systems
 
 Currently porting is in progress or partially documented for:
