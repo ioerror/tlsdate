@@ -70,5 +70,7 @@ On Mac OS X, we'd like to support chroot and seatbelt.
 
 On Plan9, we'd like to chroot.
 
+On Windows, we do nothing beyond compile time hardening. We'd like to do more.
+
 On other platforms, we'll try to run correctly with the understanding that any
 bug is likely a much more serious problem.
