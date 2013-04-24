@@ -23,4 +23,10 @@ then
   export WARNINGS
 fi
 
+if [ $(uname) != "CYGWIN_NT-6.1" ];
+then
+  WARNINGS=""
+  export WARNINGS
+fi
+
 autoreconf --install --verbose --force

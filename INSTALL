@@ -15,6 +15,7 @@ tlsdate should build and work on the following Operating Systems:
   OpenBSD 5.2
   Gentoo 20130413
   DragonFly BSD 3.3-DEVELOPMENT
+  Cygwin CYGWIN_NT-6.1 1.7.18(0.263/5/3)
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
@@ -94,6 +95,11 @@ On Arch Linux there is a PKGBUILD in the Arch User Repository:
 
   https://aur.archlinux.org/packages/tlsdate
   https://aur.archlinux.org/packages/tl/tlsdate/PKGBUILD
+
+Cygwin requires that the user installs openssl-dev, gcc, pkg-config, libtool, automake, autoconf:
+
+  ./configure
+  make
 
 On Plan9 the start of building might look something like this:
 

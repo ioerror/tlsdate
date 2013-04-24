@@ -47,7 +47,7 @@
 # define SHUT_RDWR SD_BOTH
 #endif
           ])],
-        [*CYGWIN_NT*],
+        [*cygwin*],
         [TARGET_CYGWIN="true"
         AC_DEFINE([TARGET_OS_CYGWIN],[1],[Whether we build for Cygwin])],
         [*freebsd*],

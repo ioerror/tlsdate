@@ -273,6 +273,23 @@ case "$host" in
             [""|yes|no], [UNPRIV_GROUP="nogroup"],
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-cygwin*)
+    dnl This is for Cygwin
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
     case "$host" in
       *-linux-androideabi)
         dnl This is for Android NDK as it is a special case of linux
