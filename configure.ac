@@ -290,6 +290,26 @@ case "$host" in
             [""|yes|no], [UNPRIV_GROUP="nogroup"],
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-beos*|*-haiku*)
+    dnl This is for BeOS and Haiku; we probably only support Haiku with gcc4
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    dnl on Haiku we require the bsd library for strsep
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    LDFLAGS="$LDFLAGS -lbsd"
+    CC="/boot/develop/abi/x86/gcc4/tools/gcc-4.6.3-haiku-121101/bin/gcc"
     case "$host" in
       *-linux-androideabi)
         dnl This is for Android NDK as it is a special case of linux

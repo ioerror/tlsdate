@@ -12,6 +12,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef TARGET_OS_HAIKU
+#include <stdarg.h>
+#endif
+
 #define API __attribute__((visibility("default")))
 
 extern int verbose;

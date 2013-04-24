@@ -50,6 +50,9 @@
         [*cygwin*],
         [TARGET_CYGWIN="true"
         AC_DEFINE([TARGET_OS_CYGWIN],[1],[Whether we build for Cygwin])],
+        [*haiku*],
+        [TARGET_HAIKU="true"
+        AC_DEFINE([TARGET_OS_HAIKU],[1],[Whether we build for Haiku])],
         [*freebsd*],
         [TARGET_OS_FREEBSD="true"
         AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])],
@@ -75,6 +78,7 @@
 
   AM_CONDITIONAL([BUILD_WIN32],[test "x${TARGET_WINDOWS}" = "xtrue"])
   AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_CYGWIN}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_HAIKU],[test "x${TARGET_HAIKU}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OSX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])

@@ -33,6 +33,7 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
 Currently porting is in progress or partially documented for:
 
   Plan9 (with APE)
+  Haiku
 
 Building and install of tlsdate on GNU/Linux and FreeBSD:
 
@@ -109,6 +110,13 @@ On Plan9 the start of building might look something like this:
   9fs sources
   /n/sources/contrib/fgb/root/rc/bin/contrib/install fgb/openssl
   mk install
+
+On Haiku we must use gcc4:
+
+  export CC=/boot/develop/abi/x86/gcc4/tools/gcc4.6.3-haiku-121101/bin/gcc
+  export LDFLAGS="$LDFLAGS -lbsd"
+  ./configure
+  make
 
 OpenBSD builds from source and is not yet in the port system:
 

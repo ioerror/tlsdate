@@ -36,6 +36,8 @@ struct tlsdate_time {
     mach_timespec_t tp;
 #elif _WIN32
     void *tp;
+#elif TARGET_OS_HAIKU
+    struct timespec tp;
 #elif TARGET_OS_CYGWIN
     struct timespec tp;
 #endif
