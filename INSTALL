@@ -15,7 +15,11 @@ tlsdate should build and work on the following Operating Systems:
   OpenBSD 5.2
   Gentoo 20130413
   DragonFly BSD 3.3-DEVELOPMENT
+
+tlsdate should build and may work on the following Operating Systems:
+
   Cygwin CYGWIN_NT-6.1 1.7.18(0.263/5/3)
+  Haiku r1alpha4
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
@@ -33,7 +37,6 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
 Currently porting is in progress or partially documented for:
 
   Plan9 (with APE)
-  Haiku
 
 Building and install of tlsdate on GNU/Linux and FreeBSD:
 
@@ -115,7 +118,7 @@ On Haiku we must use gcc4:
 
   export CC=/boot/develop/abi/x86/gcc4/tools/gcc4.6.3-haiku-121101/bin/gcc
   export LDFLAGS="$LDFLAGS -lbsd"
-  ./configure
+  ./configure # This includes the above exports currently
   make
 
 OpenBSD builds from source and is not yet in the port system:
