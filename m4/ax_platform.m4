@@ -36,7 +36,7 @@
       AS_CASE([$target_os],
         [*mingw32*],
         [TARGET_WINDOWS="true"
-	AC_DEFINE([TARGET_OS_WINDOWS], [1], [Whether we are building for Windows])
+        AC_DEFINE([TARGET_OS_WINDOWS], [1], [Whether we are building for Windows])
         AC_DEFINE([WINVER], [WindowsXP], [Version of Windows])
         AC_DEFINE([_WIN32_WINNT], [0x0501], [Magical number to make things work])
         AC_DEFINE([EAI_SYSTEM], [11], [Another magical number])
@@ -47,6 +47,9 @@
 # define SHUT_RDWR SD_BOTH
 #endif
           ])],
+        [*CYGWIN_NT*],
+        [TARGET_CYGWIN="true"
+        AC_DEFINE([TARGET_OS_CYGWIN],[1],[Whether we build for Cygwin])],
         [*freebsd*],
         [TARGET_OS_FREEBSD="true"
         AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])],
@@ -64,13 +67,14 @@
         AC_DEFINE([TARGET_OS_BSD],[1],[Whether we are building for some other *BSD])],
         [*solaris*],[AC_DEFINE([TARGET_OS_SOLARIS],[1],[Whether we are building for Solaris])],
         [*darwin*],
-	[TARGET_OSX="true"
-	AC_DEFINE([TARGET_OS_OSX],[1],[Whether we build for OSX])],
-	[*linux*],
-	[TARGET_LINUX="true"
-	AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
+        [TARGET_OSX="true"
+        AC_DEFINE([TARGET_OS_OSX],[1],[Whether we build for OSX])],
+        [*linux*],
+        [TARGET_LINUX="true"
+        AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
 
   AM_CONDITIONAL([BUILD_WIN32],[test "x${TARGET_WINDOWS}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_CYGWIN}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OSX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
