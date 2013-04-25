@@ -61,6 +61,8 @@
         AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])],
         [*kfreebsd*-gnu],
         [TARGET_OS_GNUKFREEBSD="true"
+        TARGET_OS_FREEBSD="true"
+        AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])
         AC_DEFINE([TARGET_OS_GNUKFREEBSD],[1],[Whether we are building for GNU/kFreeBSD])],
         [*netbsd*],
         [TARGET_OS_NETBSD="true"
