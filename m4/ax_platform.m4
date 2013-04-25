@@ -76,7 +76,7 @@
         [TARGET_LINUX="true"
         AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
 
-  AM_CONDITIONAL([BUILD_WIN32],[test "x${TARGET_WINDOWS}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_WIN32],[test "x${TARGET_WINDOWS}" = "xtrue"])
   AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_CYGWIN}" = "xtrue"])
   AM_CONDITIONAL([TARGET_HAIKU],[test "x${TARGET_HAIKU}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OSX}" = "xtrue"])
