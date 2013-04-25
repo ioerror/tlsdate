@@ -291,6 +291,23 @@ case "$host" in
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
     ;;
+  *-mingw32*)
+    dnl This is for MINGW32_NT
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
   *-beos*|*-haiku*)
     dnl This is for BeOS and Haiku; we probably only support Haiku with gcc4
     dnl Check for clock_gettime.  Some systems put it into -lc, while

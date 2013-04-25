@@ -23,7 +23,7 @@ then
   export WARNINGS
 fi
 
-if [ $(uname) != "CYGWIN_NT-6.1" ];
+if [ $(uname) = "CYGWIN_NT-6.1" ] || [ $(uname) = "MINGW32_NT-6.1" ];
 then
   WARNINGS=""
   export WARNINGS

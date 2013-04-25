@@ -47,6 +47,9 @@
 # define SHUT_RDWR SD_BOTH
 #endif
           ])],
+        [*mingw*],
+        [TARGET_OS_MINGW="true"
+        AC_DEFINE([TARGET_OS_MINGW],[1],[Whether we build for MinGW])],
         [*cygwin*],
         [TARGET_OS_CYGWIN="true"
         AC_DEFINE([TARGET_OS_CYGWIN],[1],[Whether we build for Cygwin])],
@@ -77,6 +80,7 @@
         AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
 
   AM_CONDITIONAL([TARGET_WIN32],[test "x${TARGET_OS_WINDOWS}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_MINGW],[test "x${TARGET_OS_MINGW}" = "xtrue"])
   AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_OS_CYGWIN}" = "xtrue"])
   AM_CONDITIONAL([TARGET_HAIKU],[test "x${TARGET_OS_HAIKU}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OS_OSX}" = "xtrue"])
