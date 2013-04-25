@@ -96,6 +96,17 @@ endif
 endif
 endif
 
+if TARGET_GNUHURD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
 if TARGET_CYGWIN
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
@@ -277,6 +288,19 @@ endif
 endif
 endif
 
+if TARGET_GNUHURD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
 if TARGET_CYGWIN
 if !POLARSSL
 src_proxy_bio_unittest_LDADD = @SSL_LIBS@
@@ -335,7 +359,6 @@ endif
 # This is our explicit target list
 # We do not attempt to build with PolarSSL
 if !POLARSSL
-if !TARGET_HAIKU
 if !TARGET_LINUX
 if !TARGET_OSX
 if !TARGET_OPENBSD
@@ -343,6 +366,7 @@ if !TARGET_NETBSD
 if !TARGET_FREEBSD
 if !TARGET_DRAGONFLYBSD
 if !TARGET_HAIKU
+if !TARGET_GNUHURD
 if !TARGET_CYGWIN
 if !TARGET_MINGW
 if !TARGET_BSD
@@ -368,7 +392,6 @@ endif
 endif
 
 if !POLARSSL
-if !TARGET_HAIKU
 if !TARGET_LINUX
 if !TARGET_OSX
 if !TARGET_OPENBSD
@@ -376,6 +399,7 @@ if !TARGET_NETBSD
 if !TARGET_FREEBSD
 if !TARGET_DRAGONFLYBSD
 if !TARGET_HAIKU
+if !TARGET_GNUHURD
 if !TARGET_CYGWIN
 if !TARGET_MINGW
 if !TARGET_BSD

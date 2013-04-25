@@ -42,6 +42,10 @@ struct tlsdate_time {
     struct timespec tp;
 #elif TARGET_OS_MINGW
     struct timespec tp;
+#elif TARGET_OS_GNUHURD
+    struct timespec tp;
+#else
+    struct timespec tp;
 #endif
 };
 

@@ -75,6 +75,9 @@
         [*darwin*],
         [TARGET_OS_OSX="true"
         AC_DEFINE([TARGET_OS_OSX],[1],[Whether we build for OSX])],
+        [*gnu*],
+        [TARGET_OS_GNUHURD="true"
+        AC_DEFINE([TARGET_OS_GNUHURD],[1],[Whether we build for GNU/Hurd])],
         [*linux*],
         [TARGET_OS_LINUX="true"
         AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
@@ -84,6 +87,7 @@
   AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_OS_CYGWIN}" = "xtrue"])
   AM_CONDITIONAL([TARGET_HAIKU],[test "x${TARGET_OS_HAIKU}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OS_OSX}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_GNUHURD],[test "x${TARGET_OS_GNUHURD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_OS_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_NETBSD],[test "x${TARGET_OS_NETBSD}" = "xtrue"])
