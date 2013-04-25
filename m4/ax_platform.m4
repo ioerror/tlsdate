@@ -73,10 +73,10 @@
         AC_DEFINE([TARGET_OS_BSD],[1],[Whether we are building for some other *BSD])],
         [*solaris*],[AC_DEFINE([TARGET_OS_SOLARIS],[1],[Whether we are building for Solaris])],
         [*darwin*],
-        [TARGET_OSX="true"
+        [TARGET_OS_OSX="true"
         AC_DEFINE([TARGET_OS_OSX],[1],[Whether we build for OSX])],
         [*linux*],
-        [TARGET_LINUX="true"
+        [TARGET_OS_LINUX="true"
         AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
 
   AM_CONDITIONAL([TARGET_WIN32],[test "x${TARGET_OS_WINDOWS}" = "xtrue"])
