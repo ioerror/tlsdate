@@ -59,6 +59,9 @@
         [*freebsd*],
         [TARGET_OS_FREEBSD="true"
         AC_DEFINE([TARGET_OS_FREEBSD],[1],[Whether we are building for FreeBSD])],
+        [*kfreebsd*-gnu],
+        [TARGET_OS_GNUKFREEBSD="true"
+        AC_DEFINE([TARGET_OS_GNUKFREEBSD],[1],[Whether we are building for GNU/kFreeBSD])],
         [*netbsd*],
         [TARGET_OS_NETBSD="true"
         AC_DEFINE([TARGET_OS_NETBSD],[1],[Whether we are building for NetBSD])],
@@ -90,6 +93,7 @@
   AM_CONDITIONAL([TARGET_GNUHURD],[test "x${TARGET_OS_GNUHURD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_OS_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_GNUKFREEBSD],[test "x${TARGET_OS_GNUKFREEBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_NETBSD],[test "x${TARGET_OS_NETBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OPENBSD],[test "x${TARGET_OS_OPENBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_DRAGONFLYBSD],[test "x${TARGET_OS_DRAGONFLYBSD}" = "xtrue"])
