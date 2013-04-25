@@ -184,6 +184,24 @@ case "$host" in
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
     ;;
+  *kfreebsd*-gnu*)
+    dnl This is for Debian GNU/kFreeBSD
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
   *-netbsd*)
     dnl This is for NetBSD
     dnl clock_gettime is either part of libc or unavailable.
