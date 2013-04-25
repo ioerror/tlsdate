@@ -16,12 +16,13 @@ tlsdate should build and work on the following Operating Systems:
   Gentoo 20130413
   DragonFly BSD 3.3-DEVELOPMENT
 
-tlsdate should build and may work on the following Operating Systems:
+tlsdate should build and might even work on the following Operating Systems:
 
   Win32 with Cygwin CYGWIN_NT-6.1 1.7.18(0.263/5/3
   Win32 with MinGW
   Haiku r1alpha4
   GNU/Hurd GNU-Mach 1.3.99-486-dbg/Hurd-0.3
+  GNU/kFreeBSD asdfasdf 8.2-1-amd64
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
