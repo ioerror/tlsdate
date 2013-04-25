@@ -35,7 +35,7 @@
 
       AS_CASE([$target_os],
         [*mingw32*],
-        [TARGET_WINDOWS="true"
+        [TARGET_OS_WINDOWS="true"
         AC_DEFINE([TARGET_OS_WINDOWS], [1], [Whether we are building for Windows])
         AC_DEFINE([WINVER], [WindowsXP], [Version of Windows])
         AC_DEFINE([_WIN32_WINNT], [0x0501], [Magical number to make things work])
@@ -48,10 +48,10 @@
 #endif
           ])],
         [*cygwin*],
-        [TARGET_CYGWIN="true"
+        [TARGET_OS_CYGWIN="true"
         AC_DEFINE([TARGET_OS_CYGWIN],[1],[Whether we build for Cygwin])],
         [*haiku*],
-        [TARGET_HAIKU="true"
+        [TARGET_OS_HAIKU="true"
         AC_DEFINE([TARGET_OS_HAIKU],[1],[Whether we build for Haiku])],
         [*freebsd*],
         [TARGET_OS_FREEBSD="true"
@@ -76,11 +76,11 @@
         [TARGET_LINUX="true"
         AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
 
-  AM_CONDITIONAL([TARGET_WIN32],[test "x${TARGET_WINDOWS}" = "xtrue"])
-  AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_CYGWIN}" = "xtrue"])
-  AM_CONDITIONAL([TARGET_HAIKU],[test "x${TARGET_HAIKU}" = "xtrue"])
-  AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OSX}" = "xtrue"])
-  AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_LINUX}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_WIN32],[test "x${TARGET_OS_WINDOWS}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_CYGWIN],[test "x${TARGET_OS_CYGWIN}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_HAIKU],[test "x${TARGET_OS_HAIKU}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_OSX],[test "x${TARGET_OS_OSX}" = "xtrue"])
+  AM_CONDITIONAL([TARGET_LINUX],[test "x${TARGET_OS_LINUX}" = "xtrue"])
   AM_CONDITIONAL([TARGET_FREEBSD],[test "x${TARGET_OS_FREEBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_NETBSD],[test "x${TARGET_OS_NETBSD}" = "xtrue"])
   AM_CONDITIONAL([TARGET_OPENBSD],[test "x${TARGET_OS_OPENBSD}" = "xtrue"])
