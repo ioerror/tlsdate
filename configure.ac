@@ -307,10 +307,13 @@ case "$host" in
     ;;
   *-gnu0.*)
     dnl This is a generic catch for GNU/Hurd variants
-    dnl This likely needs to be tuned to catch all
-    dnl clock_gettime is either part of libc or unavailable.
-    AC_CHECK_FUNC([clock_gettime], ,
-                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
     dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
     dnl the fmemopen prototype is hidden causing the unit tests to segfault.
     dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
