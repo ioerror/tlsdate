@@ -15,7 +15,6 @@ tlsdate should build and work on the following Operating Systems:
   OpenBSD 5.2
   Gentoo 20130413
   DragonFly BSD 3.3-DEVELOPMENT
-  Debian GNU/Hurd 7.0 (GNU-Mach 1.3.99-486-dbg/Hurd-0.3)
   Debian GNU/kFreeBSD 7.0 (8.2-1-amd64)
 
 tlsdate should build and might even work on the following Operating Systems:
@@ -39,7 +38,8 @@ ports of tlsdate or for tlsdate integration on the following Operating Systems:
 Currently porting is in progress or partially documented for:
 
   Plan9 (with APE)
-
+  Debian GNU/Hurd 7.0 (GNU-Mach 1.3.99-486-dbg/Hurd-0.3)
+    Currently we report "server time 0 (difference is about 1367009757 s)"
 Building and install of tlsdate on GNU/Linux and FreeBSD:
 
   ./autogen.sh
