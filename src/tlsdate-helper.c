@@ -328,16 +328,15 @@ dns_label_count(char *label, char *delim)
     if (saveptr[0] != delim[0])
     {
       label_count++;
-      verb ("V: label found; total label count: %d\n", label_count);
     }
     do
     {
       // Find all subsequent labels
       label_count++;
       saveptr_tmp = strtok_r(NULL, delim, &saveptr);
-      verb ("V: label found; total label count: %d\n", label_count);
     } while (NULL != saveptr_tmp);
   }
+  verb ("V: label found; total label count: %d\n", label_count);
   free(label_tmp);
   return label_count;
 }
