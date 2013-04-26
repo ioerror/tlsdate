@@ -323,7 +323,7 @@ case "$host" in
                 [AS_HELP_STRING([--with-unpriv-group=<group>],
                 [Group to drop privs to @<:@default: nobody@:>@])])
     AS_CASE([$with_unpriv_group],
-            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
     ;;
