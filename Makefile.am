@@ -124,6 +124,9 @@ update_ca_root_data:
 	go run ~/Documents/code/git/extract-nss-root-certs/convert_mozilla_certdata.go ca-roots/certdata.txt > ca-roots/tlsdate-ca-roots.conf
 	rm ca-roots/certdata.txt
 
+test_run:
+	./src/tlsdate-helper www.ptb.de 443 tlsv1 racket verbose ca-roots/tlsdate-ca-roots.conf dont-set-clock showtime no-fun holdfast none
+
 BUILT_SOURCES+= src/configmake.h
 noinst_HEADERS+= src/configmake.h
 src/configmake.h: ${top_srcdir}/Makefile.in
