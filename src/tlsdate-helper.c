@@ -1191,7 +1191,7 @@ main(int argc, char **argv)
 #endif
   // We should never have a time_map of zero here;
   // It either stayed zero or we have a false ticker.
-  if (0 == time_map)
+  if ( 0 == server_time_s )
     die ("child process failed to update time map; weird platform issues?\n");
   munmap (time_map, sizeof (uint32_t));
 
