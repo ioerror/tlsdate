@@ -1189,6 +1189,10 @@ main(int argc, char **argv)
 #else
   server_time_s = ntohl (*time_map);
 #endif
+  // We should never have a time_map of zero here;
+  // It either stayed zero or we have a false ticker.
+  if (0 == time_map)
+    die ("child process failed to update time map; weird platform issues?\n");
   munmap (time_map, sizeof (uint32_t));
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
