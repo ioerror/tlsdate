@@ -1,6 +1,8 @@
-tlsdate should build and work on the following Operating Systems:
+======================================== INTRODUCTION
 
-  Debian Gnu/Linux squeeze, wheezy, sid
+tlsdate should build and work on the following operating systems:
+
+  Debian GNU/Linux squeeze, wheezy, sid
   Ubuntu lucid, natty, oneiric, precise, quantal
   CentOS 6.2, 6.3, 6.4
   Fedora 17, 18
@@ -15,32 +17,79 @@ tlsdate should build and work on the following Operating Systems:
   OpenBSD 5.2
   Gentoo 20130413
   DragonFly BSD 3.3-DEVELOPMENT
-  Debian GNU/kFreeBSD 7.0 (8.2-1-amd64)
-
-tlsdate should build and might even work on the following Operating Systems:
-
-  Win32 with Cygwin CYGWIN_NT-6.1 1.7.18(0.263/5/3
-  Win32 with MinGW
-  Haiku r1alpha4
 
 Please file a bug or email the tlsdate team if you have successfully built or
 use tlsdate on a platform that is not listed. We are specifically looking for
 ports of tlsdate or for tlsdate integration on the following Operating Systems:
 
-  Windows native
+  Win32 (MinGW or otherwise)
   OpenWRT
   pfsense
   OpenVMS
   Irix
-  Minix
-  Any of the other classic unix systems
+  GNU/Hurd
+  Any of the classic unix systems
 
 Currently porting is in progress or partially documented for:
 
   Plan9 (with APE)
-  Debian GNU/Hurd 7.0 (GNU-Mach 1.3.99-486-dbg/Hurd-0.3)
-    Currently we report "server time 0 (difference is about 1367009757 s)"
-Building and install of tlsdate on GNU/Linux and FreeBSD:
+
+On Debian GNU/Linux and related systems, we provide an init.d script that
+controls the tlsdated daemon. It will notice network changes and regularly
+invoke tlsdate to keep the clock in sync. Start it like so:
+
+  /etc/init.d/tlsdate start
+
+======================================== BINARY DISTRIBUTIONS AND 'ports'-LIKE SYSTEMS
+
+Fedora:
+
+  yum install tlsdate
+
+  To run tlsdated as a service:
+  systemctl enable tlsdate.service
+  systemctl start tlsdate.service
+
+Arch Linux:
+
+  There is a PKGBUILD in the Arch User Repository:
+  https://aur.archlinux.org/packages/tlsdate
+  https://aur.archlinux.org/packages/tl/tlsdate/PKGBUILD
+
+Debian GNU/Linux sid/unstable:
+
+  apt-get install tlsdate
+
+ChromeOS:
+
+  tlsdate is part of the ChromeOS TCB; no install needed
+
+Gentoo:
+
+  emerge net-misc/tlsdate
+
+FreeBSD:
+
+  cd /usr/ports/sysutils/tlsdate
+  make
+  make install
+
+======================================== BUILDING FROM SOURCE
+
+Common prerequisites:
+
+  Compatible C compiler
+  OpenSSL (libraries and header files) or PolarSSL
+  autoconf    works with 2.68, possibly earlier
+  automake    works with 1.11.3, possibly earlier
+  libtool     works with 2.4.2, possibly earlier
+  pkg-config  works with 0.2.6, possibly earlier
+
+  For example, on Debian-based systems:
+	apt-get install gcc autotools-dev autoconf automake libtool pkg-config libssl-dev
+	apt-get install hardening-wrapper # suggested
+
+GNU/Linux, FreeBSD, and other unixalikes:
 
   ./autogen.sh
   ./configure
@@ -51,72 +100,18 @@ Cleaning is the usual:
 
   make clean
 
-On Debian Gnu/Linux sid/unstable:
-
-  apt-get install tlsdate
-
-On Debian GNU/Linux and related systems, we provide an init.d script that
-controls the tlsdated daemon. It will notice network changes and regularly
-invoke tlsdate to keep the clock in sync. Start it like so:
-
-  /etc/init.d/tlsdate start
-
-Debian GNU/Hurd does not yet support autotools bootstrapping and users must
-bootstrap with `make dist` on another platform from the tlsdate git
-repository. With such a release tar.gz it is the expected process:
-
-  ./configure
-  make
-  make install
-
-Please note that setting time on GNU/Hurd has not yet been tested.
-
-On ChromeOS:
-
- tlsdate is part of the ChromeOS TCB; no install needed
-
-On Gentoo:
-
-  emerge net-misc/tlsdate
-
-On FreeBSD one may also use the ports system:
-
-  cd /usr/ports/sysutils/tlsdate
-  make
-  make install
-
 On Mac OS X, we require that you have XCode installed. You may also need brew
 for autoconf and automake packages:
 
   brew install autoconf automake libtool pkg-config
 
-It should also be possible to install tlsdate on OS X 10.8.x with brew directly:
-
+  It should also be possible to install tlsdate on OS X 10.8.x with brew directly:
   brew install tlsdate
 
 To make an unsigned Debian package:
 
   git checkout debian-master
   make deb
-
-On Fedora:
-
-  yum install tlsdate
-
-To run tlsdated as a service on Fedora:
-
-  systemctl enable tlsdate.service
-  systemctl start tlsdate.service
-
-On Arch Linux there is a PKGBUILD in the Arch User Repository:
-
-  https://aur.archlinux.org/packages/tlsdate
-  https://aur.archlinux.org/packages/tl/tlsdate/PKGBUILD
-
-Cygwin requires that the user installs openssl-dev, gcc, pkg-config, libtool, automake, autoconf:
-
-  ./configure
-  make
 
 On Plan9 the start of building might look something like this:
 
@@ -125,13 +120,6 @@ On Plan9 the start of building might look something like this:
   9fs sources
   /n/sources/contrib/fgb/root/rc/bin/contrib/install fgb/openssl
   mk install
-
-On Haiku we must use gcc4:
-
-  export CC=/boot/develop/abi/x86/gcc4/tools/gcc4.6.3-haiku-121101/bin/gcc
-  export LDFLAGS="$LDFLAGS -lbsd"
-  ./configure # This includes the above exports currently
-  make
 
 OpenBSD builds from source and is not yet in the port system:
 
@@ -142,7 +130,15 @@ OpenBSD builds from source and is not yet in the port system:
   make
   make install
 
+======================================== PACKAGING DEBIAN
+
 To make a Debian source package:
+
+  Common prerequisites for building from source.
+
+  apt-get install dh-apparmor hardening-wrapper
+
+  TODO other prerequisites?
 
   git checkout master
   ./autogen.sh
@@ -165,6 +161,8 @@ Example of how to upload it (after a Debian sponsor signs off on it):
 
   dget http://www.example.com/tlsdate_0.0.1-1_amd64.changes
   dput tlsdate_0.0.1-1_amd64.changes
+
+======================================== ANDROID
 
 For Android:
 
@@ -189,4 +187,3 @@ Once NDK_BASE and OPENSSL_ANDROID are set properly, you can cross compile tlsdat
 
 Android NDK: https://developer.android.com/tools/sdk/ndk/index.html
 OpenSSL for Android: https://github.com/guardianproject/openssl-android
-
