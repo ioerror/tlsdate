@@ -80,12 +80,12 @@
         [*darwin*],
         [TARGET_OS_OSX="true"
         AC_DEFINE([TARGET_OS_OSX],[1],[Whether we build for OSX])],
-        [*gnu*],
-        [TARGET_OS_GNUHURD="true"
-        AC_DEFINE([TARGET_OS_GNUHURD],[1],[Whether we build for GNU/Hurd])],
         [*linux*],
         [TARGET_OS_LINUX="true"
-        AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])])
+        AC_DEFINE([TARGET_OS_LINUX],[1],[Whether we build for Linux])],
+        [*gnu*],
+        [TARGET_OS_GNUHURD="true"
+        AC_DEFINE([TARGET_OS_GNUHURD],[1],[Whether we build for GNU/Hurd])])
 
   AM_CONDITIONAL([TARGET_WIN32],[test "x${TARGET_OS_WINDOWS}" = "xtrue"])
   AM_CONDITIONAL([TARGET_MINGW],[test "x${TARGET_OS_MINGW}" = "xtrue"])
