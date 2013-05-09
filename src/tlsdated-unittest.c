@@ -27,14 +27,13 @@ FIXTURE_SETUP(tempdir) {
   ASSERT_NE(NULL, p);
 }
 
-int rmrf(char *dir) {
-  char buf[256];
-  snprintf(buf, sizeof(buf), "rm -rf %s", dir);
-  return system(buf);
-}
-
 FIXTURE_TEARDOWN(tempdir) {
-  ASSERT_EQ(0, rmrf(self->path));
+  char buf[256];
+  snprintf(buf, sizeof(buf), "%s/load", self->path);
+  unlink(buf);
+  snprintf(buf, sizeof(buf), "%s/save", self->path);
+  unlink(buf);
+  ASSERT_EQ(0, rmdir(self->path));
 }
 
 int write_time(const char *path, time_t time) {
