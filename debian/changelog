@@ -1,8 +1,12 @@
 tlsdate (0.0.6-1) unstable; urgency=low
 
+  [ Kartik Mistry ]
   * New upstream release.
+  * debian/rules:
+    + Fixed for upstream build changes.
+  * Removed unused lintian overrides.
 
- -- Kartik Mistry <kartik@debian.org>  Wed, 20 Feb 2013 16:54:47 +0530
+ -- Kartik Mistry <kartik@debian.org>  Tue, 14 May 2013 20:41:11 +0530
 
 tlsdate (0.0.5-2) unstable; urgency=low
 
