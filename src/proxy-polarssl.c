@@ -12,6 +12,8 @@
  * This file implements a SOCKS4a/SOCKS5 net layer as used by PolarSSL.
  */
 
+#include "config.h"
+
 #include <arpa/inet.h>
 #include <assert.h>
 #ifndef __USE_MISC
@@ -23,6 +25,10 @@
 #include <netdb.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#ifndef HAVE_STRNLEN
+#include "src/common/strnlen.h"
+#endif
 
 #include "src/proxy-polarssl.h"
 #include "src/util.h"

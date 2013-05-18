@@ -14,6 +14,7 @@
     and Arch GNU/Linux distros.
   Add Mac OS X 10.8.3 support
   Extensive setup/install documentation is now present in INSTALL for most OSes
+  Add DragonFly BSD 3.3 support
 0.0.6 Mon 18 Feb, 2013
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.

@@ -1,0 +1,76 @@
+Platforms offer varying security features; we'd like to support the best.
+
+This is a document that notes which security hardening we have implemented and
+which things we'd like to see implemented for various platforms. We
+specifically address exploitation mitigation and containment; security issues
+such as x509 certification validation are not addressed here, yet. Patches,
+suggestions and improvements are welcome! We always want the strongest set of
+options by default on each supported platform.
+
+We attempt to use the C programming language correctly and in a standard way.
+We do however use some compiler specific options such as defining integer
+wrapping because we believe the practical benefit outweights the implied risks.
+As such, we prefer to be explicit rather than implicit in our casting or other
+possible ambiguity.
+
+We should treat all compiler and linker warnings as fatal errors. Currently,
+consider autotools warnings to be an exception as we would like to support
+platforms imperfectly rather than not at all. We generally wish to support
+autotools bootstrapping on all of our supported platforms. This is not possible
+on Plan 9. Currently autotools will complain on the BSD systems.
+
+On all platforms we attempt to support available compiler hardening and linking
+options. Please do not disable these options. Additional compiler and linker
+hardening options are welcome and the current options are implemented in the
+following file:
+
+  configure.ac
+
+On all platforms, we attempt to switch from the administrative user to an
+unimportant role account which shares data with no other processes. If we start
+as any user other than an administrative user, we will likely be unable to
+switch to our normal unprivileged account. These users are defined at
+`configure` time. It is most effective if such a user is not the traditional
+'nobody' or group 'nogroup' as is often the tradition.
+
+In addition to the above hardening options, we have tried to extend our
+hardening when the platform supports it. Each additional security measure that
+we take is documented as well as planned or desired improvements.
+
+We do not currently support or set ulimits, we should do so where possible.
+
+On Debian Gnu/Linux platforms, we ship with a minimal AppArmor profile, see
+the policy for details:
+
+  apparmor-profile
+
+We'd like to have an SELinux policy specifically for tlsdate.
+We'd like to support capability dropping with libcap or libcap-ng.
+We'd like to support libseccomp2 filters.
+Other kernel hardening suggestions are welcome.
+
+On ChromeOS we use minijail and seccomp filters, see the following policies for
+details:
+
+  tlsdate-seccomp-amd64.policy
+  tlsdate-seccomp-arm.policy
+  tlsdate-seccomp-x86.policy
+
+These are enabled by default in ChromeOS.
+
+On FreeBSD, we'd like to support jails, chroot, and Capsicum.
+
+On OpenBSD, we'd like to support chroot and systrace.
+
+On NetBSD, we'd like to chroot.
+
+On DragonFly BSD, we'd like to support chroot and jails.
+
+On Mac OS X, we'd like to support chroot and seatbelt.
+
+On Plan9, we'd like to chroot.
+
+On Windows, we do nothing beyond compile time hardening. We'd like to do more.
+
+On other platforms, we'll try to run correctly with the understanding that any
+bug is likely a much more serious problem.

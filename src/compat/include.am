@@ -28,12 +28,32 @@ if TARGET_OPENBSD
 src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
 endif
 
+if TARGET_DRAGONFLYBSD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
 if TARGET_BSD
 if !TARGET_NETBSD
 if !TARGET_FREEBSD
 src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
 endif
 endif
+endif
+
+if TARGET_GNUHURD
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-hurd.c
+endif
+
+if TARGET_CYGWIN
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_MINGW
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
+endif
+
+if TARGET_HAIKU
+src_compat_libtlsdate_compat_la_SOURCES+= src/compat/clock-linux.c
 endif
 
 src_compat_libtlsdate_compat_la_LIBADD+= @RT_LIB@

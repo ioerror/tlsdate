@@ -14,6 +14,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef TARGET_OS_HAIKU
+#include <posix/string.h>
+#include <bsd/string.h>
+#endif
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>

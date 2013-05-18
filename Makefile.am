@@ -7,6 +7,7 @@ doc_DATA=
 EXTRA_DIST=
 TESTS=
 bin_PROGRAMS=
+sbin_PROGRAMS=
 check_PROGRAMS=
 lib_LTLIBRARIES=
 man_MANS=
@@ -78,7 +79,7 @@ man_MANS+= man/tlsdate.1
 man_MANS+= man/tlsdate-helper.1
 
 if TARGET_LINUX
-man_MANS+= man/tlsdated.1
+man_MANS+= man/tlsdated.8
 man_MANS+= man/tlsdate-routeup.1
 man_MANS+= man/tlsdated.conf.5
 man_MANS+= man/tlsdate-dbus-announce.1
@@ -122,6 +123,9 @@ update_ca_root_data:
 	curl https://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt\?raw\=1 -o ca-roots/certdata.txt
 	go run ~/Documents/code/git/extract-nss-root-certs/convert_mozilla_certdata.go ca-roots/certdata.txt > ca-roots/tlsdate-ca-roots.conf
 	rm ca-roots/certdata.txt
+
+test_run:
+	./src/tlsdate-helper www.ptb.de 443 tlsv1 racket verbose ca-roots/tlsdate-ca-roots.conf dont-set-clock showtime no-fun holdfast none
 
 BUILT_SOURCES+= src/configmake.h
 noinst_HEADERS+= src/configmake.h

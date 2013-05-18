@@ -27,6 +27,7 @@
 
   # Required for gethostbyname
   /etc/resolv.conf r,
+  /run/resolvconf/resolv.conf r,
   /etc/nsswitch.conf r,
   /etc/localtime r,
   /etc/nsswitch.conf r,
@@ -88,6 +89,7 @@
 
   # Required for gethostbyname
   /etc/resolv.conf r,
+  /run/resolvconf/resolv.conf r,
   /etc/nsswitch.conf r,
   /etc/localtime r,
   /etc/nsswitch.conf r,

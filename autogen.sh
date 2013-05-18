@@ -17,7 +17,13 @@ then
   export WARNINGS
 fi
 
-if [ $(uname) = NetBSD ];
+if [ $(uname) = NetBSD ] || [ $(uname) = DragonFly ];
+then
+  WARNINGS=""
+  export WARNINGS
+fi
+
+if [ $(uname) = "CYGWIN_NT-6.1" ] || [ $(uname) = "MINGW32_NT-6.1" ];
 then
   WARNINGS=""
   export WARNINGS

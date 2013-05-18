@@ -122,7 +122,7 @@ static void
 validate_proxy_port(const char *port)
 {
   while (*port)
-    if (!isdigit(*port++))
+    if (!isdigit((int)(unsigned char)*port++))
       die("invalid char in port\n");
 }
 
@@ -328,16 +328,15 @@ dns_label_count(char *label, char *delim)
     if (saveptr[0] != delim[0])
     {
       label_count++;
-      verb ("V: label found; total label count: %d\n", label_count);
     }
     do
     {
       // Find all subsequent labels
       label_count++;
       saveptr_tmp = strtok_r(NULL, delim, &saveptr);
-      verb ("V: label found; total label count: %d\n", label_count);
     } while (NULL != saveptr_tmp);
   }
+  verb ("V: label found; total label count: %d\n", label_count);
   free(label_tmp);
   return label_count;
 }
@@ -1190,6 +1189,10 @@ main(int argc, char **argv)
 #else
   server_time_s = ntohl (*time_map);
 #endif
+  // We should never have a time_map of zero here;
+  // It either stayed zero or we have a false ticker.
+  if ( 0 == server_time_s )
+    die ("child process failed to update time map; weird platform issues?\n");
   munmap (time_map, sizeof (uint32_t));
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
