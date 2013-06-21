@@ -42,10 +42,8 @@ at exit.
 If enabled, set the hwclock to the fetched time.
 .IP "steady-state-interval [int]"
 Check at least once this many seconds when in steady state.
-.IP "subprocess-tries [int]"
-How many times to try waiting for the subprocess.
-.IP "subprocess-wait-between-tries [int]"
-How many seconds to wait between each attempt to wait for the subprocess.
+.IP "subprocess-timeout [int]"
+How many seconds to wait for the subprocess to exit.
 .IP "verbose [bool]"
 If enabled, tlsdated will be annoyingly verbose in syslog and on stdout.
 .IP "wait-between-tries [int]"

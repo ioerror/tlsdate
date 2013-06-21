@@ -37,4 +37,8 @@ static inline int min(int x, int y) { return x < y ? x : y; }
 
 void drop_privs_to (const char *user, const char *group);
 
+/* like wait(), but with a timeout. Returns ordinary fork() error codes, or
+ * ETIMEDOUT. */
+pid_t wait_with_timeout(int *status, int timeout_secs);
+
 #endif /* !UTIL_H */
