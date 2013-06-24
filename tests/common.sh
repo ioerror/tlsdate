@@ -1,7 +1,7 @@
 #!/bin/sh
 
 kill_tlsdated() {
-	kill -9 $PPID
+	kill -TERM $PPID
 }
 
 passed() {

@@ -17,6 +17,8 @@
   Add DragonFly BSD 3.3 support
   Refactored subprocess watching.
   Added integration tests. Run with ./run-tests
+  Refactored event loop.
+  Added suspend/resume RTC corruption detection.
 0.0.6 Mon 18 Feb, 2013
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
