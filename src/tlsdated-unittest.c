@@ -118,8 +118,7 @@ TEST(tlsdate_tests) {
   memset(&opts, 0, sizeof(opts));
   opts.sources = &source;
   opts.base_argv = args;
-  opts.subprocess_tries = 2;
-  opts.subprocess_wait_between_tries = 1;
+  opts.subprocess_timeout = 1;
   extern char **environ;
   EXPECT_EQ(1, tlsdate(&opts, environ));
   args[0] = "/bin/false";
@@ -129,7 +128,7 @@ TEST(tlsdate_tests) {
   args[0] = "src/test/sleep-wrap";
   args[1] = "3";
   EXPECT_EQ(-1, tlsdate(&opts, environ));
-  opts.subprocess_wait_between_tries = 5;
+  opts.subprocess_timeout = 5;
   EXPECT_EQ(0, tlsdate(&opts, environ));
 }
 
@@ -167,8 +166,7 @@ TEST(rotate_hosts) {
   memset(&opts, 0, sizeof(opts));
   opts.sources = &s1;
   opts.base_argv = args;
-  opts.subprocess_tries = 2;
-  opts.subprocess_wait_between_tries = 1;
+  opts.subprocess_timeout = 2;
   extern char **environ;
   EXPECT_EQ(1, tlsdate(&opts, environ));
   EXPECT_EQ(2, tlsdate(&opts, environ));
@@ -188,8 +186,7 @@ TEST(proxy_override) {
   memset(&opts, 0, sizeof(opts));
   opts.sources = &s1;
   opts.base_argv = args;
-  opts.subprocess_tries = 2;
-  opts.subprocess_wait_between_tries = 1;
+  opts.subprocess_timeout = 2;
   extern char **environ;
   EXPECT_EQ(1, tlsdate(&opts, environ));
   s1.proxy = "socks5://bad.proxy";
@@ -210,8 +207,7 @@ TEST(tlsdate_args) {
   memset(&opts, 0, sizeof(opts));
   opts.sources = &s1;
   opts.base_argv = args;
-  opts.subprocess_tries = 2;
-  opts.subprocess_wait_between_tries = 1;
+  opts.subprocess_timeout = 2;
   opts.leap = 1;
   verbose = 1;
   EXPECT_EQ(9, tlsdate(&opts, environ));
