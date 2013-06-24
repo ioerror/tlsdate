@@ -33,8 +33,7 @@
 /* tlsdated magic numbers */
 #define MAX_TRIES 10
 #define WAIT_BETWEEN_TRIES 10
-#define SUBPROCESS_TRIES 10
-#define SUBPROCESS_WAIT_BETWEEN_TRIES 3
+#define SUBPROCESS_TIMEOUT 30
 #define STEADY_STATE_INTERVAL 86400
 #define DEFAULT_SYNC_HWCLOCK 1
 #define DEFAULT_LOAD_FROM_DISK 1
@@ -67,8 +66,7 @@ struct opts {
   int max_tries;
   int min_steady_state_interval;
   int wait_between_tries;
-  int subprocess_tries;
-  int subprocess_wait_between_tries;
+  int subprocess_timeout;
   int steady_state_interval;
   const char *base_path;
   char **base_argv;
