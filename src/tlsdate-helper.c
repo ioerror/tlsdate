@@ -1104,6 +1104,7 @@ main(int argc, char **argv)
   /* We are not going to set the clock, thus no need to stay root */
   if (0 == setclock && 0 == timewarp)
   {
+    verb ("V: attemping to drop administrator privileges\n");
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
   }
 
