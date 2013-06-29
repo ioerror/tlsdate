@@ -1089,18 +1089,16 @@ main(int argc, char **argv)
   leap = (0 == strcmp ("leapaway", argv[10]));
   proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
 
-  if (timewarp)
+  /* Initalize warp_time with RECENT_COMPILE_DATE */
+  clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
+
+  verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
+       (unsigned long) CLOCK_SEC(&warp_time),
+       (unsigned long) CLOCK_USEC(&warp_time));
+
+  if (1 != timewarp)
   {
-
-    verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
-         (unsigned long) CLOCK_SEC(&warp_time),
-         (unsigned long) CLOCK_USEC(&warp_time));
-
-    if (1 == setclock) {
-      clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
-    } else {
-      verb ("V: we'll do the time warp another time - we're not setting clock\n");
-    }
+    verb ("V: we'll do the time warp another time - we're not setting clock\n");
   }
 
   /* We are not going to set the clock, thus no need to stay root */
