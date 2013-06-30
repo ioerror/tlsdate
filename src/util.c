@@ -9,9 +9,11 @@
 
 #include <grp.h>
 #include <pwd.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <syslog.h>
 #include <unistd.h>
 
@@ -101,3 +103,32 @@ drop_privs_to (const char *user, const char *group)
 #endif
 }
 
+pid_t
+wait_with_timeout(int *status, int timeout_secs)
+{
+  int st = 0;
+  pid_t exited;
+  /* synthesize waiting with a timeout by using a helper process. We
+   * launch a child process that will exit in |timeout_secs|, guaranteeing
+   * that wait() will return by then. */
+  pid_t helper = fork();
+  if (helper < 0)
+    return helper;
+  if (helper == 0)
+  {
+    sleep(timeout_secs);
+    exit(0);
+  }
+
+  /* use temporary status to avoid touching it if we do ETIMEDOUT */
+  exited = wait(&st);
+  if (exited == helper)
+    /* helper exited before any other child did */
+    return -ETIMEDOUT;
+
+  /* a real child process exited - don't leak the helper */
+  kill(helper, SIGKILL);
+  waitpid(helper, NULL, 0);
+  *status = st;
+  return exited;
+}

@@ -106,43 +106,35 @@ int
 tlsdate (struct opts *opts, char *envp[])
 {
   pid_t pid;
+  pid_t exited;
+  int status;
+
   build_argv(opts);
-  
-  if ((pid = fork ()) > 0)
-    {
-      /*
-       * We launched tlsdate; wait for up to kMaxTries intervals of
-       * kWaitBetweenTries for it to exit, then kill it if it still
-       * hasn't.
-       */
-      int status = -1;
-      int i = 0;
-      for (i = 0; i < opts->subprocess_tries; ++i)
+
+  pid = fork();
+  if (pid < 0)
   {
-    info ("wait for child attempt %d", i);
-    if (waitpid (-1, &status, WNOHANG) > 0)
-      break;
-    sleep (opts->subprocess_wait_between_tries);
-  }
-      if (i == opts->subprocess_tries)
-  {
-    error ("child hung?");
-    kill (pid, SIGKILL);
-    /* still have to wait() so we don't leak the child. */
-    wait (&status);
+    pinfo("fork() failed");
     return -1;
   }
-      info ("child exited with %d", status);
-      return WIFEXITED (status) ? WEXITSTATUS (status) : -1;
-    }
-  else if (pid < 0)
-    {
-      pinfo ("fork() failed");
-      return -1;
-    }
-  execve (opts->argv[0], opts->argv, envp);
-  pinfo ("execve() failed");
-  exit (1);
+  else if (pid == 0)
+  {
+    execve(opts->argv[0], opts->argv, envp);
+    pinfo("execve() failed");
+    exit(1);
+  }
+
+  exited = wait_with_timeout(&status, opts->subprocess_timeout);
+  info("child %d exited with %d", exited, status);
+
+  if (exited == -ETIMEDOUT)
+  {
+    kill(pid, SIGKILL);
+    wait(&status);
+    return -1;
+  }
+
+  return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 }
 
 /*
@@ -394,8 +386,7 @@ set_conf_defaults(struct opts *opts)
   opts->max_tries = MAX_TRIES;
   opts->min_steady_state_interval = STEADY_STATE_INTERVAL;
   opts->wait_between_tries = WAIT_BETWEEN_TRIES;
-  opts->subprocess_tries = SUBPROCESS_TRIES;
-  opts->subprocess_wait_between_tries = SUBPROCESS_WAIT_BETWEEN_TRIES;
+  opts->subprocess_timeout = SUBPROCESS_TIMEOUT;
   opts->steady_state_interval = STEADY_STATE_INTERVAL;
   opts->base_path = kCacheDir;
   opts->base_argv = kDefaultArgv;
@@ -418,7 +409,7 @@ parse_argv(struct opts *opts, int argc, char *argv[])
 {
   int opt;
 
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:c:a:lsvm:j:f:x:")) != -1)
     {
       switch (opt)
   {
@@ -436,12 +427,6 @@ parse_argv(struct opts *opts, int argc, char *argv[])
     break;
   case 'd':
     opts->wait_between_tries = atoi (optarg);
-    break;
-  case 'T':
-    opts->subprocess_tries = atoi (optarg);
-    break;
-  case 'D':
-    opts->subprocess_wait_between_tries = atoi (optarg);
     break;
   case 'c':
     opts->base_path = optarg;
@@ -572,10 +557,8 @@ load_conf(struct opts *opts)
       opts->min_steady_state_interval = atoi (e->value);
     } else if (!strcmp (e->key, "wait-between-tries") && e->value) {
       opts->wait_between_tries = atoi (e->value);
-    } else if (!strcmp (e->key, "subprocess-tries") && e->value) {
-      opts->subprocess_tries = atoi (e->value);
-    } else if (!strcmp (e->key, "subprocess-wait-between-tries") && e->value) {
-      opts->subprocess_wait_between_tries = atoi (e->value);
+    } else if (!strcmp (e->key, "subprocess-timeout") && e->value) {
+      opts->subprocess_timeout = atoi (e->value);
     } else if (!strcmp (e->key, "steady-state-interval") && e->value) {
       opts->steady_state_interval = atoi (e->value);
     } else if (!strcmp (e->key, "base-path") && e->value) {
@@ -611,10 +594,8 @@ check_conf(struct opts *opts)
     fatal ("-t argument must be nonzero");
   if (!opts->wait_between_tries)
     fatal ("-d argument must be nonzero");
-  if (!opts->subprocess_tries)
-    fatal ("-T argument must be nonzero");
-  if (!opts->subprocess_wait_between_tries)
-    fatal ("-D argument must be nonzero");
+  if (!opts->subprocess_timeout)
+    fatal ("subprocess timeout must be nonzero");
   if (!opts->steady_state_interval)
     fatal ("-a argument must be nonzero");
   if (snprintf (timestamp_path, sizeof (timestamp_path), "%s/timestamp",
