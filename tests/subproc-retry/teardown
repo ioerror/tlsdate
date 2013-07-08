@@ -1,0 +1,4 @@
+#!/bin/sh
+. "$(dirname "$0")"/../common.sh
+
+reset_counter "runs"
