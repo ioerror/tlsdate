@@ -13,12 +13,14 @@
 #ifndef ROUTEUP_H
 #define ROUTEUP_H
 
-struct routeup {
+struct routeup
+{
   int netlinkfd;  /* AF_NETLINK event socket */
 };
 
-int routeup_setup(struct routeup *ifc);
-int routeup_once(struct routeup *ifc, unsigned int timeout);
-void routeup_teardown(struct routeup *ifc);
+int routeup_setup (struct routeup *ifc);
+int routeup_once (struct routeup *ifc, unsigned int timeout);
+int routeup_process (struct routeup *rtc);
+void routeup_teardown (struct routeup *ifc);
 
 #endif /* !ROUTEUP_H */

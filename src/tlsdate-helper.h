@@ -51,11 +51,11 @@ int verbose;
 // We set this manually to ensure others can reproduce a build;
 // automation of this will make every build different!
 #ifndef RECENT_COMPILE_DATE
-#define RECENT_COMPILE_DATE (uint32_t) 1342323666
+#define RECENT_COMPILE_DATE 1342323666L
 #endif
 
 #ifndef MAX_REASONABLE_TIME
-#define MAX_REASONABLE_TIME (uint32_t) 1999991337
+#define MAX_REASONABLE_TIME 1999991337L
 #endif
 
 #ifndef MIN_PUB_KEY_LEN

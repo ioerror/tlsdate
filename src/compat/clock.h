@@ -14,18 +14,19 @@
 #  include <time.h>
 #endif
 
-struct tlsdate_time {
-    struct timespec tp;
+struct tlsdate_time
+{
+  struct timespec tp;
 };
 
-extern int clock_get_real_time_linux(struct tlsdate_time *time);
+extern int clock_get_real_time_linux (struct tlsdate_time *time);
 #define clock_get_real_time(time) clock_get_real_time_linux(time)
 
-extern int clock_set_real_time_linux(const struct tlsdate_time *time);
+extern int clock_set_real_time_linux (const struct tlsdate_time *time);
 #define clock_set_real_time(time) clock_set_real_time_linux(time)
 
-extern void clock_init_time_linux(struct tlsdate_time *time, time_t sec,
-                                  long nsec);
+extern void clock_init_time_linux (struct tlsdate_time *time, time_t sec,
+                                   long nsec);
 #define clock_init_time(time, sec, nsec) \
         clock_init_time_linux(time, sec, nsec)
 
@@ -37,20 +38,21 @@ extern void clock_init_time_linux(struct tlsdate_time *time, time_t sec,
 
 #elif _WIN32
 
-struct tlsdate_time {
-    /* TODO: Fix Windows support */
+struct tlsdate_time
+{
+  /* TODO: Fix Windows support */
 };
 
 TLSDATE_API
-int clock_get_real_time_win(struct tlsdate_time *time);
+int clock_get_real_time_win (struct tlsdate_time *time);
 #define clock_get_real_time(time) clock_get_real_time_win(time)
 
-extern int clock_set_real_time_win(const struct tlsdate_time *time);
+extern int clock_set_real_time_win (const struct tlsdate_time *time);
 #define clock_set_real_time(time) clock_set_real_time_win(time)
 
 TLSDATE_API
-void clock_init_time_win(struct tlsdate_time *time, time_t sec,
-                                long nsec);
+void clock_init_time_win (struct tlsdate_time *time, time_t sec,
+                          long nsec);
 #define clock_init_time(time, sec, nsec) \
         clock_init_time_win(time, sec, nsec)
 

@@ -20,12 +20,11 @@
  * @param time where the current time is stored
  * @return clock_gettime syscall return value
  */
-int clock_get_real_time_linux(struct tlsdate_time *time)
+int clock_get_real_time_linux (struct tlsdate_time *time)
 {
   /* Safety net */
-  assert(time);
-
-  return clock_gettime(CLOCK_REALTIME, &time->tp);
+  assert (time);
+  return clock_gettime (CLOCK_REALTIME, &time->tp);
 }
 
 /**
@@ -34,12 +33,11 @@ int clock_get_real_time_linux(struct tlsdate_time *time)
  * @param time where the current time to set is stored
  * @return clock_settime syscall return value
  */
-int clock_set_real_time_linux(const struct tlsdate_time *time)
+int clock_set_real_time_linux (const struct tlsdate_time *time)
 {
   /* Safety net */
-  assert(time);
-
-  return clock_settime(CLOCK_REALTIME, &time->tp);
+  assert (time);
+  return clock_settime (CLOCK_REALTIME, &time->tp);
 }
 
 /**
@@ -48,12 +46,11 @@ int clock_set_real_time_linux(const struct tlsdate_time *time)
  * @param sec is the seconds
  * @param nsec is the nanoseconds
  */
-void clock_init_time_linux(struct tlsdate_time *time, time_t sec,
-                           long nsec)
+void clock_init_time_linux (struct tlsdate_time *time, time_t sec,
+                            long nsec)
 {
   /* Safety net */
-  assert(time);
-
+  assert (time);
   time->tp.tv_sec = sec;
   time->tp.tv_nsec = nsec;
 }
