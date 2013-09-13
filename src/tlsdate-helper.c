@@ -1071,6 +1071,7 @@ main(int argc, char **argv)
   uint32_t server_time_s;
   int setclock;
   int showtime;
+  int showtime_raw;
   int timewarp;
   int leap;
 
@@ -1085,6 +1086,7 @@ main(int argc, char **argv)
   verbose = (0 != strcmp ("quiet", argv[5]));
   setclock = (0 == strcmp ("setclock", argv[7]));
   showtime = (0 == strcmp ("showtime", argv[8]));
+  showtime_raw = (0 == strcmp ("showtime=raw", argv[8]));
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
   proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
@@ -1203,6 +1205,11 @@ main(int argc, char **argv)
   if (rt_time_ms > TLS_RTT_THRESHOLD) {
     verb ("V: the TLS handshake took more than %d msecs - consider using a different " \
       "server or run it again\n", TLS_RTT_THRESHOLD);
+  }
+
+  if (showtime_raw)
+  {
+    fwrite(&server_time_s, sizeof(server_time_s), 1, stdout);
   }
 
   if (showtime)
