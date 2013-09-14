@@ -19,7 +19,7 @@ if !TARGET_OSX
 # GNU style is "make check", this will make check and test work
 TESTS+= src/conf_unittest src/proxy-bio_unittest
 if TARGET_LINUX
-TESTS+= src/tlsdated_unittest
+TESTS+= src/tlsdated_unittest src/event_unittest
 endif
 test: check
 endif

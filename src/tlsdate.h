@@ -11,6 +11,7 @@
 #define TLSDATE_H
 
 #include "src/configmake.h"
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +85,9 @@ struct opts {
   int leap;
 };
 
+char timestamp_path[PATH_MAX];
+
+void sync_hwclock (void *rtc_handle);
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
 void save_disk_timestamp (const char *path, time_t t);
