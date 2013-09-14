@@ -132,7 +132,7 @@ main(int argc, char **argv)
     static struct option long_options[] =
       {
         {"verbose", 0, 0, 'v'},
-        {"showtime", 2, 0, 'R'},
+        {"showtime", 2, 0, 'V'},
         {"skip-verification", 0, 0, 's'},
         {"help", 0, 0, 'h'},
         {"host", 0, 0, 'H'},
@@ -146,15 +146,14 @@ main(int argc, char **argv)
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vVshH:p:P:nC:tlx:",
+    c = getopt_long(argc, argv, "vV::shH:p:P:nC:tlx:",
                     long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 'v': verbose = 1; break;
-      case 'V': showtime = 1; break;
-      case 'R': showtime = (optarg && 0 == strcmp("raw", optarg) ? 2:1); break;
+      case 'V': showtime = (optarg && 0 == strcmp("raw", optarg) ? 2:1); break;
       case 's': ca_racket = 0; break;
       case 'h': usage(); exit(1); break;
       case 'H': host = optarg; break;

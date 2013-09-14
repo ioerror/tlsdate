@@ -49,8 +49,9 @@ The proxy argument expects HTTP, SOCKS4A or SOCKS5 formatted as followed:
 The proxy support should not leak DNS requests and is suitable for use with Tor.
 .IP "\-v | \-\-verbose"
 Provide verbose output
-.IP "\-V | \-\-showtime"
-Show the time retrieved from the remote server
+.IP "\-V | \-\-showtime [human|raw]"
+Show the time retrieved from the remote server in a human-readable format or as
+a raw time_t.
 .IP "\-t | \-\-timewarp"
 If the local clock is before RECENT_COMPILE_DATE; we set the clock to the
 RECENT_COMPILE_DATE. If the local clock is after RECENT_COMPILE_DATE, we leave
