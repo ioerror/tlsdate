@@ -91,7 +91,7 @@ usage(void)
           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
           " [-C|--certcontainer] [dirname|filename]\n"
           " [-v|--verbose]\n"
-          " [-V|--showtime]\n"
+          " [-V|--showtime] [human|raw]\n"
           " [-t|--timewarp]\n"
           " [-l|--leap]\n"
     " [-x|--proxy] [url]\n");
@@ -132,7 +132,7 @@ main(int argc, char **argv)
     static struct option long_options[] =
       {
         {"verbose", 0, 0, 'v'},
-        {"showtime", 0, 0, 'V'},
+        {"showtime", 2, 0, 'V'},
         {"skip-verification", 0, 0, 's'},
         {"help", 0, 0, 'h'},
         {"host", 0, 0, 'H'},
@@ -146,14 +146,14 @@ main(int argc, char **argv)
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vVshH:p:P:nC:tlx:",
+    c = getopt_long(argc, argv, "vV::shH:p:P:nC:tlx:",
                     long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 'v': verbose = 1; break;
-      case 'V': showtime = 1; break;
+      case 'V': showtime = (optarg && 0 == strcmp("raw", optarg) ? 2:1); break;
       case 's': ca_racket = 0; break;
       case 'h': usage(); exit(1); break;
       case 'H': host = optarg; break;
@@ -190,7 +190,7 @@ main(int argc, char **argv)
     (verbose ? "verbose" : "quiet"),
     ca_cert_container,
     (setclock ? "setclock" : "dont-set-clock"),
-    (showtime ? "showtime" : "no-showtime"),
+    (showtime ? (showtime == 2 ? "showtime=raw" : "showtime") : "no-showtime"),
     (timewarp ? "timewarp" : "no-fun"),
     (leap ? "leapaway" : "holdfast"),
     (proxy ? proxy : "none"),
