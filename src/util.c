@@ -11,7 +11,9 @@
 #include <fcntl.h>
 #include <grp.h>
 #include <limits.h>
+#ifdef __linux__
 #include <linux/rtc.h>
+#endif
 #include <pwd.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -143,6 +145,7 @@ wait_with_timeout(int *status, int timeout_secs)
   return exited;
 }
 
+#ifdef __linux__
 struct rtc_handle
 {
 	int fd;
@@ -226,6 +229,7 @@ int rtc_close(void *handle)
 	free(h);
 	return 0;
 }
+#endif
 
 int file_write(const char *path, void *buf, size_t sz)
 {
@@ -304,10 +308,12 @@ int pgrp_kill(void)
 }
 
 static struct platform default_platform = {
+#ifdef __linux__
 	.rtc_open = rtc_open,
 	.rtc_write = rtc_write,
 	.rtc_read = rtc_read,
 	.rtc_close = rtc_close,
+#endif
 
 	.file_write = file_write,
 	.file_read = file_read,

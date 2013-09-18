@@ -193,6 +193,129 @@ make_ssl_bio(SSL_CTX *ctx)
   return ssl;
 }
 
+
+static int
+write_all_to_bio(BIO *bio, const char *string)
+{
+  int n = (int) strlen(string);
+  int r;
+
+  while (n) {
+    r = BIO_write(bio, string, n);
+    if (r > 0) {
+      if (r > n)
+        return -1;
+      n -= r;
+      string += r;
+    } else {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+static int
+handle_date_line(const char *dateline, uint32_t *result)
+{
+  int year,mon,day,hour,min,sec;
+  char month[4];
+  struct tm tm;
+  int i;
+  time_t t;
+
+  static const char *MONTHS[] =
+    { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL };
+
+  if (strncmp("\r\nDate: ", dateline, 8))
+    return 0;
+
+  dateline += 8;
+  verb("V: The alleged date is <%s>\n", dateline);
+
+  while (*dateline == ' ')
+    ++dateline;
+  while (*dateline && *dateline != ' ')
+    ++dateline;
+  while (*dateline == ' ')
+    ++dateline;
+  /* We just skipped over the day of the week. Now we have:*/
+  if (sscanf(dateline, "%d %3s %d %d:%d:%d",
+             &day, month, &year, &hour, &min, &sec) == 6 ||
+      sscanf(dateline, "%d-%3s-%d %d:%d:%d",
+             &day, month, &year, &hour, &min, &sec) == 6 ||
+      sscanf(dateline, "%3s %d %d:%d:%d %d",
+             month, &day, &hour, &min, &sec, &year) == 6) {
+
+    if (year < 100)
+      year += 1900;
+
+    verb("V: Parsed the date: %04d-%s-%02d %02d:%02d:%02d\n",
+         year, month, day, hour, min, sec);
+  } else {
+    verb("V: Couldn't parse date.\n");
+    return -1;
+  }
+
+  for (i = 0; ; ++i) {
+    if (!MONTHS[i])
+      return -2;
+    if (!strcmp(month, MONTHS[i])) {
+      mon = i;
+      break;
+    }
+  }
+
+  memset(&tm, 0, sizeof(tm));
+  tm.tm_year = year - 1900;
+  tm.tm_mon = mon;
+  tm.tm_mday = day;
+  tm.tm_hour = hour;
+  tm.tm_min = min;
+  tm.tm_sec = sec;
+
+  t = timegm(&tm);
+  if (t > 0xffffffff || t < 0)
+    return -1;
+
+  *result = (uint32_t) t;
+
+  return 1;
+}
+
+#define MAX_HTTP_HEADERS_SIZE 8192
+
+static int
+read_http_date_from_bio(BIO *bio, uint32_t *result)
+{
+  int n;
+  char buf[MAX_HTTP_HEADERS_SIZE];
+  int buf_len=0;
+  char *dateline, *endofline;
+
+  while (buf_len < sizeof(buf)-1) {
+    n = BIO_read(bio, buf+buf_len, sizeof(buf)-buf_len-1);
+    if (n <= 0)
+      return 0;
+    buf_len += n;
+    buf[buf_len] = 0;
+    verb("V: read %d bytes.", n, buf);
+
+    dateline = memmem(buf, buf_len, "\r\nDate: ", 8);
+    if (NULL == dateline)
+      continue;
+
+    endofline = memmem(dateline+2, buf_len - (dateline-buf+2), "\r\n", 2);
+    if (NULL == endofline)
+      continue;
+
+    *endofline = 0;
+    return handle_date_line(dateline, result);
+  }
+  return -2;
+}
+
 /** helper function for 'malloc' */
 static void *
 xmalloc (size_t size)
@@ -773,6 +896,13 @@ inspect_key (SSL *ssl, const char *hostname)
 }
 #endif
 
+#define HTTP_REQUEST    \
+  "HEAD / HTTP/1.1\r\n" \
+  "User-Agent: %s\r\n"  \
+  "Host: %s\r\n"        \
+  "\r\n"
+#define HTTP_USER_AGENT "TLSDate/1.0"
+
 #ifdef USE_POLARSSL
 void
 check_timestamp (uint32_t server_time)
@@ -819,9 +949,12 @@ static int ssl_do_handshake_part(ssl_context *ssl)
  * 'time_map'.
  *
  * @param time_map where to store the current time
+ * @param time_is_an_illusion
+ * @param http whether to do an http request and take the date from that
+ *     instead.
  */
 static void
-run_ssl (uint32_t *time_map, int time_is_an_illusion)
+run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 {
   entropy_context entropy;
   ctr_drbg_context ctr_drbg;
@@ -958,14 +1091,18 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
  * 'time_map'.
  *
  * @param time_map where to store the current time
+ * @param time_is_an_illusion
+ * @param http whether to do an http request and take the date from that
+ *     instead.
  */
 static void
-run_ssl (uint32_t *time_map, int time_is_an_illusion)
+run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 {
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
   struct stat statbuf;
+  uint32_t result_time;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -1044,6 +1181,28 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
 
+  if (http) {
+    char buf[1024];
+    verb("V: Starting HTTP\n");
+    if (snprintf(buf, sizeof(buf),
+                 HTTP_REQUEST, HTTP_USER_AGENT, hostname_to_verify) >= 1024)
+      die("hostname too long");
+    buf[1023]='\0'; /* Unneeded. */
+    verb("V: Writing HTTP request\n");
+    if (1 != write_all_to_bio(s_bio, buf))
+      die ("write all to bio failed.\n");
+    verb("V: Reading HTTP response\n");
+    if (1 != read_http_date_from_bio(s_bio, &result_time))
+      die ("read all from bio failed.\n");
+    verb("V: Got HTTP response. T=%lu\n", (unsigned long)result_time);
+
+    result_time = htonl(result_time);
+  } else {
+    // from /usr/include/openssl/ssl3.h
+    //  ssl->s3->server_random is an unsigned char of 32 bits
+    memcpy(&result_time, ssl->s3->server_random, sizeof (uint32_t));
+  }
+
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
     inspect_key (ssl, hostname_to_verify);
@@ -1051,9 +1210,9 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
     verb ("V: Certificate verification skipped!\n");
   }
   check_key_length(ssl);
-  // from /usr/include/openssl/ssl3.h
-  //  ssl->s3->server_random is an unsigned char of 32 bits
-  memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
+
+  memcpy(time_map, &result_time, sizeof (uint32_t));
+
   SSL_free(ssl);
   SSL_CTX_free(ctx);
 }
@@ -1074,8 +1233,9 @@ main(int argc, char **argv)
   int showtime_raw;
   int timewarp;
   int leap;
+  int http;
 
-  if (argc != 12)
+  if (argc != 13)
     return 1;
   host = argv[1];
   hostname_to_verify = argv[1];
@@ -1090,6 +1250,7 @@ main(int argc, char **argv)
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
   proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
+  http = (0 == (strcmp("http", argv[12])));
 
   /* Initalize warp_time with RECENT_COMPILE_DATE */
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
@@ -1169,7 +1330,7 @@ main(int argc, char **argv)
   if (0 == ssl_child)
   {
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
-    run_ssl (time_map, leap);
+    run_ssl (time_map, leap, http);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
   }
