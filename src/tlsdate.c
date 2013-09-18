@@ -94,7 +94,8 @@ usage(void)
           " [-V|--showtime] [human|raw]\n"
           " [-t|--timewarp]\n"
           " [-l|--leap]\n"
-    " [-x|--proxy] [url]\n");
+          " [-x|--proxy] [url]\n"
+          " [-w|--http]\n");
 }
 
 
@@ -112,6 +113,7 @@ main(int argc, char **argv)
   int timewarp;
   int leap;
   const char *proxy;
+  int http;
 
   host = DEFAULT_HOST;
   port = DEFAULT_PORT;
@@ -124,6 +126,7 @@ main(int argc, char **argv)
   timewarp = 0;
   leap = 0;
   proxy = NULL;
+  http = 0;
 
   while (1) {
     int option_index = 0;
@@ -143,10 +146,11 @@ main(int argc, char **argv)
         {"timewarp", 0, 0, 't'},
         {"leap", 0, 0, 'l'},
         {"proxy", 0, 0, 'x'},
+        {"http", 0, 0, 'w'},
         {0, 0, 0, 0}
       };
 
-    c = getopt_long(argc, argv, "vV::shH:p:P:nC:tlx:",
+    c = getopt_long(argc, argv, "vV::shH:p:P:nC:tlx:w",
                     long_options, &option_index);
     if (c == -1)
       break;
@@ -164,6 +168,7 @@ main(int argc, char **argv)
       case 't': timewarp = 1; break;
       case 'l': leap = 1; break;
       case 'x': proxy = optarg; break;
+      case 'w': http = 1; break;
       case '?': break;
       default : fprintf(stderr, "Unknown option!\n"); usage(); exit(1);
     }
@@ -194,6 +199,7 @@ main(int argc, char **argv)
     (timewarp ? "timewarp" : "no-fun"),
     (leap ? "leapaway" : "holdfast"),
     (proxy ? proxy : "none"),
+    (http ? "http" : "tls"),
     NULL);
   perror("Failed to run tlsdate-helper");
   return 1;
