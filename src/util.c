@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <grp.h>
 #include <limits.h>
-#ifdef __linux__
+#ifdef HAVE_LINUX_RTC_H
 #include <linux/rtc.h>
 #endif
 #include <pwd.h>
@@ -28,6 +28,10 @@
 #include <unistd.h>
 
 #include "src/util.h"
+
+#if defined(HAVE_STRUCT_RTC_TIME) && defined(RTC_SET_TIME) && defined(RTC_RD_TIME)
+#define ENABLE_RTC
+#endif
 
 const char *kTempSuffix = DEFAULT_DAEMON_TMPSUFFIX;
 
@@ -145,7 +149,7 @@ wait_with_timeout(int *status, int timeout_secs)
   return exited;
 }
 
-#ifdef __linux__
+#ifdef ENABLE_RTC
 struct rtc_handle
 {
 	int fd;
@@ -308,7 +312,7 @@ int pgrp_kill(void)
 }
 
 static struct platform default_platform = {
-#ifdef __linux__
+#ifdef ENABLE_RTC
 	.rtc_open = rtc_open,
 	.rtc_write = rtc_write,
 	.rtc_read = rtc_read,
