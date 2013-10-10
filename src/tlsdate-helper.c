@@ -223,6 +223,15 @@ handle_date_line(const char *dateline, uint32_t *result)
   struct tm tm;
   int i;
   time_t t;
+  /* We recognize the three formats in RFC2616, section 3.3.1.  Month
+     names are always in English.  The formats are:
+
+      Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
+      Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
+      Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
+
+     Note that the first is preferred.
+   */
 
   static const char *MONTHS[] =
     { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
