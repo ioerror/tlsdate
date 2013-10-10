@@ -270,6 +270,8 @@ handle_date_line(const char *dateline, uint32_t *result)
       sscanf(dateline, "%3s %d %d:%d:%d %d",
              month, &day, &hour, &min, &sec, &year) == 6) {
 
+    /* Two digit dates are defined to be relative to 1900; all other dates
+     * are supposed to be represented as four digits. */
     if (year < 100)
       year += 1900;
 
