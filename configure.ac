@@ -143,6 +143,13 @@ AC_CHECK_HEADERS([sys/wait.h], ,[AC_MSG_ERROR([Required headers missing; compila
 AC_CHECK_HEADERS([time.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 
+AC_CHECK_HEADERS([linux/rtc.h])
+AC_CHECK_TYPES([struct rtc_time], [], [], [
+#ifdef HAVE_LINUX_RTC_H
+#include <linux/rtc.h>
+#endif
+])
+
 AC_CHECK_FUNCS([strnlen])
 AM_CONDITIONAL(HAVE_STRNLEN, [test "x${ac_cv_func_strnlen}" = xyes])
 
