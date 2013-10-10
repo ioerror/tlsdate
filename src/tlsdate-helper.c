@@ -1205,6 +1205,11 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
 
+  // from /usr/include/openssl/ssl3.h
+  //  ssl->s3->server_random is an unsigned char of 32 bits
+  memcpy(&result_time, ssl->s3->server_random, sizeof (uint32_t));
+  verb("V: In TLS response, T=%lu\n", (unsigned long)ntohl(result_time));
+
   if (http) {
     char buf[1024];
     verb("V: Starting HTTP\n");
@@ -1221,10 +1226,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
     verb("V: Got HTTP response. T=%lu\n", (unsigned long)result_time);
 
     result_time = htonl(result_time);
-  } else {
-    // from /usr/include/openssl/ssl3.h
-    //  ssl->s3->server_random is an unsigned char of 32 bits
-    memcpy(&result_time, ssl->s3->server_random, sizeof (uint32_t));
   }
 
   // Verify the peer certificate against the CA certs on the local system
