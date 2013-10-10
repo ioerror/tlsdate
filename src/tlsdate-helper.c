@@ -925,7 +925,6 @@ inspect_key (SSL *ssl, const char *hostname)
   "User-Agent: %s\r\n"  \
   "Host: %s\r\n"        \
   "\r\n"
-#define HTTP_USER_AGENT "TLSDate/1.0"
 
 #ifdef USE_POLARSSL
 void
@@ -1214,7 +1213,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
     char buf[1024];
     verb("V: Starting HTTP\n");
     if (snprintf(buf, sizeof(buf),
-                 HTTP_REQUEST, HTTP_USER_AGENT, hostname_to_verify) >= 1024)
+                 HTTP_REQUEST, HTTPS_USER_AGENT, hostname_to_verify) >= 1024)
       die("hostname too long");
     buf[1023]='\0'; /* Unneeded. */
     verb("V: Writing HTTP request\n");

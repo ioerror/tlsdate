@@ -39,6 +39,16 @@ dnl Place we install our config file
 TLSDATE_CONF_DIR="${sysconfdir}/$PACKAGE_NAME/"
 AC_SUBST([TLSDATE_CONF_DIR])
 
+dnl HTTPS User-agent
+AC_ARG_WITH([https-user-agent],
+	    [AS_HELP_STRING([--with-https-user-agent=AGENT],
+	                    [a User-Agent value to send when running in HTTPS mode])],
+	    [],
+	    [with_https_user_agent="TLSDate/1.0"])
+AC_DEFINE_UNQUOTED([HTTPS_USER_AGENT],
+	           ["${with_https_user_agent}"],
+		   [User-Agent value to send when running as an HTTPS client])
+
 dnl check for PolarSSL
 OPT_POLARSSL=yes
 
