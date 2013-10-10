@@ -215,6 +215,19 @@ write_all_to_bio(BIO *bio, const char *string)
   return 1;
 }
 
+/* If the string is all nice clean ascii that it's safe to log, return
+ * it. Otherwise return a placeholder "This is junk" string. */
+static const char *
+sanitize_string(const char *s)
+{
+  const unsigned char *cp;
+  for (cp = (const unsigned char *)s; *cp; cp++) {
+    if (*cp < 32 || *cp > 127)
+      return "string with invalid characters";
+  }
+  return s;
+}
+
 static int
 handle_date_line(const char *dateline, uint32_t *result)
 {
@@ -241,7 +254,7 @@ handle_date_line(const char *dateline, uint32_t *result)
     return 0;
 
   dateline += 8;
-  verb("V: The alleged date is <%s>\n", dateline);
+  verb("V: The alleged date is <%s>\n", sanitize_string(dateline));
 
   while (*dateline == ' ')
     ++dateline;
