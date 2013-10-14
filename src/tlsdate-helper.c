@@ -222,7 +222,7 @@ sanitize_string(const char *s)
 {
   const unsigned char *cp;
   for (cp = (const unsigned char *)s; *cp; cp++) {
-    if (*cp < 32 || *cp > 127)
+    if (*cp < 32 || *cp >= 127)
       return "string with invalid characters";
   }
   return s;
@@ -254,6 +254,10 @@ handle_date_line(const char *dateline, uint32_t *result)
     return 0;
 
   dateline += 8;
+  if (strlen(dateline) > MAX_DATE_LINE_LEN) {
+    verb("V: The date line was impossibly long.\n");
+    return -1;
+  }
   verb("V: The alleged date is <%s>\n", sanitize_string(dateline));
 
   while (*dateline == ' ')
