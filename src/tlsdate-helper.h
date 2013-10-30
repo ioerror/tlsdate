@@ -89,6 +89,9 @@ int verbose;
 // To support our RFC 2595 wildcard verification
 #define RFC2595_MIN_LABEL_COUNT 3
 
+// Define a max length for the HTTP Date: header
+#define MAX_DATE_LINE_LEN 32
+
 static int ca_racket;
 
 static const char *host;
