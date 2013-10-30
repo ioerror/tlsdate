@@ -92,6 +92,16 @@ int verbose;
 // Define a max length for the HTTP Date: header
 #define MAX_DATE_LINE_LEN 32
 
+// Define a max length for HTTP headers
+#define MAX_HTTP_HEADERS_SIZE 8192
+
+// Define our basic HTTP request
+#define HTTP_REQUEST    \
+  "HEAD / HTTP/1.1\r\n" \
+  "User-Agent: %s\r\n"  \
+  "Host: %s\r\n"        \
+  "\r\n"
+
 static int ca_racket;
 
 static const char *host;

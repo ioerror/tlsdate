@@ -312,8 +312,6 @@ handle_date_line(const char *dateline, uint32_t *result)
   return 1;
 }
 
-#define MAX_HTTP_HEADERS_SIZE 8192
-
 static int
 read_http_date_from_bio(BIO *bio, uint32_t *result)
 {
@@ -923,12 +921,6 @@ inspect_key (SSL *ssl, const char *hostname)
     check_name (ssl, hostname);
 }
 #endif
-
-#define HTTP_REQUEST    \
-  "HEAD / HTTP/1.1\r\n" \
-  "User-Agent: %s\r\n"  \
-  "Host: %s\r\n"        \
-  "\r\n"
 
 #ifdef USE_POLARSSL
 void
