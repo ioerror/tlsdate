@@ -51,3 +51,11 @@ time warp to restore sanity and do so with a leap of faith:
   % sudo tlsdate -V -l -t
   Fri Apr 19 18:08:03 PDT 2013
 
+
+Some SSL/TLS services do not provide accurate time in their handshake process;
+tlsdate may also be used to fetch time by processing the HTTP Date headers of
+HTTP services:
+
+  % sudo tlsdate -V -l -t -w
+  Wed Oct 30 18:08:46 CET 2013
+
