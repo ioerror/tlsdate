@@ -328,7 +328,7 @@ read_http_date_from_bio(BIO *bio, uint32_t *result)
       return 0;
     buf_len += n;
     buf[buf_len] = 0;
-    verb("V: read %d bytes.", n, buf);
+    verb("V: read %d bytes.\n", n, buf);
 
     dateline = memmem(buf, buf_len, "\r\nDate: ", 8);
     if (NULL == dateline)
