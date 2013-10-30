@@ -35,5 +35,6 @@ src/tlsdate-routeup
 src/tlsdated
 src/tlsdated_unittest
 TAGS
+tags
 config.h
 config.in
