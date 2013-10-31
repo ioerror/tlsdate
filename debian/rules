@@ -7,7 +7,7 @@
 export DEB_BUILD_HARDENING=1
 
 %:
-	dh $@
+	dh --with autotools_dev $@
 
 override_dh_install:
 	dh_install
