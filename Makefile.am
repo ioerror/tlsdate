@@ -38,6 +38,7 @@ doc_DATA+= TODO
 EXTRA_DIST+= $(doc_DATA)
 EXTRA_DIST+= apparmor-profile
 EXTRA_DIST+= autogen.sh 
+EXTRA_DIST+= tlsdated.service
 
 include src/include.am
 
