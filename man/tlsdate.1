@@ -5,7 +5,7 @@
 .SH NAME
 tlsdate \- secure parasitic rdate replacement
 .SH SYNOPSIS
-.B tlsdate [\-hnvVstl] [\-H [hostname]] [\-p [port]] [\-P [sslv23|sslv3|tlsv1]] \
+.B tlsdate [\-hnvVstlw] [\-H [hostname]] [\-p [port]] [\-P [sslv23|sslv3|tlsv1]] \
 [\-\-certdir [dirname]] [\-x [\-\-proxy] proxy\-type://proxyhost:proxyport]
 .SH DESCRIPTION
 .B tlsdate
@@ -49,8 +49,9 @@ The proxy argument expects HTTP, SOCKS4A or SOCKS5 formatted as followed:
 The proxy support should not leak DNS requests and is suitable for use with Tor.
 .IP "\-v | \-\-verbose"
 Provide verbose output
-.IP "\-V | \-\-showtime"
-Show the time retrieved from the remote server
+.IP "\-V | \-\-showtime [human|raw]"
+Show the time retrieved from the remote server in a human-readable format or as
+a raw time_t.
 .IP "\-t | \-\-timewarp"
 If the local clock is before RECENT_COMPILE_DATE; we set the clock to the
 RECENT_COMPILE_DATE. If the local clock is after RECENT_COMPILE_DATE, we leave
@@ -75,6 +76,10 @@ if there are any other issues, such as self-signed certificates or if the user
 pins to a CA that is not used by the remote server. This is useful if your RTC
 is broken on boot and you are unable to use DNSEC until you've at least had
 some kind of leap of cryptographically assured data.
+.IP "\-w | \-\-http"
+Run in web mode: look for the time in an HTTP "Date" header inside an
+HTTPS connection, rather than in the TLS connection itself.  The provided
+hostname and port must support HTTPS.
 .SH BUGS
 It's likely! Let us know by contacting jacob@appelbaum.net
 

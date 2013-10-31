@@ -1,0 +1,40 @@
+#!/bin/sh
+
+run_test() {
+	[ -x "$1"/setup ] && "$1"/setup
+	if [ -r "$1"/tlsdated-flags ]; then
+		flags=$(cat "$1"/tlsdated-flags | sed "s/@TESTDIR@/$1/g")
+	elif [ -r "$1"/test.conf ]; then
+		flags="-w -p -r -l -s -f $1/test.conf -v"
+	else
+		flags="-w -p -r -l -s -f test.conf -v"
+	fi
+	# flags are deliberately unquoted here so that they'll be interpolated
+	timeout 5 src/tlsdated $flags -- "$1"/subproc.sh <"$1"/input >"$1"/run-output \
+                     2>"$1"/run-err
+	[ -x "$1"/teardown ] && "$1"/teardown
+}
+
+test_passed() {
+	diff "$t"/output "$t"/run-output >/dev/null
+}
+
+total=0
+passed=0
+
+for t in tests/*; do
+	[ ! -d "$t" ] && continue
+	name="$(basename "$t")"
+	echo -n "$name: "
+	run_test "$t"
+	if test_passed "$t"; then
+		echo "ok"
+		passed=$((passed + 1))
+	else
+		echo "failed"
+	fi
+	total=$((total + 1))
+done
+echo "Passed: $passed/$total"
+[ $passed != $total ]
+exit $?

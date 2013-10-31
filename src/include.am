@@ -183,6 +183,7 @@ src_tlsdated_SOURCES+= src/common/android.c
 endif
 
 src_tlsdated_SOURCES+= src/conf.c
+src_tlsdated_SOURCES+= src/event.c
 src_tlsdated_SOURCES+= src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
 src_tlsdated_SOURCES+= src/util.c
@@ -192,7 +193,8 @@ src_tlsdate_dbus_announce_LDADD = @DBUS_LIBS@
 src_tlsdate_dbus_announce_SOURCES = src/tlsdate-dbus-announce.c
 
 src_tlsdated_unittest_LDADD = @SSL_LIBS@
-src_tlsdated_unittest_SOURCES = src/routeup.c
+src_tlsdated_unittest_SOURCES = src/event.c
+src_tlsdated_unittest_SOURCES+= src/routeup.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated-unittest.c
 src_tlsdated_unittest_SOURCES+= src/util.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated.c
@@ -423,6 +425,12 @@ endif
 endif
 endif
 endif
+
+src_event_unittest_SOURCES = src/event.c
+src_event_unittest_SOURCES+= src/event-unittest.c
+src_event_unittest_SOURCES+= src/routeup.c
+src_event_unittest_SOURCES+= src/util.c
+check_PROGRAMS+= src/event_unittest
 
 if !TARGET_OSX
 check_PROGRAMS+= src/test/proxy-override src/test/return-argc \

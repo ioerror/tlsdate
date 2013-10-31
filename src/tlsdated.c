@@ -38,12 +38,12 @@
 #endif
 
 #include "src/conf.h"
+#include "src/event.h"
 #include "src/routeup.h"
 #include "src/util.h"
 #include "src/tlsdate.h"
 
 const char *kCacheDir = DEFAULT_DAEMON_CACHEDIR;
-const char *kTempSuffix = DEFAULT_DAEMON_TMPSUFFIX;
 
 int
 is_sane_time (time_t ts)
@@ -106,43 +106,35 @@ int
 tlsdate (struct opts *opts, char *envp[])
 {
   pid_t pid;
+  pid_t exited;
+  int status;
+
   build_argv(opts);
-  
-  if ((pid = fork ()) > 0)
-    {
-      /*
-       * We launched tlsdate; wait for up to kMaxTries intervals of
-       * kWaitBetweenTries for it to exit, then kill it if it still
-       * hasn't.
-       */
-      int status = -1;
-      int i = 0;
-      for (i = 0; i < opts->subprocess_tries; ++i)
+
+  pid = fork();
+  if (pid < 0)
   {
-    info ("wait for child attempt %d", i);
-    if (waitpid (-1, &status, WNOHANG) > 0)
-      break;
-    sleep (opts->subprocess_wait_between_tries);
-  }
-      if (i == opts->subprocess_tries)
-  {
-    error ("child hung?");
-    kill (pid, SIGKILL);
-    /* still have to wait() so we don't leak the child. */
-    wait (&status);
+    pinfo("fork() failed");
     return -1;
   }
-      info ("child exited with %d", status);
-      return WIFEXITED (status) ? WEXITSTATUS (status) : -1;
-    }
-  else if (pid < 0)
-    {
-      pinfo ("fork() failed");
-      return -1;
-    }
-  execve (opts->argv[0], opts->argv, envp);
-  pinfo ("execve() failed");
-  exit (1);
+  else if (pid == 0)
+  {
+    execve(opts->argv[0], opts->argv, envp);
+    pinfo("execve() failed");
+    exit(1);
+  }
+
+  exited = wait_with_timeout(&status, opts->subprocess_timeout);
+  info("child %d exited with %d", exited, status);
+
+  if (exited == -ETIMEDOUT)
+  {
+    kill(pid, SIGKILL);
+    wait(&status);
+    return -1;
+  }
+
+  return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
 }
 
 /*
@@ -153,25 +145,15 @@ tlsdate (struct opts *opts, char *envp[])
 int
 load_disk_timestamp (const char *path, time_t * t)
 {
-  int fd = open (path, O_RDONLY | O_NOFOLLOW);
   time_t tmpt;
-  if (fd < 0)
-    {
-      perror ("Can't open %s for reading", path);
-      return -1;
-    }
-  if (read (fd, &tmpt, sizeof (tmpt)) != sizeof (tmpt))
-    {
-      perror ("Can't read seconds from %s", path);
-      close (fd);
-      return -1;
-    }
-  close (fd);
-  if (!is_sane_time (tmpt))
-    {
-      perror ("Timevalue not sane: %lu", tmpt);
-      return -1;
-    }
+  if (platform->file_read(path, &tmpt, sizeof(tmpt))) {
+    info("can't load time file");
+    return -1;
+  }
+  if (!is_sane_time(tmpt)) {
+    info("time %lu not sane", tmpt);
+    return -1;
+  }
   *t = tmpt;
   return 0;
 }
@@ -180,34 +162,8 @@ load_disk_timestamp (const char *path, time_t * t)
 void
 save_disk_timestamp (const char *path, time_t t)
 {
-  char tmp[PATH_MAX];
-  int fd;
-
-  if (snprintf (tmp, sizeof (tmp), "%s%s", path, kTempSuffix) >= sizeof (tmp))
-    {
-      pinfo ("Path %s too long to use", path);
-      exit (1);
-    }
-
-  if ((fd = open (tmp, O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC,
-      S_IRUSR | S_IWUSR)) < 0)
-    {
-      pinfo ("open failed");
-      return;
-    }
-  if (write (fd, &t, sizeof (t)) != sizeof (t))
-    {
-      pinfo ("write failed");
-      close (fd);
-      return;
-    }
-  if (close (fd))
-    {
-      pinfo ("close failed");
-      return;
-    }
-  if (rename (tmp, path))
-    pinfo ("rename failed");
+  if (platform->file_write(path, &t, sizeof(t)))
+    info("saving disk timestamp failed");
 }
 
 /*
@@ -218,38 +174,17 @@ save_disk_timestamp (const char *path, time_t t)
  * this function except try later.
  */
 void
-sync_hwclock (int fd)
+sync_hwclock (void *rtc_handle)
 {
   struct timeval tv;
-  struct tm *tm;
-  struct rtc_time rtctm;
+  if (platform->time_get(&tv))
+  {
+    pinfo("gettimeofday() failed");
+    return;
+  }
 
-  if (gettimeofday (&tv, NULL))
-    {
-      pinfo ("gettimeofday() failed");
-      return;
-    }
-
-  tm = gmtime (&tv.tv_sec);
-
-  /* these structs are identical, but separately defined */
-  rtctm.tm_sec = tm->tm_sec;
-  rtctm.tm_min = tm->tm_min;
-  rtctm.tm_hour = tm->tm_hour;
-  rtctm.tm_mday = tm->tm_mday;
-  rtctm.tm_mon = tm->tm_mon;
-  rtctm.tm_year = tm->tm_year;
-  rtctm.tm_wday = tm->tm_wday;
-  rtctm.tm_yday = tm->tm_yday;
-  rtctm.tm_isdst = tm->tm_isdst;
-
-  if (ioctl (fd, RTC_SET_TIME, &rtctm))
-    {
-      pinfo ("ioctl(%d, RTC_SET_TIME, ...) failed", fd);
-      return;
-    }
-
-  info ("synced rtc to sysclock");
+  if (platform->rtc_write(rtc_handle, &tv))
+    info("rtc_write() failed");
 }
 
 /*
@@ -282,14 +217,14 @@ wait_for_event (struct routeup *rtc, int should_netlink, int timeout)
 char timestamp_path[PATH_MAX];
 
 void
-sync_and_save (int hwclock_fd, int should_sync, int should_save)
+sync_and_save (void *hwclock_handle, int should_save)
 {
   struct timeval tv;
-  if (should_sync)
-    sync_hwclock (hwclock_fd);
+  if (hwclock_handle)
+    sync_hwclock (hwclock_handle);
   if (should_save)
     {
-      if (gettimeofday (&tv, NULL))
+      if (platform->time_get(&tv))
   pfatal ("gettimeofday() failed");
       save_disk_timestamp (timestamp_path, tv.tv_sec);
     }
@@ -328,6 +263,12 @@ add_jitter (int base, int jitter)
   return base + (abs(n) % (2 * jitter)) - jitter;
 }
 
+int
+calc_wait_time (const struct opts *opts)
+{
+  return add_jitter (opts->steady_state_interval, opts->jitter);
+}
+
 #ifdef TLSDATED_MAIN
 #ifdef HAVE_DBUS
 void
@@ -356,11 +297,19 @@ void
 sigterm_handler (int _unused)
 {
   struct timeval tv;
+  platform->pgrp_kill();
   if (gettimeofday (&tv, NULL))
     /* can't use stdio or syslog inside a sig handler */
     exit (2);
   save_disk_timestamp (timestamp_path, tv.tv_sec);
   exit (0);
+}
+
+void
+sigterm_handler_nosave (int _unused)
+{
+  platform->pgrp_kill();
+  exit(0);
 }
 
 void
@@ -394,8 +343,7 @@ set_conf_defaults(struct opts *opts)
   opts->max_tries = MAX_TRIES;
   opts->min_steady_state_interval = STEADY_STATE_INTERVAL;
   opts->wait_between_tries = WAIT_BETWEEN_TRIES;
-  opts->subprocess_tries = SUBPROCESS_TRIES;
-  opts->subprocess_wait_between_tries = SUBPROCESS_WAIT_BETWEEN_TRIES;
+  opts->subprocess_timeout = SUBPROCESS_TIMEOUT;
   opts->steady_state_interval = STEADY_STATE_INTERVAL;
   opts->base_path = kCacheDir;
   opts->base_argv = kDefaultArgv;
@@ -418,7 +366,7 @@ parse_argv(struct opts *opts, int argc, char *argv[])
 {
   int opt;
 
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:c:a:lsvm:j:f:x:")) != -1)
     {
       switch (opt)
   {
@@ -436,12 +384,6 @@ parse_argv(struct opts *opts, int argc, char *argv[])
     break;
   case 'd':
     opts->wait_between_tries = atoi (optarg);
-    break;
-  case 'T':
-    opts->subprocess_tries = atoi (optarg);
-    break;
-  case 'D':
-    opts->subprocess_wait_between_tries = atoi (optarg);
     break;
   case 'c':
     opts->base_path = optarg;
@@ -572,10 +514,8 @@ load_conf(struct opts *opts)
       opts->min_steady_state_interval = atoi (e->value);
     } else if (!strcmp (e->key, "wait-between-tries") && e->value) {
       opts->wait_between_tries = atoi (e->value);
-    } else if (!strcmp (e->key, "subprocess-tries") && e->value) {
-      opts->subprocess_tries = atoi (e->value);
-    } else if (!strcmp (e->key, "subprocess-wait-between-tries") && e->value) {
-      opts->subprocess_wait_between_tries = atoi (e->value);
+    } else if (!strcmp (e->key, "subprocess-timeout") && e->value) {
+      opts->subprocess_timeout = atoi (e->value);
     } else if (!strcmp (e->key, "steady-state-interval") && e->value) {
       opts->steady_state_interval = atoi (e->value);
     } else if (!strcmp (e->key, "base-path") && e->value) {
@@ -611,10 +551,8 @@ check_conf(struct opts *opts)
     fatal ("-t argument must be nonzero");
   if (!opts->wait_between_tries)
     fatal ("-d argument must be nonzero");
-  if (!opts->subprocess_tries)
-    fatal ("-T argument must be nonzero");
-  if (!opts->subprocess_wait_between_tries)
-    fatal ("-D argument must be nonzero");
+  if (!opts->subprocess_timeout)
+    fatal ("subprocess timeout must be nonzero");
   if (!opts->steady_state_interval)
     fatal ("-a argument must be nonzero");
   if (snprintf (timestamp_path, sizeof (timestamp_path), "%s/timestamp",
@@ -627,21 +565,69 @@ check_conf(struct opts *opts)
            opts->jitter, opts->steady_state_interval);
 }
 
+struct tlsdated_state
+{
+  struct routeup rtc;
+  time_t last_success;
+  struct opts *opts;
+  char *envp[];
+};
+
+static time_t now(void)
+{
+  struct timeval tv;
+  if (!platform->time_get(&tv))
+    return 0;
+  return tv.tv_sec;
+}
+
+int tlsdate_retry(struct opts *opts, char *envp[])
+{
+  int backoff = opts->wait_between_tries;
+  int i;
+
+  for (i = 0; i < opts->max_tries; i++)
+  {
+    if (!tlsdate(opts, envp))
+      return 0;
+    if (backoff < 1)
+      fatal("backoff too small? %d", backoff);
+    sleep(backoff);
+    if (backoff < MAX_SANE_BACKOFF)
+      backoff *= 2;
+  }
+  return 1;
+}
+
 int API
 main (int argc, char *argv[], char *envp[])
 {
-  struct routeup rtc;
-  int hwclock_fd = -1;
+  void *hwclock_handle = NULL;
   time_t last_success = 0;
   struct opts opts;
-  int wait_time = 0;
   struct timeval tv = { 0, 0 };
+  int r;
+
+  struct event *routeup = NULL;
+  struct event *suspend = NULL;
+  struct event *periodic = NULL; /* XXX */
+  struct event *composite = event_composite();
+
+  if (platform->pgrp_enter())
+   pfatal("pgrp_enter() failed");
+
+  suspend = event_suspend();
+
+  event_composite_add(composite, suspend);
 
   set_conf_defaults(&opts);
   parse_argv(&opts, argc, argv);
   check_conf(&opts);
   load_conf(&opts);
   check_conf(&opts);
+
+  periodic = event_every(opts.steady_state_interval);
+  event_composite_add(composite, periodic);
 
   info ("started up, loaded config file");
 
@@ -655,49 +641,53 @@ main (int argc, char *argv[], char *envp[])
                               (char *) DEFAULT_PROXY);
 
   /* grab a handle to /dev/rtc for sync_hwclock() */
-  if (opts.should_sync_hwclock && (hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
-    {
-      pinfo ("can't open hwclock fd");
-      opts.should_sync_hwclock = 0;
-    }
+  if (opts.should_sync_hwclock && !(hwclock_handle = platform->rtc_open()))
+    pinfo ("can't open hwclock fd");
 
-  /* set up a netlink context if we need one */
-  if (opts.should_netlink && routeup_setup (&rtc))
+  if (opts.should_netlink)
+    routeup = event_routeup();
+  else
+    routeup = event_fdread(STDIN_FILENO);
+  event_composite_add(composite, routeup);
+
+  if (!routeup)
     pfatal ("Can't open netlink socket");
 
   if (!is_sane_time (time (NULL)))
-    {
-      /*
-       * If the time is before the build timestamp, we're probably on
-       * a system with a broken rtc. Try loading the timestamp off
-       * disk.
-       */
-      tv.tv_sec = RECENT_COMPILE_DATE;
-      if (opts.should_load_disk &&
-    load_disk_timestamp (timestamp_path, &tv.tv_sec))
-  pinfo ("can't load disk timestamp");
-      if (!opts.dry_run && settimeofday (&tv, NULL))
-  pfatal ("settimeofday() failed");
-      dbus_announce();
-      /*
-       * don't save here - we either just loaded this time or used the
-       * default time, and neither of those are good to save
-       */
-      sync_and_save (hwclock_fd, opts.should_sync_hwclock, 0);
-    }
+  {
+    /*
+     * If the time is before the build timestamp, we're probably on
+     * a system with a broken rtc. Try loading the timestamp off
+     * disk.
+     */
+    tv.tv_sec = RECENT_COMPILE_DATE;
+    if (opts.should_load_disk
+        && load_disk_timestamp (timestamp_path, &tv.tv_sec))
+      pinfo ("can't load disk timestamp");
+    if (!opts.dry_run && settimeofday (&tv, NULL))
+      pfatal ("settimeofday() failed");
+    dbus_announce();
+    /*
+     * don't save here - we either just loaded this time or used the
+     * default time, and neither of those are good to save
+     */
+    sync_and_save (hwclock_handle, 0);
+  }
 
-  /* register a signal handler to save time at shutdown */
   if (opts.should_save_disk)
     signal (SIGTERM, sigterm_handler);
+  else
+    signal (SIGTERM, sigterm_handler_nosave);
 
   /*
    * Try once right away. If we fail, wait for a route to appear, then try
    * for a while; repeat whenever another route appears. Try until we
    * succeed.
    */
-  if (!tlsdate (&opts, envp)) {
+  if (!tlsdate (&opts, envp))
+  {
     last_success = time (NULL);
-    sync_and_save (hwclock_fd, opts.should_sync_hwclock, opts.should_save_disk);
+    sync_and_save (hwclock_handle, opts.should_save_disk);
     dbus_announce();
   }
 
@@ -707,36 +697,51 @@ main (int argc, char *argv[], char *envp[])
    * this should handle cases like a VPN being brought up and down
    * periodically.
    */
-  wait_time = add_jitter(opts.steady_state_interval, opts.jitter);
-  while (wait_for_event (&rtc, opts.should_netlink, wait_time) >= 0)
+
+  /*
+   * The event loop.
+   * When we start up, we may have no time fix at all; we'll call this "active
+   * mode", where we are actively looking for opportunities to get a time fix.
+   * Once we get a time fix, we go into "passive mode", where we're looking to
+   * prevent clock drift or rtc corruption. The difference between these two
+   * modes is whether we're aggressive about checking for time after network
+   * routes come up.
+   *
+   * To do this, we create some event sources:
+   *   e0 = event_routeup()
+   *   e1 = event_suspend()
+   *   e2 = event_every(interval)
+   * Then we create a couple of composite events:
+   *   active = event_anyof(3, e0, e1, e2)
+   * Whenever our wait for an event returns, we start checking (i.e., running
+   * tlsdate with exponential backoff until it succeeds). If checking succeeds
+   * and we were in active state, we go to passive state; otherwise we return to
+   * our previous state.
+   */
+
+  while ((r = event_wait(composite)))
+  {
+    if (r < 0)
     {
-      /*
-       * If a route just came up, run tlsdate; if it
-       * succeeded, then we're good and can keep time locally
-       * from now on.
-       */
-      int i;
-      int backoff = opts.wait_between_tries;
-      wait_time = add_jitter(opts.steady_state_interval, opts.jitter);
-      if (time (NULL) - last_success < opts.min_steady_state_interval)
-        continue;
-      for (i = 0; i < opts.max_tries && tlsdate (&opts, envp); ++i) {
-        if (backoff < 1)
-          fatal ("backoff too small? %d", backoff);
-        sleep (backoff);
-        if (backoff < MAX_SANE_BACKOFF)
-          backoff *= 2;
-      }
-      if (i != opts.max_tries)
-      {
-        last_success = time (NULL);
-        info ("tlsdate succeeded");
-        sync_and_save (hwclock_fd, opts.should_sync_hwclock, opts.should_save_disk);
-        dbus_announce();
-      }
+      info("event_wait() failed: %d", r);
+      continue;
     }
+    if (now() - last_success < opts.min_steady_state_interval)
+    {
+      info("too soon");
+      continue;
+    }
+    if (!tlsdate_retry(&opts, envp))
+    {
+      last_success = now();
+      info("tlsdate succeeded");
+      sync_and_save (hwclock_handle, opts.should_save_disk);
+      dbus_announce();
+    }
+  }
 
   info ("exiting");
+  platform->pgrp_kill();
   return 1;
 }
 #endif /* !TLSDATED_MAIN */

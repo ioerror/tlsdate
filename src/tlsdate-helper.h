@@ -89,6 +89,19 @@ int verbose;
 // To support our RFC 2595 wildcard verification
 #define RFC2595_MIN_LABEL_COUNT 3
 
+// Define a max length for the HTTP Date: header
+#define MAX_DATE_LINE_LEN 32
+
+// Define a max length for HTTP headers
+#define MAX_HTTP_HEADERS_SIZE 8192
+
+// Define our basic HTTP request
+#define HTTP_REQUEST    \
+  "HEAD / HTTP/1.1\r\n" \
+  "User-Agent: %s\r\n"  \
+  "Host: %s\r\n"        \
+  "\r\n"
+
 static int ca_racket;
 
 static const char *host;
@@ -118,6 +131,6 @@ void inspect_key (SSL *ssl, const char *hostname);
 uint32_t dns_label_count (char *label, char *delim);
 uint32_t check_wildcard_match_rfc2595 (const char *orig_hostname,
                                        const char *orig_cert_wild_card);
-static void run_ssl (uint32_t *time_map, int time_is_an_illusion);
+static void run_ssl (uint32_t *time_map, int time_is_an_illusion, int http);
 
 #endif
