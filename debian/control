@@ -10,6 +10,8 @@ Build-Depends: autotools-dev,
                libssl-dev
 Standards-Version: 3.9.4
 Homepage: https://www.github.com/ioerror/tlsdate/
+Vcs-Git: https://www.github.com/ioerror/tlsdate/ -b debian-master
+Vcs-Browser: https://www.github.com/ioerror/tlsdate/
 
 Package: tlsdate
 Architecture: any
