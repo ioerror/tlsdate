@@ -59,6 +59,7 @@
   /lib64/* rm,
   /usr/lib/* rm,
   /lib/x86_64-linux-gnu/* rm,
+  /usr/lib/x86_64-linux-gnu/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
   /tmp/ r,
@@ -122,6 +123,7 @@
   /usr/lib/* rm,
   /usr/local/lib/* rm,
   /lib/x86_64-linux-gnu/* rm,
+  /usr/lib/x86_64-linux-gnu/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
   /tmp/ r,
@@ -187,6 +189,7 @@
   /usr/lib/* rm,
   /usr/local/lib/* rm,
   /lib/x86_64-linux-gnu/* rm,
+  /usr/lib/x86_64-linux-gnu/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
   /tmp/ r,
@@ -221,6 +224,7 @@
   /lib64/* rm,
   /usr/lib/* rm,
   /lib/x86_64-linux-gnu/* rm,
+  /usr/lib/x86_64-linux-gnu/* rm,
 }
 
 /usr/bin/tlsdate-dbus-announce {
@@ -238,4 +242,5 @@
   /lib64/* rm,
   /usr/lib/* rm,
   /lib/x86_64-linux-gnu/* rm,
+  /usr/lib/x86_64-linux-gnu/* rm,
 }
