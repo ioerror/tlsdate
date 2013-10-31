@@ -20,6 +20,8 @@
   Refactored event loop.
   Added suspend/resume RTC corruption detection.
   Add -w option to get time from HTTPS header instead of from TLS ServerHello
+  Update AppArmor profile
+  Add simple systemd service file
 0.0.6 Mon 18 Feb, 2013
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
