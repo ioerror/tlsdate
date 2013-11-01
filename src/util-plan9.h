@@ -19,6 +19,7 @@
 #endif
 
 extern int verbose;
+extern int verbose_debug;
 void die (const char *fmt, ...);
 void verb (const char *fmt, ...);
 extern void logat(int isverbose, const char *fmt, ...);

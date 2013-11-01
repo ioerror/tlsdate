@@ -19,6 +19,7 @@
 #include "src/util.h"
 
 int verbose;
+int verbose_debug;
 
 static const unsigned int kMagic = 0x5f8d3f15;
 

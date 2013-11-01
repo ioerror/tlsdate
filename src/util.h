@@ -21,8 +21,10 @@
 extern const char *kTempSuffix;
 
 extern int verbose;
+extern int verbose_debug;
 void die (const char *fmt, ...);
 void verb (const char *fmt, ...);
+void verb_debug (const char *fmt, ...);
 extern void logat(int isverbose, const char *fmt, ...);
 
 #define info(fmt, ...) logat(1, fmt, ## __VA_ARGS__)

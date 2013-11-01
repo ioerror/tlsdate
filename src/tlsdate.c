@@ -103,6 +103,7 @@ int
 main(int argc, char **argv)
 {
   int verbose;
+  int verbose_debug;
   int ca_racket;
   int showtime;
   int setclock;
@@ -120,6 +121,7 @@ main(int argc, char **argv)
   protocol = DEFAULT_PROTOCOL;
   ca_cert_container = DEFAULT_CERTFILE;
   verbose = 0;
+  verbose_debug = 0;
   ca_racket = 1;
   showtime = 0;
   setclock = 1;
@@ -156,7 +158,7 @@ main(int argc, char **argv)
       break;
 
     switch (c) {
-      case 'v': verbose = 1; break;
+      case 'v': verbose += 1; break;
       case 'V': showtime = (optarg && 0 == strcmp("raw", optarg) ? 2:1); break;
       case 's': ca_racket = 0; break;
       case 'h': usage(); exit(1); break;
@@ -174,7 +176,7 @@ main(int argc, char **argv)
     }
   }
 
-  if (verbose) {
+  if (2 == verbose) {
     fprintf(stderr,
       "V: tlsdate version %s\n"
             "V: We were called with the following arguments:\n"
@@ -192,7 +194,7 @@ main(int argc, char **argv)
     port,
     protocol,
     (ca_racket ? "racket" : "unchecked"),
-    (verbose ? "verbose" : "quiet"),
+    (verbose ? (verbose >= 2 ? "debug" : "verbose") : "quiet"),
     ca_cert_container,
     (setclock ? "setclock" : "dont-set-clock"),
     (showtime ? (showtime == 2 ? "showtime=raw" : "showtime") : "no-showtime"),
