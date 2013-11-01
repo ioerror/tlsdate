@@ -76,6 +76,7 @@ know:
 
 #include "config.h"
 #include "src/tlsdate-helper.h"
+#include "src/util.h"
 
 #ifndef USE_POLARSSL
 #include "src/proxy-bio.h"
@@ -326,7 +327,7 @@ read_http_date_from_bio(BIO *bio, uint32_t *result)
       return 0;
     buf_len += n;
     buf[buf_len] = 0;
-    verb("V: read %d bytes.\n", n, buf);
+    verb_debug ("V: read %d bytes.\n", n, buf);
 
     dateline = memmem(buf, buf_len, "\r\nDate: ", 8);
     if (NULL == dateline)
@@ -485,7 +486,7 @@ dns_label_count(char *label, char *delim)
       saveptr_tmp = strtok_r(NULL, delim, &saveptr);
     } while (NULL != saveptr_tmp);
   }
-  verb ("V: label found; total label count: %d\n", label_count);
+  verb_debug ("V: label found; total label count: %d\n", label_count);
   free(label_tmp);
   return label_count;
 }
@@ -519,7 +520,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   delim = strdup(".");
   wildchar = strdup("*");
 
-  verb ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
+  verb_debug ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
          hostname, cert_wild_card);
 
   // By default we have not processed any labels
@@ -535,7 +536,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   {
     if (wildchar[0] == cert_wild_card[0])
     {
-      verb ("V: Found wildcard in at start of provided certificate name\n");
+      verb_debug ("V: Found wildcard in at start of provided certificate name\n");
       do
       {
         // Skip over the bytes between the first char and until the next label
@@ -548,7 +549,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
         {
           // Now we only consider this wildcard valid if the rest of the
           // hostnames match verbatim
-          verb ("V: Attempting match of '%s' against '%s'\n",
+          verb_debug ("V: Attempting match of '%s' against '%s'\n",
                  expected_label, wildcard_label);
           // This is the case where we have a label that begins with wildcard
           // Furthermore, we only allow this for the first label
@@ -558,31 +559,31 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
             verb ("V: Forced match of '%s' against '%s'\n", expected_label, wildcard_label);
             wildcard_encountered = 1;
           } else {
-            verb ("V: Attempting match of '%s' against '%s'\n",
+            verb_debug ("V: Attempting match of '%s' against '%s'\n",
                    hostname, cert_wild_card);
             if (0 == strcasecmp (expected_label, wildcard_label) &&
                 label_count >= ((uint32_t)RFC2595_MIN_LABEL_COUNT))
             {
               ok = 1;
-              verb ("V: remaining labels match!\n");
+              verb_debug ("V: remaining labels match!\n");
               break;
             } else {
               ok = 0;
-              verb ("V: remaining labels do not match!\n");
+              verb_debug ("V: remaining labels do not match!\n");
               break;
             }
           }
         } else {
           // We hit this case when we have a mismatched number of labels
-          verb("V: NULL label; no wildcard here\n");
+          verb_debug ("V: NULL label; no wildcard here\n");
           break;
         }
       } while (0 != wildcard_encountered && label_count <= RFC2595_MIN_LABEL_COUNT);
     } else {
-      verb ("V: Not a RFC 2595 wildcard\n");
+      verb_debug ("V: Not a RFC 2595 wildcard\n");
     }
   } else {
-    verb ("V: Not a valid wildcard certificate\n");
+    verb_debug ("V: Not a valid wildcard certificate\n");
     ok = 0;
   }
   // Free our copies
@@ -592,11 +593,11 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   free(cert_wild_card_to_free);
   if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
   {
-    verb ("V: wildcard match of %s against %s\n",
+    verb_debug ("V: wildcard match of %s against %s\n",
           orig_hostname, orig_cert_wild_card);
     return (wildcard_encountered & ok);
   } else {
-    verb ("V: wildcard match failure of %s against %s\n",
+    verb_debug ("V: wildcard match failure of %s against %s\n",
           orig_hostname, orig_cert_wild_card);
     return 0;
   }
@@ -732,11 +733,11 @@ check_san (SSL *ssl, const char *hostname)
                 break;
               }
             }
-            verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
+            verb_debug ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
-        verb ("V: found non subjectAltName extension\n");
+        verb_debug ("V: found non subjectAltName extension\n");
       }
       if (ok)
       {
@@ -744,7 +745,7 @@ check_san (SSL *ssl, const char *hostname)
       }
     }
   } else {
-    verb ("V: no X509_EXTENSION field(s) found\n");
+    verb_debug ("V: no X509_EXTENSION field(s) found\n");
   }
   X509_free(cert);
   return ok;
@@ -846,21 +847,21 @@ check_key_length (ssl_context *ssl)
   }
 
   x509parse_dn_gets(buf, 1024, &certificate->subject);
-  verb ("V: Certificate for subject '%s'\n", buf);
+  verb_debug ("V: Certificate for subject '%s'\n", buf);
 
   public_key = &certificate->rsa;
   if (NULL == public_key)
   {
     die ("public key extraction failure\n");
   } else {
-    verb ("V: public key is ready for inspection\n");
+    verb_debug ("V: public key is ready for inspection\n");
   }
   key_bits = mpi_msb (&public_key->N);
   if (MIN_PUB_KEY_LEN >= key_bits)
   {
     die ("Unsafe public key size: %d bits\n", key_bits);
   } else {
-    verb ("V: key length appears safe\n");
+    verb_debug ("V: key length appears safe\n");
   }
 }
 #else
@@ -880,7 +881,7 @@ check_key_length (SSL *ssl)
   {
     die ("public key extraction failure\n");
   } else {
-    verb ("V: public key is ready for inspection\n");
+    verb_debug ("V: public key is ready for inspection\n");
   }
 
   key_bits = get_certificate_keybits (public_key);
@@ -892,11 +893,11 @@ check_key_length (SSL *ssl)
        if(key_bits >= MIN_ECC_PUB_KEY_LEN
           && key_bits <= MAX_ECC_PUB_KEY_LEN)
        {
-         verb ("V: ECC key length appears safe\n");
+         verb_debug ("V: ECC key length appears safe\n");
        } else {
          die ("Unsafe ECC key size: %d bits\n", key_bits);
      } else {
-       verb ("V: key length appears safe\n");
+       verb_debug ("V: key length appears safe\n");
      }
   }
   EVP_PKEY_free (public_key);
@@ -1207,18 +1208,18 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 
   if (http) {
     char buf[1024];
-    verb("V: Starting HTTP\n");
+    verb_debug ("V: Starting HTTP\n");
     if (snprintf(buf, sizeof(buf),
                  HTTP_REQUEST, HTTPS_USER_AGENT, hostname_to_verify) >= 1024)
       die("hostname too long");
     buf[1023]='\0'; /* Unneeded. */
-    verb("V: Writing HTTP request\n");
+    verb_debug ("V: Writing HTTP request\n");
     if (1 != write_all_to_bio(s_bio, buf))
       die ("write all to bio failed.\n");
-    verb("V: Reading HTTP response\n");
+    verb_debug ("V: Reading HTTP response\n");
     if (1 != read_http_date_from_bio(s_bio, &result_time))
       die ("read all from bio failed.\n");
-    verb("V: Got HTTP response. T=%lu\n", (unsigned long)result_time);
+    verb ("V: Received HTTP response. T=%lu\n", (unsigned long)result_time);
 
     result_time = htonl(result_time);
   }
@@ -1264,6 +1265,7 @@ main(int argc, char **argv)
   ca_cert_container = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
+  verbose_debug = (0 != strcmp ("verbose", argv[5]));
   setclock = (0 == strcmp ("setclock", argv[7]));
   showtime = (0 == strcmp ("showtime", argv[8]));
   showtime_raw = (0 == strcmp ("showtime=raw", argv[8]));

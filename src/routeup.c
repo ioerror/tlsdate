@@ -27,6 +27,7 @@
 #include "src/routeup.h"
 
 int verbose;
+int verbose_debug;
 
 /*
  * Set up the supplied context by creating and binding its netlink socket.
