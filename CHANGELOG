@@ -1,4 +1,4 @@
-0.0.7 TBD
+0.0.7 Sat 2 Nov, 2013
   Add tentative -plan9.[ch] versions of tlsdate-helper.
   Add -x option to tlsdated to override source proxies.
   Correctly check SANs against target host when using proxies.
