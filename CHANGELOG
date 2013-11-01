@@ -22,6 +22,7 @@
   Add -w option to get time from HTTPS header instead of from TLS ServerHello
   Update AppArmor profile
   Add simple systemd service file
+  Extra verbose output available with -vv; useful verbosity is -v
 0.0.6 Mon 18 Feb, 2013
   Ensure that tlsdate compiles with g++ by explicit casting rather than
   implicit casting by whatever compiler is compiling tlsdate.
