@@ -12,6 +12,7 @@ invoke tlsdate to keep the clock in sync. Start it like so:
 
   /etc/init.d/tlsdate start
 
+
 Here is an example an unprivileged user fetching the remote time:
 
   % tlsdate -V -n -H encrypted.google.com
@@ -27,23 +28,7 @@ clock and printing it:
 
 Here is an example with a custom host and custom port without verification:
 
-  % sudo tlsdate -v --skip-verification -p 80 -H rgnx.net
-  V: tlsdate version 0.0.6
-  V: We were called with the following arguments:
-  V: disable SSL certificate check host = rgnx.net:80
-  WARNING: Skipping certificate verification!
-  V: time is currently 1366419507.456647065
-  V: time is greater than RECENT_COMPILE_DATE
-  V: using TLSv1_client_method()
-  V: Using OpenSSL for SSL
-  V: opening socket to rgnx.net:80
-  V: Certificate verification skipped!
-  V: public key is ready for inspection
-  V: key type: EVP_PKEY_RSA
-  V: keybits: 1024
-  V: key length appears safe
-  V: server time 1366419508 (difference is about -1 s) was fetched in 338 ms
-  V: setting time succeeded
+  % sudo tlsdate --skip-verification -p 80 -H rgnx.net
 
 Here is an example where a system may not have any kind of RTC at boot. Do the
 time warp to restore sanity and do so with a leap of faith:
@@ -58,4 +43,5 @@ HTTP services:
 
   % sudo tlsdate -V -l -t -w
   Wed Oct 30 18:08:46 CET 2013
+
 
