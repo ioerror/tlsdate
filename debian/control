@@ -7,7 +7,8 @@ Build-Depends: autotools-dev,
                debhelper (>= 7.0.50~),
                dh-apparmor,
                hardening-wrapper,
-               libssl-dev
+               libssl-dev,
+               libtool
 Standards-Version: 3.9.4
 Homepage: https://www.github.com/ioerror/tlsdate/
 Vcs-Git: https://www.github.com/ioerror/tlsdate/ -b debian-master
