@@ -21,9 +21,16 @@
  * Old delta is in |delta|. |delta| is overwritten
  * if >= 0 is returned.
  *
- * Desynchronization between MONOTONIC_RAW and REALTIME
- * will occur any time a system suspends and the real-time
- * clock is not maintained.
+ * This event catches any sort of real-time clock jump.  A jump is observed
+ * when settimeofday() or adjtimex() is called, or if the RTC misbehaves on
+ * return from suspend.  If a jump is detected between a cycle-oriented clock
+ * (MONOTONIC_RAW) and a potentially RTC managed clock (REALTIME), then a
+ * network resynchronization will be required.  To avoid requiring this on
+ * every resume-from-suspend, a larger delta represents the largest time jump
+ * allowed before needing a resync.
+ *
+ * Note, CLOCK_BOOTTIME does not resolve this on platforms without a persistent
+ * clock because the RTC still determines the time considered "suspend time".
  */
 int
 check_continuity (time_t *delta)
@@ -37,7 +44,9 @@ check_continuity (time_t *delta)
   new_delta = real.tv_sec - monotonic.tv_sec;
   if (*delta)
     {
-      if (new_delta < *delta - 10 || new_delta > *delta + 10)
+      /* The allowed delta matches the interval for now. */
+      static const time_t kDelta = CONTINUITY_INTERVAL;
+      if (new_delta < *delta - kDelta || new_delta > *delta + kDelta)
         {
           *delta = new_delta;
           return  1;

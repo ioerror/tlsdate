@@ -41,8 +41,8 @@
 #define RESOLVER_TIMEOUT 30
 /* Invalidate the network sync once per day. */
 #define STEADY_STATE_INTERVAL (60*60*24)
-/* Check if the clock has drifted once an hour */
-#define CONTINUITY_INTERVAL (60*60)
+/* Check if the clock has jumped every four hours. */
+#define CONTINUITY_INTERVAL (60*60*4)
 #define DEFAULT_SYNC_HWCLOCK 1
 #define DEFAULT_LOAD_FROM_DISK 1
 #define DEFAULT_SAVE_TO_DISK 1

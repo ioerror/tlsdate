@@ -93,14 +93,17 @@ void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
   struct state *state = arg;
   debug ("[event:%s] fired", __func__);
   time_t delta = state->clock_delta;
+  int jitter = 0;
   if (check_continuity (&delta) > 0)
     {
       info ("[event:%s] clock delta desync detected (%d != %d)", __func__,
             state->clock_delta, delta);
+      /* Add jitter iff we had network synchronization once before. */
+      if (state->clock_delta)
+        jitter = add_jitter (30, 30); /* TODO(wad) make configurable */
       /* Forget the old delta until we have time again. */
       state->clock_delta = 0;
       invalidate_time (state);
-      /* Don't bother saving here */
     }
   if (state->last_sync_type == SYNC_TYPE_NET)
     {
@@ -127,7 +130,7 @@ void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
     }
   if (!state->events[E_RESOLVER])
     {
-      trigger_event (state, E_TLSDATE, 0);
+      trigger_event (state, E_TLSDATE, jitter);
       return;
     }
   /* If the resolver relies on an external response, then make sure that a
@@ -135,6 +138,6 @@ void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
    * if this fires, it won't stop eventual handling of the resolver since it
    * doesn't event_del() E_RESOLVER.
    */
-  trigger_event (state, E_TLSDATE, RESOLVER_TIMEOUT);
-  trigger_event (state, E_RESOLVER, 0);
+  trigger_event (state, E_TLSDATE, jitter + RESOLVER_TIMEOUT);
+  trigger_event (state, E_RESOLVER, jitter);
 }
