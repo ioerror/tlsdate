@@ -41,6 +41,7 @@
 #endif
 
 int verbose;
+int verbose_debug;
 
 #include "src/util.h"
 

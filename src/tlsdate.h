@@ -98,6 +98,7 @@ int tlsdate (struct opts *opts, char *argv[]);
 /** This is where we store parsed commandline options. */
 typedef struct {
   int verbose;
+  int verbose_debug;
   int ca_racket;
   int help;
   int showtime;
