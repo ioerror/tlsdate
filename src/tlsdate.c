@@ -103,7 +103,6 @@ int
 main(int argc, char **argv)
 {
   int verbose;
-  int verbose_debug;
   int ca_racket;
   int showtime;
   int setclock;
@@ -121,7 +120,6 @@ main(int argc, char **argv)
   protocol = DEFAULT_PROTOCOL;
   ca_cert_container = DEFAULT_CERTFILE;
   verbose = 0;
-  verbose_debug = 0;
   ca_racket = 1;
   showtime = 0;
   setclock = 1;
