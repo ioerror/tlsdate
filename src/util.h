@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #ifdef TARGET_OS_HAIKU
 #include <stdarg.h>
