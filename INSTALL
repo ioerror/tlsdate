@@ -6,7 +6,7 @@ tlsdate should build and work on the following Operating Systems:
   Fedora 17, 18
   RedHat Enterprise Server 6.4
   OpenSUSE 11.2, 12.3
-  FreeBSD 10-CURRENT
+  FreeBSD 9.2, 10, 11
   Mac OS X 10.8.2, 10.8.3
   ChromeOS Release 25, 26, 27 and above
   Android with the Android NDK (use Makefile.android)
