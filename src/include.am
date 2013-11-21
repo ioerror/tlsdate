@@ -35,6 +35,9 @@ bin_PROGRAMS+= src/tlsdate-helper
 
 src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
+if !HAVE_STRCHRNUL
+src_conf_unittest_SOURCES+= src/common/android.c
+endif
 check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
 endif
@@ -222,6 +225,9 @@ src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
 src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
 src_proxy_bio_unittest_SOURCES+= src/test-bio.c
 src_proxy_bio_unittest_SOURCES+= src/util.c
+if !HAVE_STRCHRNUL
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+endif
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
