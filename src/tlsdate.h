@@ -11,9 +11,11 @@
 #define TLSDATE_H
 
 #include "src/configmake.h"
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include <time.h>
 #include <unistd.h>
@@ -33,8 +35,7 @@
 /* tlsdated magic numbers */
 #define MAX_TRIES 10
 #define WAIT_BETWEEN_TRIES 10
-#define SUBPROCESS_TRIES 10
-#define SUBPROCESS_WAIT_BETWEEN_TRIES 3
+#define SUBPROCESS_TIMEOUT 30
 #define STEADY_STATE_INTERVAL 86400
 #define DEFAULT_SYNC_HWCLOCK 1
 #define DEFAULT_LOAD_FROM_DISK 1
@@ -67,8 +68,7 @@ struct opts {
   int max_tries;
   int min_steady_state_interval;
   int wait_between_tries;
-  int subprocess_tries;
-  int subprocess_wait_between_tries;
+  int subprocess_timeout;
   int steady_state_interval;
   const char *base_path;
   char **base_argv;
@@ -83,8 +83,12 @@ struct opts {
   struct source *sources;
   struct source *cur_source;
   char *proxy;
+  int leap;
 };
 
+char timestamp_path[PATH_MAX];
+
+void sync_hwclock (void *rtc_handle);
 int is_sane_time (time_t ts);
 int load_disk_timestamp (const char *path, time_t * t);
 void save_disk_timestamp (const char *path, time_t t);
@@ -94,6 +98,7 @@ int tlsdate (struct opts *opts, char *argv[]);
 /** This is where we store parsed commandline options. */
 typedef struct {
   int verbose;
+  int verbose_debug;
   int ca_racket;
   int help;
   int showtime;

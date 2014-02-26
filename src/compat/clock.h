@@ -18,6 +18,10 @@
 #include <time.h>
 #endif
 
+#ifdef TARGET_OS_OPENBSD
+#include <sys/time.h>
+#endif
+
 #ifdef HAVE_MACH_CLOCK_H
 #include <mach/clock.h>
 #endif
@@ -26,12 +30,22 @@
 #endif
 
 struct tlsdate_time {
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) || defined (__DragonFly__)
     struct timespec tp;
 #elif defined(__APPLE__)
     mach_timespec_t tp;
 #elif _WIN32
     void *tp;
+#elif TARGET_OS_HAIKU
+    struct timespec tp;
+#elif TARGET_OS_CYGWIN
+    struct timespec tp;
+#elif TARGET_OS_MINGW
+    struct timespec tp;
+#elif TARGET_OS_GNUHURD
+    struct timespec tp;
+#else
+    struct timespec tp;
 #endif
 };
 

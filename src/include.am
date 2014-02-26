@@ -14,11 +14,131 @@ if TARGET_LINUX
 bin_PROGRAMS+= src/tlsdate-routeup
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
-bin_PROGRAMS+= src/tlsdated
 bin_PROGRAMS+= src/tlsdate-dbus-announce
+
+sbin_PROGRAMS+= src/tlsdated
 
 src_conf_unittest_SOURCES = src/conf.c
 src_conf_unittest_SOURCES+= src/conf-unittest.c
+
+if HAVE_ANDROID
+src_conf_unittest_SOURCES+= src/common/android.c src/common/fmemopen.c
+endif
+
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_FREEBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+if !HAVE_STRCHRNUL
+src_conf_unittest_SOURCES+= src/common/android.c
+endif
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_NETBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+
+# XXX This conditional should apply for any system where we're building
+# conf_unittest, but I don't know how to tell that to automake.
+if !HAVE_FMEMOPEN
+if HAVE_FUNOPEN
+src_conf_unittest_SOURCES+= src/common/fmemopen-funopen.c
+endif
+endif
+
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_OPENBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+src_conf_unittest_SOURCES+= src/common/fmemopen.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_DRAGONFLYBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_BSD
+if !TARGET_FREEBSD
+if !TARGET_NETBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+endif
+endif
+
+if TARGET_GNUHURD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_CYGWIN
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_MINGW
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
+if TARGET_HAIKU
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
 check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
 endif
@@ -28,7 +148,7 @@ bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
 endif
 
-# This doesn't work on Mac OS X
+# This doesn't work on Mac OS X or FreeBSD
 if TARGET_LINUX
 src_tlsdate_routeup_CFLAGS = -DROUTEUP_MAIN
 src_tlsdate_routeup_SOURCES = src/routeup.c
@@ -51,11 +171,22 @@ src_tlsdate_helper_SOURCES+= src/proxy-bio.c
 endif
 src_tlsdate_helper_SOURCES+= src/util.c
 
+if !HAVE_STRNLEN
+src_tlsdate_helper_SOURCES+= src/common/strnlen.c
+endif
+
 # This doesn't work on Mac OS X
 if TARGET_LINUX
 src_tlsdated_CFLAGS = -DTLSDATED_MAIN @SSL_CFLAGS@
 src_tlsdated_LDADD = @SSL_LIBS@
-src_tlsdated_SOURCES = src/conf.c
+src_tlsdated_SOURCES =
+
+if HAVE_ANDROID
+src_tlsdated_SOURCES+= src/common/android.c
+endif
+
+src_tlsdated_SOURCES+= src/conf.c
+src_tlsdated_SOURCES+= src/event.c
 src_tlsdated_SOURCES+= src/routeup.c
 src_tlsdated_SOURCES+= src/tlsdated.c
 src_tlsdated_SOURCES+= src/util.c
@@ -65,7 +196,8 @@ src_tlsdate_dbus_announce_LDADD = @DBUS_LIBS@
 src_tlsdate_dbus_announce_SOURCES = src/tlsdate-dbus-announce.c
 
 src_tlsdated_unittest_LDADD = @SSL_LIBS@
-src_tlsdated_unittest_SOURCES = src/routeup.c
+src_tlsdated_unittest_SOURCES = src/event.c
+src_tlsdated_unittest_SOURCES+= src/routeup.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated-unittest.c
 src_tlsdated_unittest_SOURCES+= src/util.c
 src_tlsdated_unittest_SOURCES+= src/tlsdated.c
@@ -86,6 +218,136 @@ noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
 endif
 
+if TARGET_FREEBSD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+if !HAVE_STRCHRNUL
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+endif
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_NETBSD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+
+# XXX This conditional should apply for any system where we're building
+# proxy_bio_unittest, but I don't know how to tell that to automake.
+if !HAVE_STRNLEN
+src_proxy_bio_unittest_SOURCES+= src/common/strnlen.c
+endif
+
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_OPENBSD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+src_proxy_bio_unittest_SOURCES+= src/common/fmemopen.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_DRAGONFLYBSD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_BSD
+if !POLARSSL
+if !TARGET_FREEBSD
+if !TARGET_NETBSD
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+endif
+endif
+
+if TARGET_GNUHURD
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_CYGWIN
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_MINGW
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
+if TARGET_HAIKU
+if !POLARSSL
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+
 # We're not shipping headers
 noinst_HEADERS+= src/routeup.h
 noinst_HEADERS+= src/test_harness.h
@@ -98,4 +360,85 @@ noinst_HEADERS+= src/proxy-polarssl.h
 noinst_HEADERS+= src/test-bio.h
 noinst_HEADERS+= src/conf.h
 
-check_PROGRAMS+= src/test/proxy-override src/test/rotate src/test/sleep-wrap
+if HAVE_ANDROID
+noinst_HEADERS+= src/common/android.h
+endif
+
+# This is our explicit target list
+# We do not attempt to build with PolarSSL
+if !POLARSSL
+if !TARGET_LINUX
+if !TARGET_OSX
+if !TARGET_OPENBSD
+if !TARGET_NETBSD
+if !TARGET_FREEBSD
+if !TARGET_DRAGONFLYBSD
+if !TARGET_HAIKU
+if !TARGET_GNUHURD
+if !TARGET_CYGWIN
+if !TARGET_MINGW
+if !TARGET_BSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+src_conf_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+
+if !POLARSSL
+if !TARGET_LINUX
+if !TARGET_OSX
+if !TARGET_OPENBSD
+if !TARGET_NETBSD
+if !TARGET_FREEBSD
+if !TARGET_DRAGONFLYBSD
+if !TARGET_HAIKU
+if !TARGET_GNUHURD
+if !TARGET_CYGWIN
+if !TARGET_MINGW
+if !TARGET_BSD
+src_proxy_bio_unittest_LDADD = @SSL_LIBS@
+src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
+src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
+src_proxy_bio_unittest_SOURCES+= src/test-bio.c
+src_proxy_bio_unittest_SOURCES+= src/util.c
+src_proxy_bio_unittest_SOURCES+= src/common/android.c
+check_PROGRAMS+= src/proxy-bio_unittest
+noinst_PROGRAMS+= src/proxy-bio_unittest
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+
+src_event_unittest_SOURCES = src/event.c
+src_event_unittest_SOURCES+= src/event-unittest.c
+src_event_unittest_SOURCES+= src/routeup.c
+src_event_unittest_SOURCES+= src/util.c
+check_PROGRAMS+= src/event_unittest
+
+if !TARGET_OSX
+check_PROGRAMS+= src/test/proxy-override src/test/return-argc \
+                 src/test/rotate src/test/sleep-wrap
+endif

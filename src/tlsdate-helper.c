@@ -76,6 +76,7 @@ know:
 
 #include "config.h"
 #include "src/tlsdate-helper.h"
+#include "src/util.h"
 
 #ifndef USE_POLARSSL
 #include "src/proxy-bio.h"
@@ -122,7 +123,7 @@ static void
 validate_proxy_port(const char *port)
 {
   while (*port)
-    if (!isdigit(*port++))
+    if (!isdigit((int)(unsigned char)*port++))
       die("invalid char in port\n");
 }
 
@@ -191,6 +192,155 @@ make_ssl_bio(SSL_CTX *ctx)
   setup_proxy(ssl);
   BIO_push(ssl, con);
   return ssl;
+}
+
+
+static int
+write_all_to_bio(BIO *bio, const char *string)
+{
+  int n = (int) strlen(string);
+  int r;
+
+  while (n) {
+    r = BIO_write(bio, string, n);
+    if (r > 0) {
+      if (r > n)
+        return -1;
+      n -= r;
+      string += r;
+    } else {
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+/* If the string is all nice clean ascii that it's safe to log, return
+ * it. Otherwise return a placeholder "This is junk" string. */
+static const char *
+sanitize_string(const char *s)
+{
+  const unsigned char *cp;
+  for (cp = (const unsigned char *)s; *cp; cp++) {
+    if (*cp < 32 || *cp >= 127)
+      return "string with invalid characters";
+  }
+  return s;
+}
+
+static int
+handle_date_line(const char *dateline, uint32_t *result)
+{
+  int year,mon,day,hour,min,sec;
+  char month[4];
+  struct tm tm;
+  int i;
+  time_t t;
+  /* We recognize the three formats in RFC2616, section 3.3.1.  Month
+     names are always in English.  The formats are:
+
+      Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
+      Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
+      Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
+
+     Note that the first is preferred.
+   */
+
+  static const char *MONTHS[] =
+    { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL };
+
+  if (strncmp("\r\nDate: ", dateline, 8))
+    return 0;
+
+  dateline += 8;
+  if (strlen(dateline) > MAX_DATE_LINE_LEN) {
+    verb("V: The date line was impossibly long.\n");
+    return -1;
+  }
+  verb("V: The alleged date is <%s>\n", sanitize_string(dateline));
+
+  while (*dateline == ' ')
+    ++dateline;
+  while (*dateline && *dateline != ' ')
+    ++dateline;
+  while (*dateline == ' ')
+    ++dateline;
+  /* We just skipped over the day of the week. Now we have:*/
+  if (sscanf(dateline, "%d %3s %d %d:%d:%d",
+             &day, month, &year, &hour, &min, &sec) == 6 ||
+      sscanf(dateline, "%d-%3s-%d %d:%d:%d",
+             &day, month, &year, &hour, &min, &sec) == 6 ||
+      sscanf(dateline, "%3s %d %d:%d:%d %d",
+             month, &day, &hour, &min, &sec, &year) == 6) {
+
+    /* Two digit dates are defined to be relative to 1900; all other dates
+     * are supposed to be represented as four digits. */
+    if (year < 100)
+      year += 1900;
+
+    verb("V: Parsed the date: %04d-%s-%02d %02d:%02d:%02d\n",
+         year, month, day, hour, min, sec);
+  } else {
+    verb("V: Couldn't parse date.\n");
+    return -1;
+  }
+
+  for (i = 0; ; ++i) {
+    if (!MONTHS[i])
+      return -2;
+    if (!strcmp(month, MONTHS[i])) {
+      mon = i;
+      break;
+    }
+  }
+
+  memset(&tm, 0, sizeof(tm));
+  tm.tm_year = year - 1900;
+  tm.tm_mon = mon;
+  tm.tm_mday = day;
+  tm.tm_hour = hour;
+  tm.tm_min = min;
+  tm.tm_sec = sec;
+
+  t = timegm(&tm);
+  if (t > 0xffffffff || t < 0)
+    return -1;
+
+  *result = (uint32_t) t;
+
+  return 1;
+}
+
+static int
+read_http_date_from_bio(BIO *bio, uint32_t *result)
+{
+  int n;
+  char buf[MAX_HTTP_HEADERS_SIZE];
+  int buf_len=0;
+  char *dateline, *endofline;
+
+  while (buf_len < sizeof(buf)-1) {
+    n = BIO_read(bio, buf+buf_len, sizeof(buf)-buf_len-1);
+    if (n <= 0)
+      return 0;
+    buf_len += n;
+    buf[buf_len] = 0;
+    verb_debug ("V: read %d bytes.\n", n, buf);
+
+    dateline = memmem(buf, buf_len, "\r\nDate: ", 8);
+    if (NULL == dateline)
+      continue;
+
+    endofline = memmem(dateline+2, buf_len - (dateline-buf+2), "\r\n", 2);
+    if (NULL == endofline)
+      continue;
+
+    *endofline = 0;
+    return handle_date_line(dateline, result);
+  }
+  return -2;
 }
 
 /** helper function for 'malloc' */
@@ -328,16 +478,15 @@ dns_label_count(char *label, char *delim)
     if (saveptr[0] != delim[0])
     {
       label_count++;
-      verb ("V: label found; total label count: %d\n", label_count);
     }
     do
     {
       // Find all subsequent labels
       label_count++;
       saveptr_tmp = strtok_r(NULL, delim, &saveptr);
-      verb ("V: label found; total label count: %d\n", label_count);
     } while (NULL != saveptr_tmp);
   }
+  verb_debug ("V: label found; total label count: %d\n", label_count);
   free(label_tmp);
   return label_count;
 }
@@ -371,7 +520,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   delim = strdup(".");
   wildchar = strdup("*");
 
-  verb ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
+  verb_debug ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
          hostname, cert_wild_card);
 
   // By default we have not processed any labels
@@ -387,7 +536,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   {
     if (wildchar[0] == cert_wild_card[0])
     {
-      verb ("V: Found wildcard in at start of provided certificate name\n");
+      verb_debug ("V: Found wildcard in at start of provided certificate name\n");
       do
       {
         // Skip over the bytes between the first char and until the next label
@@ -400,7 +549,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
         {
           // Now we only consider this wildcard valid if the rest of the
           // hostnames match verbatim
-          verb ("V: Attempting match of '%s' against '%s'\n",
+          verb_debug ("V: Attempting match of '%s' against '%s'\n",
                  expected_label, wildcard_label);
           // This is the case where we have a label that begins with wildcard
           // Furthermore, we only allow this for the first label
@@ -410,31 +559,31 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
             verb ("V: Forced match of '%s' against '%s'\n", expected_label, wildcard_label);
             wildcard_encountered = 1;
           } else {
-            verb ("V: Attempting match of '%s' against '%s'\n",
+            verb_debug ("V: Attempting match of '%s' against '%s'\n",
                    hostname, cert_wild_card);
             if (0 == strcasecmp (expected_label, wildcard_label) &&
                 label_count >= ((uint32_t)RFC2595_MIN_LABEL_COUNT))
             {
               ok = 1;
-              verb ("V: remaining labels match!\n");
+              verb_debug ("V: remaining labels match!\n");
               break;
             } else {
               ok = 0;
-              verb ("V: remaining labels do not match!\n");
+              verb_debug ("V: remaining labels do not match!\n");
               break;
             }
           }
         } else {
           // We hit this case when we have a mismatched number of labels
-          verb("V: NULL label; no wildcard here\n");
+          verb_debug ("V: NULL label; no wildcard here\n");
           break;
         }
       } while (0 != wildcard_encountered && label_count <= RFC2595_MIN_LABEL_COUNT);
     } else {
-      verb ("V: Not a RFC 2595 wildcard\n");
+      verb_debug ("V: Not a RFC 2595 wildcard\n");
     }
   } else {
-    verb ("V: Not a valid wildcard certificate\n");
+    verb_debug ("V: Not a valid wildcard certificate\n");
     ok = 0;
   }
   // Free our copies
@@ -444,11 +593,11 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   free(cert_wild_card_to_free);
   if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
   {
-    verb ("V: wildcard match of %s against %s\n",
+    verb_debug ("V: wildcard match of %s against %s\n",
           orig_hostname, orig_cert_wild_card);
     return (wildcard_encountered & ok);
   } else {
-    verb ("V: wildcard match failure of %s against %s\n",
+    verb_debug ("V: wildcard match failure of %s against %s\n",
           orig_hostname, orig_cert_wild_card);
     return 0;
   }
@@ -567,9 +716,9 @@ check_san (SSL *ssl, const char *hostname)
           {
             nval = sk_CONF_VALUE_value(val, j);
             if ((!strcasecmp(nval->name, "DNS") &&
-                !strcasecmp(nval->value, host) ) ||
+                !strcasecmp(nval->value, hostname) ) ||
                 (!strcasecmp(nval->name, "iPAddress") &&
-                !strcasecmp(nval->value, host)))
+                !strcasecmp(nval->value, hostname)))
             {
               verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); // We matched this; so it's safe to print
               ok = 1;
@@ -578,17 +727,17 @@ check_san (SSL *ssl, const char *hostname)
             // Attempt to match subjectAltName DNS names
             if (!strcasecmp(nval->name, "DNS"))
             {
-              ok = check_wildcard_match_rfc2595(host, nval->value);
+              ok = check_wildcard_match_rfc2595(hostname, nval->value);
               if (ok)
               {
                 break;
               }
             }
-            verb ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
+            verb_debug ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
-        verb ("V: found non subjectAltName extension\n");
+        verb_debug ("V: found non subjectAltName extension\n");
       }
       if (ok)
       {
@@ -596,7 +745,7 @@ check_san (SSL *ssl, const char *hostname)
       }
     }
   } else {
-    verb ("V: no X509_EXTENSION field(s) found\n");
+    verb_debug ("V: no X509_EXTENSION field(s) found\n");
   }
   X509_free(cert);
   return ok;
@@ -606,7 +755,6 @@ uint32_t
 check_name (SSL *ssl, const char *hostname)
 {
   uint32_t ret;
-  ret = 0;
   ret = check_cn(ssl, hostname);
   ret += check_san(ssl, hostname);
   if (0 != ret && 0 < ret)
@@ -699,21 +847,21 @@ check_key_length (ssl_context *ssl)
   }
 
   x509parse_dn_gets(buf, 1024, &certificate->subject);
-  verb ("V: Certificate for subject '%s'\n", buf);
+  verb_debug ("V: Certificate for subject '%s'\n", buf);
 
   public_key = &certificate->rsa;
   if (NULL == public_key)
   {
     die ("public key extraction failure\n");
   } else {
-    verb ("V: public key is ready for inspection\n");
+    verb_debug ("V: public key is ready for inspection\n");
   }
   key_bits = mpi_msb (&public_key->N);
   if (MIN_PUB_KEY_LEN >= key_bits)
   {
     die ("Unsafe public key size: %d bits\n", key_bits);
   } else {
-    verb ("V: key length appears safe\n");
+    verb_debug ("V: key length appears safe\n");
   }
 }
 #else
@@ -733,7 +881,7 @@ check_key_length (SSL *ssl)
   {
     die ("public key extraction failure\n");
   } else {
-    verb ("V: public key is ready for inspection\n");
+    verb_debug ("V: public key is ready for inspection\n");
   }
 
   key_bits = get_certificate_keybits (public_key);
@@ -745,11 +893,11 @@ check_key_length (SSL *ssl)
        if(key_bits >= MIN_ECC_PUB_KEY_LEN
           && key_bits <= MAX_ECC_PUB_KEY_LEN)
        {
-         verb ("V: ECC key length appears safe\n");
+         verb_debug ("V: ECC key length appears safe\n");
        } else {
          die ("Unsafe ECC key size: %d bits\n", key_bits);
      } else {
-       verb ("V: key length appears safe\n");
+       verb_debug ("V: key length appears safe\n");
      }
   }
   EVP_PKEY_free (public_key);
@@ -821,9 +969,12 @@ static int ssl_do_handshake_part(ssl_context *ssl)
  * 'time_map'.
  *
  * @param time_map where to store the current time
+ * @param time_is_an_illusion
+ * @param http whether to do an http request and take the date from that
+ *     instead.
  */
 static void
-run_ssl (uint32_t *time_map, int time_is_an_illusion)
+run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 {
   entropy_context entropy;
   ctr_drbg_context ctr_drbg;
@@ -842,7 +993,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   {
     if (-1 == stat (ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container\n");
+      die("Unable to stat CA certficate container %s\n", ca_cert_container);
     }
     else
     {
@@ -857,7 +1008,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
           fprintf(stderr, "x509parse_crtpath failed\n");
         break;
       default:
-        die("Unable to load CA certficate container\n");
+        die("Unable to load CA certficate container %s\n", ca_cert_container);
       }
     }
   }
@@ -960,14 +1111,18 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
  * 'time_map'.
  *
  * @param time_map where to store the current time
+ * @param time_is_an_illusion
+ * @param http whether to do an http request and take the date from that
+ *     instead.
  */
 static void
-run_ssl (uint32_t *time_map, int time_is_an_illusion)
+run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 {
   BIO *s_bio;
   SSL_CTX *ctx;
   SSL *ssl;
   struct stat statbuf;
+  uint32_t result_time;
 
   SSL_load_error_strings();
   SSL_library_init();
@@ -996,7 +1151,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   {
     if (-1 == stat(ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container\n");
+      die("Unable to stat CA certficate container %s\n", ca_cert_container);
     } else
     {
       switch (statbuf.st_mode & S_IFMT)
@@ -1013,7 +1168,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
         if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
         {
           fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
-          die("Unable to load CA certficate container\n");
+          die("Unable to load CA certficate container %s\n", ca_cert_container);
         }
       }
     }
@@ -1046,6 +1201,29 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   if (1 != BIO_do_handshake(s_bio))
     die ("SSL handshake failed\n");
 
+  // from /usr/include/openssl/ssl3.h
+  //  ssl->s3->server_random is an unsigned char of 32 bits
+  memcpy(&result_time, ssl->s3->server_random, sizeof (uint32_t));
+  verb("V: In TLS response, T=%lu\n", (unsigned long)ntohl(result_time));
+
+  if (http) {
+    char buf[1024];
+    verb_debug ("V: Starting HTTP\n");
+    if (snprintf(buf, sizeof(buf),
+                 HTTP_REQUEST, HTTPS_USER_AGENT, hostname_to_verify) >= 1024)
+      die("hostname too long");
+    buf[1023]='\0'; /* Unneeded. */
+    verb_debug ("V: Writing HTTP request\n");
+    if (1 != write_all_to_bio(s_bio, buf))
+      die ("write all to bio failed.\n");
+    verb_debug ("V: Reading HTTP response\n");
+    if (1 != read_http_date_from_bio(s_bio, &result_time))
+      die ("read all from bio failed.\n");
+    verb ("V: Received HTTP response. T=%lu\n", (unsigned long)result_time);
+
+    result_time = htonl(result_time);
+  }
+
   // Verify the peer certificate against the CA certs on the local system
   if (ca_racket) {
     inspect_key (ssl, hostname_to_verify);
@@ -1053,9 +1231,9 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
     verb ("V: Certificate verification skipped!\n");
   }
   check_key_length(ssl);
-  // from /usr/include/openssl/ssl3.h
-  //  ssl->s3->server_random is an unsigned char of 32 bits
-  memcpy(time_map, ssl->s3->server_random, sizeof (uint32_t));
+
+  memcpy(time_map, &result_time, sizeof (uint32_t));
+
   SSL_free(ssl);
   SSL_CTX_free(ctx);
 }
@@ -1073,10 +1251,12 @@ main(int argc, char **argv)
   uint32_t server_time_s;
   int setclock;
   int showtime;
+  int showtime_raw;
   int timewarp;
   int leap;
+  int http;
 
-  if (argc != 12)
+  if (argc != 13)
     return 1;
   host = argv[1];
   hostname_to_verify = argv[1];
@@ -1085,24 +1265,31 @@ main(int argc, char **argv)
   ca_cert_container = argv[6];
   ca_racket = (0 != strcmp ("unchecked", argv[4]));
   verbose = (0 != strcmp ("quiet", argv[5]));
+  verbose_debug = (0 != strcmp ("verbose", argv[5]));
   setclock = (0 == strcmp ("setclock", argv[7]));
   showtime = (0 == strcmp ("showtime", argv[8]));
+  showtime_raw = (0 == strcmp ("showtime=raw", argv[8]));
   timewarp = (0 == strcmp ("timewarp", argv[9]));
   leap = (0 == strcmp ("leapaway", argv[10]));
   proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
+  http = (0 == (strcmp("http", argv[12])));
 
+  /* Initalize warp_time with RECENT_COMPILE_DATE */
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
-  if (timewarp)
+  verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
+       (unsigned long) CLOCK_SEC(&warp_time),
+       (unsigned long) CLOCK_USEC(&warp_time));
+
+  if (1 != timewarp)
   {
-    verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
-         (unsigned long) CLOCK_SEC(&warp_time),
-         (unsigned long) CLOCK_USEC(&warp_time));
+    verb ("V: we'll do the time warp another time - we're not setting clock\n");
   }
 
   /* We are not going to set the clock, thus no need to stay root */
   if (0 == setclock && 0 == timewarp)
   {
+    verb ("V: attemping to drop administrator privileges\n");
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
   }
 
@@ -1165,7 +1352,7 @@ main(int argc, char **argv)
   if (0 == ssl_child)
   {
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
-    run_ssl (time_map, leap);
+    run_ssl (time_map, leap, http);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
   }
@@ -1186,6 +1373,10 @@ main(int argc, char **argv)
 #else
   server_time_s = ntohl (*time_map);
 #endif
+  // We should never have a time_map of zero here;
+  // It either stayed zero or we have a false ticker.
+  if ( 0 == server_time_s )
+    die ("child process failed to update time map; weird platform issues?\n");
   munmap (time_map, sizeof (uint32_t));
 
   verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
@@ -1197,6 +1388,11 @@ main(int argc, char **argv)
   if (rt_time_ms > TLS_RTT_THRESHOLD) {
     verb ("V: the TLS handshake took more than %d msecs - consider using a different " \
       "server or run it again\n", TLS_RTT_THRESHOLD);
+  }
+
+  if (showtime_raw)
+  {
+    fwrite(&server_time_s, sizeof(server_time_s), 1, stdout);
   }
 
   if (showtime)

@@ -17,6 +17,8 @@
  * SSL.
  */
 
+#include "config.h"
+
 #include <arpa/inet.h>
 #include <assert.h>
 #ifndef __USE_MISC
@@ -28,6 +30,10 @@
 #include <netdb.h>
 
 #include <stdint.h>
+
+#ifndef HAVE_STRNLEN
+#include "src/common/strnlen.h"
+#endif
 
 #include "src/proxy-bio.h"
 

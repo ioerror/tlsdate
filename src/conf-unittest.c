@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "config.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +14,14 @@
 
 #include "src/conf.h"
 #include "src/test_harness.h"
+
+#ifdef HAVE_ANDROID_SYSTEM
+#include "src/common/fmemopen.h"
+#endif
+
+#ifndef HAVE_FMEMOPEN
+#include "src/common/fmemopen.h"
+#endif
 
 FILE *fopenstr(const char *str) {
   /* strlen(str) instead of strlen(str) + 1 because files shouldn't appear

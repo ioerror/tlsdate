@@ -3,12 +3,39 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* strchrnul */
 #endif
+#include "config.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "src/conf.h"
+
+#ifdef TARGET_OS_NETBSD
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
+#ifdef TARGET_OS_OPENBSD
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
+#ifdef TARGET_OS_DRAGONFLYBSD
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
+#ifdef TARGET_OS_HAIKU
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+
+#ifdef TARGET_OS_FREEBSD
+#ifndef HAVE_STRCHRNUL
+#include "src/common/android.h" // XXX: Dirty hack - make this more generic later
+#endif
+#endif
+
+#ifdef HAVE_ANDROID
+#include "src/common/android.h"
+#endif
 
 void strip_newlines(char *line)
 {
@@ -18,7 +45,7 @@ void strip_newlines(char *line)
 
 char *eat_whitespace(char *line)
 {
-  while (isspace(*line))
+  while (isspace((int)(unsigned char)*line))
     line++;
   return line;
 }
@@ -58,6 +85,7 @@ struct conf_entry *conf_parse(FILE *f)
     if (!e->key || (val && !e->value)) {
       free(e->key);
       free(e->value);
+      free(e);
       goto fail;
     }
     if (!head) {

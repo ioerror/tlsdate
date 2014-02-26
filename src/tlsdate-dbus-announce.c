@@ -22,11 +22,14 @@ int main(void)
   conn = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
   if (!conn)
     return 1;
+  if (dbus_bus_request_name(conn, "org.torproject.tlsdate", 0, &error) < 0)
+    return 1;
   msg = dbus_message_new_signal("/org/torproject/tlsdate", "org.torproject.tlsdate", "TimeUpdated");
   if (!msg)
     return 1;
   if (!dbus_connection_send(conn, msg, &ignored))
     return 1;
+  dbus_connection_flush(conn);
   dbus_message_unref(msg);
   return 0;
 }

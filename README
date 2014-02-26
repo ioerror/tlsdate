@@ -12,72 +12,36 @@ invoke tlsdate to keep the clock in sync. Start it like so:
 
   /etc/init.d/tlsdate start
 
+
 Here is an example an unprivileged user fetching the remote time:
 
-  % tlsdate -v -V -n
-  V: tlsdate version 0.0.1
-  V: We were called with the following arguments:
-  V: validate SSL certificates host = www.ptb.de:443
-  V: time is currently 1342197117.577381
-  V: using TLSv1_client_method()
-  V: SSL certificate verification passed
-  V: server time 1342197117 (difference is about 0 s) was fetched in 705 ms
-  Fri Jul 13 18:31:57 CEST 2012
+  % tlsdate -V -n -H encrypted.google.com
+  Fri Apr 19 17:56:46 PDT 2013
 
 
-This is an example run - starting as root and dropping to nobody:
+This is an example run - starting as root and dropping to nobody, setting the
+clock and printing it:
 
-  % sudo ./tlsdate -v 
-  V: tlsdate version 0.0.1
-  V: We were called with the following arguments:
-  V: validate SSL certificates host = www.ptb.de:443
-  V: time is currently 1342197222.273552
-  V: using TLSv1_client_method()
-  V: SSL certificate verification passed
-  V: server time 1342197222 (difference is about 0 s) was fetched in 520 ms
-  V: setting time succeeded
+  % sudo tlsdate -V
+  Fri Apr 19 17:57:49 PDT 2013
+
 
 Here is an example with a custom host and custom port without verification:
 
-  % sudo tlsdate -v --skip-verification -p 80 -H rgnx.net
-  V: tlsdate version 0.0.1
-  V: We were called with the following arguments:
-  V: disable SSL certificate check host = rgnx.net:80
-  WARNING: Skipping certificate verification!
-  V: time is currently 1342197285.298607
-  V: using TLSv1_client_method()
-  V: Certificate verification skipped!
-  V: server time 1342197286 (difference is about -1 s) was fetched in 765 ms
-  V: setting time succeeded
-
-Here is an example of a false ticker that is detected and rejected:
-
-  % sudo tlsdate -v -H facebook.com
-  V: tlsdate version 0.0.1
-  V: We were called with the following arguments:
-  V: validate SSL certificates host = facebook.com:443
-  V: time is currently 1342197379.931852
-  V: using TLSv1_client_method()
-  V: SSL certificate verification passed
-  V: server time 2693501503 (difference is about -1351304124 s) was fetched in 724 ms
-  remote server is a false ticker from the future!
+  % sudo tlsdate --skip-verification -p 80 -H rgnx.net
 
 Here is an example where a system may not have any kind of RTC at boot. Do the
 time warp to restore sanity and do so with a leap of faith:
 
-  % sudo tlsdate -v -V -l -t
-  V: tlsdate version 0.0.1
-  V: We were called with the following arguments:
-  V: validate SSL certificates host = www.ptb.de:443
-  V: RECENT_COMPILE_DATE is 1342407042.000000
-  V: time is currently 1342488229.659967
-  V: time is greater than RECENT_COMPILE_DATE
-  V: using TLSv1_client_method()
-  V: freezing time for x509 verification
-  V: remote peer provided: 1342488230, prefered over compile time: 1342407042
-  V: freezing time with X509_VERIFY_PARAM_set_time
-  V: SSL certificate verification passed
-  V: server time 1342488230 (difference is about -1 s) was fetched in 791 ms
-  Mon Jul 16 18:23:50 PDT 2012
-  V: setting time succeeded
+  % sudo tlsdate -V -l -t
+  Fri Apr 19 18:08:03 PDT 2013
+
+
+Some SSL/TLS services do not provide accurate time in their handshake process;
+tlsdate may also be used to fetch time by processing the HTTP Date headers of
+HTTP services:
+
+  % sudo tlsdate -V -l -t -w
+  Wed Oct 30 18:08:46 CET 2013
+
 

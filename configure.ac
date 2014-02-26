@@ -1,4 +1,4 @@
-AC_INIT([tlsdate],[0.0.6],[jacob at appelbaum.net])
+AC_INIT([tlsdate],[0.0.7],[jacob at appelbaum.net])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -38,6 +38,16 @@ AC_SUBST([TLSDATE_CA_ROOTS])
 dnl Place we install our config file
 TLSDATE_CONF_DIR="${sysconfdir}/$PACKAGE_NAME/"
 AC_SUBST([TLSDATE_CONF_DIR])
+
+dnl HTTPS User-agent
+AC_ARG_WITH([https-user-agent],
+	    [AS_HELP_STRING([--with-https-user-agent=AGENT],
+	                    [a User-Agent value to send when running in HTTPS mode])],
+	    [],
+	    [with_https_user_agent="TLSDate/1.0"])
+AC_DEFINE_UNQUOTED([HTTPS_USER_AGENT],
+	           ["${with_https_user_agent}"],
+		   [User-Agent value to send when running as an HTTPS client])
 
 dnl check for PolarSSL
 OPT_POLARSSL=yes
@@ -136,15 +146,32 @@ AC_CHECK_HEADERS([stdint.h], ,[AC_MSG_ERROR([Required headers missing; compilati
 AC_CHECK_HEADERS([stdio.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([stdlib.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([sys/mman.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
+AC_CHECK_HEADERS([sys/socket.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([sys/time.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([sys/types.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([sys/wait.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([time.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 AC_CHECK_HEADERS([unistd.h], ,[AC_MSG_ERROR([Required headers missing; compilation will not succeed])])
 
+AC_CHECK_HEADERS([linux/rtc.h])
+AC_CHECK_TYPES([struct rtc_time], [], [], [
+#ifdef HAVE_LINUX_RTC_H
+#include <linux/rtc.h>
+#endif
+])
+
+AC_CHECK_FUNCS([strchrnul])
+AM_CONDITIONAL(HAVE_STRCHRNUL, [test "x${ac_cv_func_strchrnul}" = xyes])
+
+AC_CHECK_FUNCS([strnlen])
+AM_CONDITIONAL(HAVE_STRNLEN, [test "x${ac_cv_func_strnlen}" = xyes])
+
 AC_CHECK_FUNCS([setresuid])
 AC_CHECK_FUNCS([gettimeofday])
 
+AC_CHECK_FUNCS([fmemopen funopen])
+AM_CONDITIONAL(HAVE_FMEMOPEN, [test "x${ac_cv_func_fmemopen}" = xyes])
+AM_CONDITIONAL(HAVE_FUNOPEN, [test "x${ac_cv_func_funopen}" = xyes])
 
 case "$host" in
   *-darwin*)
@@ -154,6 +181,120 @@ case "$host" in
     AC_ARG_WITH([unpriv-group],
                 [AS_HELP_STRING([--with-unpriv-group=<group>],
                                 [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-freebsd*)
+    dnl This is for FreeBSD
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *kfreebsd*-gnu*)
+    dnl This is for Debian GNU/kFreeBSD
+    dnl clock_gettime is either part of libc or unavailable.
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-netbsd*)
+    dnl This is for NetBSD
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    if test "x${ac_cv_func_fmemopen}" != xyes; then
+        if test "x${ac_cv_func_funopen}" != xyes; then
+            AC_MSG_ERROR([We need fmemopen or funopen for unit tests.])
+        fi
+    fi
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-openbsd*)
+    dnl This is for OpenBSD
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_WARN([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *dragonfly*)
+    dnl This is for DragonFly BSD
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_WARN([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nobody"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-bsd*)
+    dnl This is a generic catch for BSD variants
+    dnl This likely needs to be tuned to catch all
+    dnl clock_gettime is either part of libc or unavailable.
+    AC_CHECK_FUNC([clock_gettime], ,
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
     AS_CASE([$with_unpriv_group],
             [""|yes|no], [UNPRIV_GROUP="nobody"],
             [*], [UNPRIV_GROUP=$with_unpriv_group])
@@ -175,8 +316,95 @@ case "$host" in
             [""|yes|no], [UNPRIV_GROUP="nogroup"],
             [*], [UNPRIV_GROUP=$with_unpriv_group])
     AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    case "$host" in
+      *-linux-androideabi)
+        dnl This is for Android NDK as it is a special case of linux
+        AC_DEFINE(HAVE_ANDROID,1, [Defined if we are to build for an Android system])
+        AC_SUBST(HAVE_ANDROID, [1])
+        HAVE_ANDROID="yes"
+        ;;
+    esac
+    ;;
+  *-gnu0.*)
+    dnl This is a generic catch for GNU/Hurd variants
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    dnl If the autoconf goo picks up a compiler that runs in pre-POSIX mode,
+    dnl the fmemopen prototype is hidden causing the unit tests to segfault.
+    dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
+    AC_CHECK_FUNC([fmemopen], ,
+                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nobody@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-cygwin*)
+    dnl This is for Cygwin
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-mingw32*)
+    dnl This is for MINGW32_NT
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    ;;
+  *-beos*|*-haiku*)
+    dnl This is for BeOS and Haiku; we probably only support Haiku with gcc4
+    dnl Check for clock_gettime.  Some systems put it into -lc, while
+    dnl others use -lrt.  Try the first and fallback to the latter.
+    dnl on Haiku we require the bsd library for strsep
+    RT_LIB=
+    AC_CHECK_FUNC([clock_gettime], [:],
+                  [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
+                  [AC_MSG_ERROR([Your system lacks clock_gettime])])])
+    AC_SUBST(RT_LIB)
+    AC_ARG_WITH([unpriv-group],
+                [AS_HELP_STRING([--with-unpriv-group=<group>],
+                [Group to drop privs to @<:@default: nogroup@:>@])])
+    AS_CASE([$with_unpriv_group],
+            [""|yes|no], [UNPRIV_GROUP="nogroup"],
+            [*], [UNPRIV_GROUP=$with_unpriv_group])
+    AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+    LDFLAGS="$LDFLAGS -lbsd"
+    CC="/boot/develop/abi/x86/gcc4/tools/gcc-4.6.3-haiku-121101/bin/gcc"
     ;;
 esac
+
+dnl Android conditional
+AM_CONDITIONAL(HAVE_ANDROID, test "x${HAVE_ANDROID}" = "xyes")
 
 AC_MSG_CHECKING([user/group to drop privs to])
 
@@ -229,8 +457,6 @@ AC_DEFUN([LOCAL_CHECK_FLAGS],[
           AC_REQUIRE([AX_APPEND_COMPILE_FLAGS])
           AC_LANG_PUSH([C])
           AS_IF([test "x$enable_hardened_checks" != xno], [
-              CFLAGS=
-              LIBS=
               AX_APPEND_COMPILE_FLAGS([-g -O1])
           ], [
               AC_MSG_WARN([using hardened flags is HIGHLY RECOMMENDED and disabling them is a BAD IDEA])
