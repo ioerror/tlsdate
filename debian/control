@@ -3,12 +3,15 @@ Section: net
 Priority: extra
 Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
 Uploaders: Kartik Mistry <kartik@debian.org>
-Build-Depends: autotools-dev,
+Build-Depends: autoconf,
+               automake,
+               autotools-dev,
                debhelper (>= 7.0.50~),
                dh-apparmor,
                hardening-wrapper,
                libssl-dev,
-               libtool
+               libtool,
+               pkg-config
 Standards-Version: 3.9.5
 Homepage: https://www.github.com/ioerror/tlsdate/
 Vcs-Git: https://www.github.com/ioerror/tlsdate/ -b debian-master

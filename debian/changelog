@@ -1,6 +1,7 @@
 tlsdate (0.0.7-1) unstable; urgency=low
 
   * New upstream version.
+  * Add two bug fix patches merged into master post 0.0.7 release
   * debian/control:
     + Updated Standards-Version to 3.9.5
 
