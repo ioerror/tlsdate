@@ -1,6 +1,8 @@
 tlsdate (0.0.7-1) unstable; urgency=low
 
   * New upstream version.
+  * debian/control:
+    + Updated Standards-Version to 3.9.5
 
  -- Jacob Appelbaum <jacob@appelbaum.net>  Sat, 02 Nov 2013 01:26:22 +0100
 
