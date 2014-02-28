@@ -7,7 +7,7 @@
 export DEB_BUILD_HARDENING=1
 
 %:
-	dh $@
+	dh --with autotools_dev $@
 
 override_dh_auto_configure:
 	./autogen.sh
@@ -19,6 +19,7 @@ override_dh_install:
 	rm -f debian/tlsdate/usr/lib/libtlsdate_compat.la
 	
 	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
+	cp tlsdated.service debian/tlsdate/lib/systemd/system/
 	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
 
 override_dh_auto_clean:
