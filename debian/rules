@@ -9,6 +9,10 @@ export DEB_BUILD_HARDENING=1
 %:
 	dh --with autotools_dev $@
 
+override_dh_auto_configure:
+	./autogen.sh
+	dh_auto_configure
+
 override_dh_install:
 	dh_install
 	# Remove .la file

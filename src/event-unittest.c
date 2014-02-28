@@ -1,7 +1,7 @@
 #include "src/event.h"
 #include "src/test_harness.h"
 
-#include <sys/time.h>
+#include <time.h>
 
 TEST(every) {
 	struct event *e = event_every(3);

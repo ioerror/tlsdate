@@ -160,6 +160,9 @@ AC_CHECK_TYPES([struct rtc_time], [], [], [
 #endif
 ])
 
+AC_CHECK_FUNCS([strchrnul])
+AM_CONDITIONAL(HAVE_STRCHRNUL, [test "x${ac_cv_func_strchrnul}" = xyes])
+
 AC_CHECK_FUNCS([strnlen])
 AM_CONDITIONAL(HAVE_STRNLEN, [test "x${ac_cv_func_strnlen}" = xyes])
 
