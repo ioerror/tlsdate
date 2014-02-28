@@ -21,7 +21,7 @@ TEST(fdread) {
 	ASSERT_EQ(0, pipe(fds));
 	e = event_fdread(fds[0]);
 
-	write(fds[1], &z, 1);
+	EXPECT_EQ(1, write(fds[1], &z, 1));
 	EXPECT_EQ(1, event_wait(e));
 	event_free(e);
 }
