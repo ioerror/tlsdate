@@ -64,10 +64,8 @@ static const char *kResolveMember = kResolveMemberData;
 /* TODO(wad) Integrate with cros_system_api/dbus/service_constants.h */
 static const char kPowerManagerInterfaceData[] = "org.chromium.PowerManager";
 static const char *kPowerManagerInterface = kPowerManagerInterfaceData;
-static const char kPowerStateChangedData[] = "PowerStateChanged";
-static const char *kPowerStateChanged = kPowerStateChangedData;
-static const char kPowerStateArgData[] = "on";
-static const char *kPowerStateArg = kPowerStateArgData;
+static const char kSuspendDoneData[] = "SuspendDone";
+static const char *kSuspendDone = kSuspendDoneData;
 
 static const char kErrorServiceUnknownData[] = "org.freedesktop.DBus.Error.ServiceUnknown";
 static const char *kErrorServiceUnknown = kErrorServiceUnknownData;
@@ -261,25 +259,18 @@ handle_manager_change (DBusConnection *connection,
 
 static
 DBusHandlerResult
-handle_power_state_change (DBusConnection *connection,
-                           DBusMessage *message,
-                           struct platform_state *ctx)
+handle_suspend_done (DBusConnection *connection,
+                     DBusMessage *message,
+                     struct platform_state *ctx)
 {
   DBusMessageIter iter;
   DBusError error;
   const char *pname;
   debug ("[event:cros:%s]: fired", __func__);
-  dbus_error_init (&error);
-  if (!dbus_message_iter_init (message, &iter))
-    return DBUS_HANDLER_RESULT_HANDLED;
-  if (dbus_message_iter_get_arg_type (&iter) != DBUS_TYPE_STRING)
-    return DBUS_HANDLER_RESULT_HANDLED;
-  dbus_message_iter_get_basic (&iter, &pname);
   /* Coming back from resume, trigger a continuity and time
    * check just in case none of the other events happen.
    */
-  if (!strcmp (pname, kPowerStateArg))
-    action_kickoff_time_sync (-1, EV_TIMEOUT, ctx->state);
+  action_kickoff_time_sync (-1, EV_TIMEOUT, ctx->state);
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -432,8 +423,8 @@ dbus_filter (DBusConnection *connection, DBusMessage *message, void *data)
     return handle_proxy_change (connection, message, state);
   if (dbus_message_is_signal (message, kDBusInterface, kNameOwnerChanged))
     return handle_dbus_change (connection, message, state);
-  if (dbus_message_is_signal (message, kPowerManagerInterface, kPowerStateChanged))
-    return handle_power_state_change (connection, message, state);
+  if (dbus_message_is_signal (message, kPowerManagerInterface, kSuspendDone))
+    return handle_suspend_done (connection, message, state);
   if (dbus_message_is_error (message, kErrorServiceUnknown))
     {
       info ("[cros] org.chromium.LibCrosService.ResolveNetworkProxy is missing");
@@ -565,7 +556,7 @@ platform_init_cros (struct state *state)
       add_match (conn, kManagerInterface, kMember, kDefaultService) ||
       add_match (conn, kResolveInterface, kResolveMember, NULL) ||
       add_match (conn, kDBusInterface, kNameOwnerChanged, kLibCrosDest) ||
-      add_match (conn, kPowerManagerInterface, kPowerStateChanged, kPowerStateArg))
+      add_match (conn, kPowerManagerInterface, kSuspendDone, NULL))
     return 1;
 
   /* Allocate one per source */
