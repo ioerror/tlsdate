@@ -140,6 +140,10 @@ AS_IF([test "x$enable_seccomp_filter" = xyes], [
     have_seccomp_filter=true
     AC_MSG_RESULT([forced])
   ], [
+  AS_IF([test "x$enable_seccomp_filter" = xno], [
+      have_seccomp_filter=no
+      AC_MSG_RESULT([disabled])
+  ], [
   dnl Detect seccomp filter support.
   AC_RUN_IFELSE([AC_LANG_PROGRAM([[
       #include <errno.h>
@@ -163,7 +167,7 @@ AS_IF([test "x$enable_seccomp_filter" = xyes], [
       have_seccomp_filter=true
     ]
   )
-])
+])])
 
 AS_IF([${have_seccomp_filter}], [
     AC_DEFINE([HAVE_SECCOMP_FILTER], [1], [Enable seccomp filter])
