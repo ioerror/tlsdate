@@ -95,9 +95,11 @@ know:
 #include "polarssl/ctr_drbg.h"
 #include "polarssl/ssl.h"
 #else
+#include <fcntl.h>
+#include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
+#include <unistd.h>
 #endif
 
 static void
@@ -183,13 +185,131 @@ setup_proxy(BIO *ssl)
   BIO_push(ssl, bio);
 }
 
+static const char *
+sockaddr_to_str(void *_sa) {
+  static char out[128];
+  struct sockaddr_in *sin = _sa;
+  return inet_ntop(sin->sin_family, &sin->sin_addr, out, sizeof(out));
+}
+
+static const char *
+sock_peername(int sock) {
+  struct sockaddr_storage sa;
+  socklen_t salen = sizeof(sa);
+
+  if (getpeername(sock, (struct sockaddr *)&sa, &salen) < 0) {
+    perror("getpeername");
+    return "(unknown)";
+  }
+  return sockaddr_to_str((struct sockaddr *)&sa);
+}
+
+static int
+parallel_connect(struct addrinfo *ai) {
+  struct addrinfo *cai;
+  int socks[64], nsocks = 0, connsock = -1, i;
+
+  // connect a socket for each possible address
+  for (cai = ai; cai; cai = cai->ai_next) {
+    int sock = -1;
+    if (nsocks >= sizeof(socks)/sizeof(socks[0])) break;
+
+    socks[nsocks++] = sock = socket(cai->ai_family, SOCK_STREAM, 0);
+    if (sock < 0) {
+      perror("socket");
+      nsocks--;
+      continue;
+    }
+
+    if (fcntl(sock, F_SETFL, (long)O_NONBLOCK) < 0) {
+      perror("fcntl(O_NONBLOCK)");
+      close(sock);
+      nsocks--;
+      continue;
+    }
+
+    verb("V: connecting fd#%d to %s\n", sock, sockaddr_to_str(cai->ai_addr));
+    if (!connect(sock, cai->ai_addr, cai->ai_addrlen)) {
+      // instant success!
+      connsock = sock;
+      goto done;
+    }
+    if (errno != EINPROGRESS) {
+      perror("connect");
+      close(sock);
+      nsocks--;
+      continue;
+    }
+  }
+
+  // wait for the sockets to finish connectin
+  while (nsocks > 0) {
+    int fd_max = 0, readyfds;
+    fd_set wfd;
+    struct timeval tv = { .tv_sec = 10, .tv_usec = 0 };
+
+    verb("V: Waiting for %d server IP addresses...\n", nsocks);
+
+    FD_ZERO(&wfd);
+    for (i = 0; i < nsocks; i++) {
+      if (socks[i] > fd_max) fd_max = socks[i];
+      FD_SET(socks[i], &wfd);
+    }
+
+    readyfds = select(fd_max + 1, NULL, &wfd, NULL, &tv);
+    if (readyfds < 0) {
+      perror("select(connect)");
+      break;
+    } else if (readyfds == 0) {
+      fprintf(stderr, "timed out waiting for TCP connection\n");
+      break;
+    }
+
+    for (i = 0; i < nsocks; i++) {
+      if (FD_ISSET(socks[i], &wfd)) {
+        int v = 0;
+        socklen_t vlen = sizeof(v);
+        if (getsockopt(socks[i], SOL_SOCKET, SO_ERROR, &v, &vlen) < 0) {
+          perror("getsockopt(SO_ERROR)");
+          close(socks[i]);
+          socks[i] = socks[--nsocks];
+          break;
+        }
+        if (v) {
+          fprintf(stderr, "connect(fd#%d): %s\n", socks[i], strerror(v));
+          close(socks[i]);
+          socks[i] = socks[--nsocks];
+        } else {
+          verb("V: connected fd#%d to %s\n",
+               socks[i], sock_peername(socks[i]));
+          connsock = socks[i];
+          goto done;
+        }
+        break;
+      }
+    }
+  }
+
+done:
+  if (connsock >= 0 && fcntl(connsock, F_SETFL, 0) < 0) {
+    perror("fcntl(!O_NONBLOCK)");
+    connsock = -1;
+  }
+  for (i = 0; i < nsocks; i++) {
+    if (socks[i] != connsock) {
+      close(socks[i]);
+    }
+  }
+  return connsock;
+}
+
 static BIO *
 make_ssl_bio(SSL_CTX *ctx, const char *host, const char *port)
 {
   BIO *con = NULL;
   BIO *ssl = NULL;
   int err, sock = -1;
-  struct addrinfo *ai = NULL, *cai = NULL;
+  struct addrinfo *ai = NULL;
   struct addrinfo hints = {
     .ai_flags = AI_ADDRCONFIG,
     .ai_family = AF_UNSPEC,
@@ -200,24 +320,8 @@ make_ssl_bio(SSL_CTX *ctx, const char *host, const char *port)
     fprintf(stderr, "getaddrinfo(%s): %s\n", host, gai_strerror(err));
     goto error;
   }
-
-  for (cai = ai; cai; cai = cai->ai_next) {
-    sock = socket(cai->ai_family, SOCK_STREAM, 0);
-    if (sock < 0) {
-      perror("socket");
-      continue;
-    }
-
-    if (connect(sock, cai->ai_addr, cai->ai_addrlen) != 0) {
-      perror("connect");
-      close(sock);
-      sock = -1;
-      continue;
-    }
-
-    break;
-  }
-  if (ai) freeaddrinfo(ai);
+  sock = parallel_connect(ai);
+  freeaddrinfo(ai);
   if (sock < 0) goto error;
 
   if (!(con = BIO_new_fd(sock, 1)))
