@@ -1,0 +1,10 @@
+# Defaults for tlsdated initscript
+# sourced by /etc/init.d/tlsdated
+# installed at /etc/default/tlsdated by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS=""

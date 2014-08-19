@@ -16,11 +16,16 @@ override_dh_auto_install:
 	rm debian/tlsdate/usr/share/doc/tlsdate/LICENSE
 	# Remove .la file
 	rm -f debian/tlsdate/usr/lib/libtlsdate_compat.la
-	
+
+override_dh_systemd_enable:
+	dh_systemd_enable tlsdated.service
+		
 override_dh_install:
 	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
-	cp tlsdated.service debian/tlsdate/lib/systemd/system/
+	# use copy from debian/tlsdated.service as long as upstream file is broken:
+	cp debian/tlsdated.service debian/tlsdate/lib/systemd/system/
 	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
+	
 
 override_dh_installchangelogs:
 	dh_installchangelogs
