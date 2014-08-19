@@ -6,9 +6,8 @@ Uploaders: Kartik Mistry <kartik@debian.org>
 Build-Depends: autoconf,
                automake,
                autotools-dev,
-               debhelper (>= 7.0.50~),
+               debhelper (>= 9.20120909~),
                dh-apparmor,
-               hardening-wrapper,
                libssl-dev,
                libtool,
                pkg-config

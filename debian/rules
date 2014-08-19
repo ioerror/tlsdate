@@ -3,24 +3,29 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# See: http://wiki.debian.org/Hardening#hardening-wrapper
-export DEB_BUILD_HARDENING=1
-
 %:
-	dh --with autotools_dev $@
+	dh $@ -with autotools_dev,autoreconf
 
 override_dh_auto_configure:
 	./autogen.sh
 	dh_auto_configure
 
-override_dh_install:
-	dh_install
+override_dh_auto_install:
+	dh_auto_install
+	# Debian Policy rightfully suggest to not ship LICENSE files as the information is also part of debian/copyright
+	rm debian/tlsdate/usr/share/doc/tlsdate/LICENSE
 	# Remove .la file
 	rm -f debian/tlsdate/usr/lib/libtlsdate_compat.la
 	
+override_dh_install:
 	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
 	cp tlsdated.service debian/tlsdate/lib/systemd/system/
 	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
+
+override_dh_installchangelogs:
+	dh_installchangelogs
+	# Debian Policy requires that the upstream changelog is called changelog...
+	mv debian/tlsdate/usr/share/doc/tlsdate/CHANGELOG debian/tlsdate/usr/share/doc/tlsdate/changelog
 
 override_dh_auto_clean:
 	dh_auto_clean
