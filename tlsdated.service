@@ -2,5 +2,5 @@
 Description=Secure parasitic rdate replacement
 
 [Service]
-ExecStart=/usr/bin/tlsdated
+ExecStart=/usr/sbin/tlsdated
 Type=forking
