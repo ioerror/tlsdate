@@ -1,3 +1,24 @@
+tlsdate (0.0.7-1.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Remove build-depends on hardening-wrapper and instead raise dependency on
+    debhelper 9 and use that and dpkg-buildflags to achieve the same.
+  * Use dh-autoreconf (Closes: #744526)
+  * Make lintian and everybody happy:
+    - don't install LICENSE file as the information is contained in
+      debian/copyright already.
+    - install upstream CHANGELOG as changelog as mandated by Debian Policy.
+
+ -- Holger Levsen <holger@debian.org>  Tue, 19 Aug 2014 17:32:08 -0400
+
+tlsdate (0.0.7-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Correctly set DAEMON path in debian/tlsdate.init to /usr/sbin.
+    (Closes: #746606)
+
+ -- Holger Levsen <holger@debian.org>  Sun, 15 Jun 2014 13:44:43 +0000
+
 tlsdate (0.0.7-1) unstable; urgency=low
 
   * New upstream version.
