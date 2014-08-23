@@ -1385,6 +1385,10 @@ main(int argc, char **argv)
   rt_time_ms);
 
   /* warning if the handshake took too long */
+  if (rt_time_ms > TLS_RTT_UNREASONABLE) {
+    die ("the TLS handshake took more than %d msecs - consider using a different " \
+      "server or run it again\n", TLS_RTT_UNREASONABLE);
+  }
   if (rt_time_ms > TLS_RTT_THRESHOLD) {
     verb ("V: the TLS handshake took more than %d msecs - consider using a different " \
       "server or run it again\n", TLS_RTT_THRESHOLD);
