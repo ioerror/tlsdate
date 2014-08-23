@@ -3,6 +3,7 @@ tlsdate (0.0.7-1.3) UNRELEASED; urgency=medium
   * Non-maintainer upload.
   * Add lintian override for possible-gpl-code-linked-with-openssl warning as
     only the AppArmor profile is GPL licensed.
+  * Add dh-autoreconf to build-depends.
 
  -- Holger Levsen <holger@debian.org>  Fri, 22 Aug 2014 18:00:12 -0700
 
