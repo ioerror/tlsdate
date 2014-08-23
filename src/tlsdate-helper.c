@@ -94,6 +94,12 @@ know:
 #include "polarssl/entropy.h"
 #include "polarssl/ctr_drbg.h"
 #include "polarssl/ssl.h"
+#else
+#include <fcntl.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #endif
 
 static void
@@ -179,19 +185,155 @@ setup_proxy(BIO *ssl)
   BIO_push(ssl, bio);
 }
 
+static const char *
+sockaddr_to_str(void *_sa) {
+  static char out[128];
+  struct sockaddr_in *sin = _sa;
+  return inet_ntop(sin->sin_family, &sin->sin_addr, out, sizeof(out));
+}
+
+static const char *
+sock_peername(int sock) {
+  struct sockaddr_storage sa;
+  socklen_t salen = sizeof(sa);
+
+  if (getpeername(sock, (struct sockaddr *)&sa, &salen) < 0) {
+    perror("getpeername");
+    return "(unknown)";
+  }
+  return sockaddr_to_str((struct sockaddr *)&sa);
+}
+
+static int
+parallel_connect(struct addrinfo *ai) {
+  struct addrinfo *cai;
+  int socks[64], nsocks = 0, connsock = -1, i;
+
+  // connect a socket for each possible address
+  for (cai = ai; cai; cai = cai->ai_next) {
+    int sock = -1;
+    if (nsocks >= sizeof(socks)/sizeof(socks[0])) break;
+
+    socks[nsocks++] = sock = socket(cai->ai_family, SOCK_STREAM, 0);
+    if (sock < 0) {
+      perror("socket");
+      nsocks--;
+      continue;
+    }
+
+    if (fcntl(sock, F_SETFL, (long)O_NONBLOCK) < 0) {
+      perror("fcntl(O_NONBLOCK)");
+      close(sock);
+      nsocks--;
+      continue;
+    }
+
+    verb("V: connecting fd#%d to %s\n", sock, sockaddr_to_str(cai->ai_addr));
+    if (!connect(sock, cai->ai_addr, cai->ai_addrlen)) {
+      // instant success!
+      connsock = sock;
+      goto done;
+    }
+    if (errno != EINPROGRESS) {
+      perror("connect");
+      close(sock);
+      nsocks--;
+      continue;
+    }
+  }
+
+  // wait for the sockets to finish connectin
+  while (nsocks > 0) {
+    int fd_max = 0, readyfds;
+    fd_set wfd;
+    struct timeval tv = { .tv_sec = 10, .tv_usec = 0 };
+
+    verb("V: Waiting for %d server IP addresses...\n", nsocks);
+
+    FD_ZERO(&wfd);
+    for (i = 0; i < nsocks; i++) {
+      if (socks[i] > fd_max) fd_max = socks[i];
+      FD_SET(socks[i], &wfd);
+    }
+
+    readyfds = select(fd_max + 1, NULL, &wfd, NULL, &tv);
+    if (readyfds < 0) {
+      perror("select(connect)");
+      break;
+    } else if (readyfds == 0) {
+      fprintf(stderr, "timed out waiting for TCP connection\n");
+      break;
+    }
+
+    for (i = 0; i < nsocks; i++) {
+      if (FD_ISSET(socks[i], &wfd)) {
+        int v = 0;
+        socklen_t vlen = sizeof(v);
+        if (getsockopt(socks[i], SOL_SOCKET, SO_ERROR, &v, &vlen) < 0) {
+          perror("getsockopt(SO_ERROR)");
+          close(socks[i]);
+          socks[i] = socks[--nsocks];
+          break;
+        }
+        if (v) {
+          fprintf(stderr, "connect(fd#%d): %s\n", socks[i], strerror(v));
+          close(socks[i]);
+          socks[i] = socks[--nsocks];
+        } else {
+          verb("V: connected fd#%d to %s\n",
+               socks[i], sock_peername(socks[i]));
+          connsock = socks[i];
+          goto done;
+        }
+        break;
+      }
+    }
+  }
+
+done:
+  if (connsock >= 0 && fcntl(connsock, F_SETFL, 0) < 0) {
+    perror("fcntl(!O_NONBLOCK)");
+    connsock = -1;
+  }
+  for (i = 0; i < nsocks; i++) {
+    if (socks[i] != connsock) {
+      close(socks[i]);
+    }
+  }
+  return connsock;
+}
+
 static BIO *
-make_ssl_bio(SSL_CTX *ctx)
+make_ssl_bio(SSL_CTX *ctx, const char *host, const char *port)
 {
   BIO *con = NULL;
   BIO *ssl = NULL;
+  int err, sock = -1;
+  struct addrinfo *ai = NULL;
+  struct addrinfo hints = {
+    .ai_flags = AI_ADDRCONFIG,
+    .ai_family = AF_UNSPEC,
+    .ai_socktype = SOCK_STREAM,
+  };
+  err = getaddrinfo(host, port, &hints, &ai);
+  if (err != 0 || !ai) {
+    fprintf(stderr, "getaddrinfo(%s): %s\n", host, gai_strerror(err));
+    goto error;
+  }
+  sock = parallel_connect(ai);
+  freeaddrinfo(ai);
+  if (sock < 0) goto error;
 
-  if (!(con = BIO_new(BIO_s_connect())))
-    die("BIO_s_connect failed\n");
+  if (!(con = BIO_new_fd(sock, 1)))
+    die("BIO_new_fd failed\n");
   if (!(ssl = BIO_new_ssl(ctx, 1)))
     die("BIO_new_ssl failed\n");
   setup_proxy(ssl);
   BIO_push(ssl, con);
   return ssl;
+error:
+  die("connection failed\n");
+  return NULL;
 }
 
 
@@ -1174,7 +1316,8 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
     }
   }
 
-  if (NULL == (s_bio = make_ssl_bio(ctx)))
+  verb("V: opening socket to %s:%s\n", host, port);
+  if (NULL == (s_bio = make_ssl_bio(ctx, host, port)))
     die ("SSL BIO setup failed\n");
   BIO_get_ssl(s_bio, &ssl);
   if (NULL == ssl)
@@ -1186,10 +1329,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   }
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-  verb("V: opening socket to %s:%s\n", host, port);
-  if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
-       (1 != BIO_set_conn_port(s_bio, port)) )
-    die ("Failed to initialize connection to `%s:%s'\n", host, port);
 
   if (NULL == BIO_new_fp(stdout, BIO_NOCLOSE))
     die ("BIO_new_fp returned error, possibly: %s", strerror(errno));
