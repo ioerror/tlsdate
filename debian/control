@@ -5,6 +5,7 @@ Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
 Uploaders: Kartik Mistry <kartik@debian.org>
 Build-Depends: autoconf,
                dh-autoreconf,
+               dh-systemd,
                automake,
                autotools-dev,
                debhelper (>= 9.20120909~),

@@ -3,7 +3,7 @@ tlsdate (0.0.7-1.3) UNRELEASED; urgency=medium
   * Non-maintainer upload in coordination with the maintainer.
   * Add lintian override for possible-gpl-code-linked-with-openssl warning as
     only the AppArmor profile is GPL licensed.
-  * Add dh-autoreconf to build-depends.
+  * Add dh-autoreconf and dh-systemd to build-depends.
   * Rename debian/tlsdate.init to debian/tlsdated.init (to match the
     systemd service file) and modify it's content to match. (Closes: #758677)
   * Thus also rename debian/tlsdate.default to debian/tlsdated.default.
