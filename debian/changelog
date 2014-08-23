@@ -1,19 +1,19 @@
-tlsdate (0.0.7-1.3) UNRELEASED; urgency=medium
+tlsdate (0.0.7-1.3) unstable; urgency=medium
 
   * Non-maintainer upload in coordination with the maintainer.
-  * Add lintian override for possible-gpl-code-linked-with-openssl warning as
-    only the AppArmor profile is GPL licensed.
-  * Add dh-autoreconf and dh-systemd to build-depends.
   * Rename debian/tlsdate.init to debian/tlsdated.init (to match the
     systemd service file) and modify it's content to match. (Closes: #758677)
   * Thus also rename debian/tlsdate.default to debian/tlsdated.default.
   * Add preinst, postinst and postrm maintainer script to handle this
-    conffile renaming properly
+    conffile renaming properly.
   * Ship copy debian/tlsdated.service with one single change: /usr/sbin as
     the path. (This is temporarily, until the fixed service file has become
     part of the next upstream release.)
+  * Add lintian override for possible-gpl-code-linked-with-openssl warning as
+    only the AppArmor profile is GPL licensed.
+  * Add dh-autoreconf and dh-systemd to build-depends.
 
- -- Holger Levsen <holger@debian.org>  Fri, 22 Aug 2014 18:00:12 -0700
+ -- Holger Levsen <holger@debian.org>  Fri, 22 Aug 2014 19:36:20 -0700
 
 tlsdate (0.0.7-1.2) unstable; urgency=medium
 
