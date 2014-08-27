@@ -29,6 +29,19 @@ check_PROGRAMS+= src/conf_unittest
 noinst_PROGRAMS+= src/conf_unittest
 endif
 
+if TARGET_GNUKFREEBSD
+bin_PROGRAMS+= src/tlsdate
+bin_PROGRAMS+= src/tlsdate-helper
+
+src_conf_unittest_SOURCES = src/conf.c
+src_conf_unittest_SOURCES+= src/conf-unittest.c
+if !HAVE_STRCHRNUL
+src_conf_unittest_SOURCES+= src/common/android.c
+endif
+check_PROGRAMS+= src/conf_unittest
+noinst_PROGRAMS+= src/conf_unittest
+endif
+
 if TARGET_FREEBSD
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
@@ -405,6 +418,7 @@ if !TARGET_OSX
 if !TARGET_OPENBSD
 if !TARGET_NETBSD
 if !TARGET_FREEBSD
+if !TARGET_GNUKFREEBSD
 if !TARGET_DRAGONFLYBSD
 if !TARGET_HAIKU
 if !TARGET_GNUHURD
@@ -419,6 +433,13 @@ src_proxy_bio_unittest_SOURCES+= src/util.c
 src_proxy_bio_unittest_SOURCES+= src/common/android.c
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
+
+src_event_unittest_SOURCES = src/event.c
+src_event_unittest_SOURCES+= src/event-unittest.c
+src_event_unittest_SOURCES+= src/routeup.c
+src_event_unittest_SOURCES+= src/util.c
+check_PROGRAMS+= src/event_unittest
+endif
 endif
 endif
 endif
@@ -432,11 +453,6 @@ endif
 endif
 endif
 
-src_event_unittest_SOURCES = src/event.c
-src_event_unittest_SOURCES+= src/event-unittest.c
-src_event_unittest_SOURCES+= src/routeup.c
-src_event_unittest_SOURCES+= src/util.c
-check_PROGRAMS+= src/event_unittest
 
 if !TARGET_OSX
 check_PROGRAMS+= src/test/proxy-override src/test/return-argc \
