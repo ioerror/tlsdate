@@ -80,6 +80,10 @@ int verbose_debug;
 // (in msec), a warning is printed.
 #define TLS_RTT_THRESHOLD      2000
 
+// After the duration of the TLS handshake exceeds this threshold
+// (in msec), we consider the operation to have failed.
+#define TLS_RTT_UNREASONABLE      30000
+
 // RFC 5280 says...
 // ub-common-name-length INTEGER ::= 64
 #define MAX_CN_NAME_LENGTH 64
