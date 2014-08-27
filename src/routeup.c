@@ -9,7 +9,10 @@
 
 #include "config.h"
 
+#ifdef linux
 #include <asm/types.h>
+#endif
+
 #include <sys/socket.h>   /* needed for linux/if.h for struct sockaddr */
 #include <errno.h>
 #include <fcntl.h>
