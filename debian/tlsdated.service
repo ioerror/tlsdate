@@ -1,0 +1,6 @@
+[Unit]
+Description=Secure parasitic rdate replacement
+
+[Service]
+ExecStart=/usr/sbin/tlsdated
+Type=forking
