@@ -57,6 +57,14 @@ static const char kTestHost[] = { TEST_HOST, 0 };
 /** The current version of tlsdate. */
 #define tlsdate_version VERSION
 
+/** GNU/Hurd support requires that we declare this ourselves: */
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+#ifndef MAXPATHLEN
+#define MAXPATHLEN PATH_MAX
+#endif
+
 struct source {
 	struct source *next;
 	char *host;
