@@ -1,4 +1,4 @@
-AC_INIT([tlsdate],[0.0.7],[jacob at appelbaum.net])
+AC_INIT([tlsdate],[0.0.8],[jacob at appelbaum.net])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -44,7 +44,7 @@ AC_ARG_WITH([https-user-agent],
 	    [AS_HELP_STRING([--with-https-user-agent=AGENT],
 	                    [a User-Agent value to send when running in HTTPS mode])],
 	    [],
-	    [with_https_user_agent="TLSDate/1.0"])
+	    [with_https_user_agent="TLSDate/$VERSION"])
 AC_DEFINE_UNQUOTED([HTTPS_USER_AGENT],
 	           ["${with_https_user_agent}"],
 		   [User-Agent value to send when running as an HTTPS client])
