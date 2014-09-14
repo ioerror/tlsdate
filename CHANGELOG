@@ -11,6 +11,7 @@
   Addition of various TODO items.
   Update git tag to reference new GnuPG key (0xD255D3F5C868227F)
     Key fingerprint = D2C6 7D20 E9C3 6C2A C5FE  74A2 D255 D3F5 C868 227F
+  Update tlsdate HTTPS user-agent to reflect proper version number
 0.0.7 Sat 2 Nov, 2013
   Add tentative -plan9.[ch] versions of tlsdate-helper.
   Add -x option to tlsdated to override source proxies.
