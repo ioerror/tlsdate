@@ -1,6 +1,14 @@
-0.0.8 TBD
+0.0.8 Sun 14, Sep, 2014
+  Add Debian GNU/Hurd and Debian GNU/kFreeBSD build support.
   Fix build on FreeBSD 10 and 11.
-  Add FreeBSD 9.2 support for tlsdate and tlsdate-helper.
+  Add FreeBSD (9.2 & 11-CURRENT) support for tlsdate and
+    tlsdate-helper. (Fabian Keil).
+  Update man pages (Kartik Mistry, Holger Levsen).
+  tlsdate will now abort if time fetch has a long delay (Avery Pennarun).
+  Updates for tlsdate related systemd service (Holger Levsen).
+  Check previously unchecked return codes (Brian Aker).
+  Update headers to reflect the correct location (Brian Aker).
+  Addition of various TODO items.
 0.0.7 Sat 2 Nov, 2013
   Add tentative -plan9.[ch] versions of tlsdate-helper.
   Add -x option to tlsdated to override source proxies.
