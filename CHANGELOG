@@ -9,7 +9,7 @@
   Check previously unchecked return codes (Brian Aker).
   Update headers to reflect the correct location (Brian Aker).
   Addition of various TODO items.
-  Update git tag to reference new GnuPG key (0xD255D3F5C868227F)
+  Update git tag to reference new GnuPG key
     Key fingerprint = D2C6 7D20 E9C3 6C2A C5FE  74A2 D255 D3F5 C868 227F
   Update tlsdate HTTPS user-agent to reflect proper version number
 0.0.7 Sat 2 Nov, 2013
