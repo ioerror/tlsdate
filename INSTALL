@@ -1,6 +1,6 @@
 tlsdate should build and work on the following Operating Systems:
 
-  Debian Gnu/Linux squeeze, wheezy, sid
+  Debian GNU/Linux squeeze, wheezy, jessie, sid
   Ubuntu lucid, natty, oneiric, precise, quantal
   CentOS 6.2, 6.3, 6.4
   Fedora 17, 18
@@ -16,6 +16,7 @@ tlsdate should build and work on the following Operating Systems:
   Gentoo 20130413
   DragonFly BSD 3.3-DEVELOPMENT
   Debian GNU/kFreeBSD 7.0 (8.2-1-amd64)
+  Debian GNU/Hurd
 
 tlsdate should build and might even work on the following Operating Systems:
 

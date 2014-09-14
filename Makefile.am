@@ -94,10 +94,10 @@ debian_orig:
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
 
 git-tag:
-	git tag -u 0xD81D840E -s tlsdate-$(VERSION)
+	git tag -u 0xD255D3F5C868227F -s tlsdate-$(VERSION)
 
 git-tag-debian:
-	git tag -u 0xD81D840E -s tlsdate-$(VERSION)-debian-${DEBIAN_VERSION}
+	git tag -u 0xD255D3F5C868227F -s tlsdate-$(VERSION)-debian-${DEBIAN_VERSION}
 
 git-push:
 	git push --tags
