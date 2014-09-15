@@ -1,3 +1,5 @@
+0.0.8 XXX
+  Fix missing function prototype
 0.0.8 Sun 14, Sep, 2014
   Add Debian GNU/Hurd and Debian GNU/kFreeBSD build support.
   Fix build on FreeBSD 10 and 11.
