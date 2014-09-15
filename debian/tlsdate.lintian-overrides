@@ -1,3 +1,2 @@
 tlsdate binary: possible-gpl-code-linked-with-openssl
-tlsdate binary: implicit-declaration
 tlsdate binary: compiler-flags-hidden
