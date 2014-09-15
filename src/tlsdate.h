@@ -103,6 +103,8 @@ void save_disk_timestamp (const char *path, time_t t);
 int add_jitter (int base, int jitter);
 int tlsdate (struct opts *opts, char *argv[]);
 
+void sync_and_save (void *hwclock_handle, int should_save);
+
 /** This is where we store parsed commandline options. */
 typedef struct {
   int verbose;
