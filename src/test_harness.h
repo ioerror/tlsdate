@@ -357,9 +357,10 @@
 } while (0); OPTIONAL_HANDLER(_assert)
 
 /* Contains all the information for test execution and status checking. */
-struct __test_metadata {
+struct __test_metadata
+{
   const char *name;
-  void (*fn)(struct __test_metadata *);
+  void (*fn) (struct __test_metadata *);
   int passed;
   int trigger; /* extra handler after the evaluation */
   struct __test_metadata *prev, *next;
@@ -370,70 +371,80 @@ static struct __test_metadata *__test_list = NULL;
 static unsigned int __test_count = 0;
 static unsigned int __fixture_count = 0;
 
-static inline void __register_test(struct __test_metadata *t) {
+static inline void __register_test (struct __test_metadata *t)
+{
   __test_count++;
   /* Circular linked list where only prev is circular. */
-  if (__test_list == NULL) {
-    __test_list = t;
-    t->next = NULL;
-    t->prev = t;
-    return;
-  }
+  if (__test_list == NULL)
+    {
+      __test_list = t;
+      t->next = NULL;
+      t->prev = t;
+      return;
+    }
   t->next = NULL;
   t->prev = __test_list->prev;
   t->prev->next = t;
   __test_list->prev = t;
 }
 
-static inline int __bail(int for_realz) {
+static inline int __bail (int for_realz)
+{
   if (for_realz)
     abort();
   return 0;
 }
 
-static int test_harness_run(int __attribute__((unused)) argc,
-                            char __attribute__((unused)) **argv) {
+static int test_harness_run (int __attribute__ ( (unused)) argc,
+                             char __attribute__ ( (unused)) **argv)
+{
   struct __test_metadata *t;
   int ret = 0;
   unsigned int count = 0;
-
   /* TODO(wad) add optional arguments similar to gtest. */
-  printf("[==========] Running %u tests from %u test cases.\n",
+  printf ("[==========] Running %u tests from %u test cases.\n",
           __test_count, __fixture_count + 1);
-  for (t = __test_list; t; t = t->next) {
-    pid_t child_pid;
-    int status;
-    count++;
-    t->passed = 1;
-    t->trigger = 0;
-    printf("[ RUN      ] %s\n", t->name);
-    child_pid = fork();
-    if (child_pid < 0) {
-      printf("ERROR SPAWNING TEST CHILD\n");
-      t->passed = 0;
-    } else if (child_pid == 0) {
-      t->fn(t);
-      _exit(t->passed);
-    } else {
-      /* TODO(wad) add timeout support. */
-      waitpid(child_pid, &status, 0);
-      if (WIFEXITED(status))
-        t->passed = WEXITSTATUS(status);
-      if (WIFSIGNALED(status)) {
-        t->passed = 0;
-        fprintf(TH_LOG_STREAM,
-                "%s: Test terminated unexpectedly by signal %d\n",
-               t->name,
-               WTERMSIG(status));
-      }
+  for (t = __test_list; t; t = t->next)
+    {
+      pid_t child_pid;
+      int status;
+      count++;
+      t->passed = 1;
+      t->trigger = 0;
+      printf ("[ RUN      ] %s\n", t->name);
+      child_pid = fork();
+      if (child_pid < 0)
+        {
+          printf ("ERROR SPAWNING TEST CHILD\n");
+          t->passed = 0;
+        }
+      else if (child_pid == 0)
+        {
+          t->fn (t);
+          _exit (t->passed);
+        }
+      else
+        {
+          /* TODO(wad) add timeout support. */
+          waitpid (child_pid, &status, 0);
+          if (WIFEXITED (status))
+            t->passed = WEXITSTATUS (status);
+          if (WIFSIGNALED (status))
+            {
+              t->passed = 0;
+              fprintf (TH_LOG_STREAM,
+                       "%s: Test terminated unexpectedly by signal %d\n",
+                       t->name,
+                       WTERMSIG (status));
+            }
+        }
+      printf ("[     %4s ] %s\n", (t->passed ? "OK" : "FAIL"), t->name);
+      if (!t->passed)
+        ret = 1;
     }
-    printf("[     %4s ] %s\n", (t->passed ? "OK" : "FAIL"), t->name);
-    if (!t->passed)
-      ret = 1;
-  }
   /* TODO(wad) organize by fixtures since ordering is not guaranteed now. */
-  printf("[==========] %u tests ran.\n", count);
-  printf("[  %s  ]\n", (ret ? "FAILED" : "PASSED"));
+  printf ("[==========] %u tests ran.\n", count);
+  printf ("[  %s  ]\n", (ret ? "FAILED" : "PASSED"));
   return ret;
 }
 

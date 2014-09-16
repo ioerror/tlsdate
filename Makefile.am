@@ -56,6 +56,7 @@ maintainer-clean-local:
 	@rm config/missing
 	@rm configure
 	@rmdir config
+	@rm dbus/org.torproject.tlsdate.conf
 	@rm m4/libtool.m4
 	@rm m4/ltoptions.m4
 	@rm m4/ltsugar.m4
@@ -83,7 +84,6 @@ if TARGET_LINUX
 man_MANS+= man/tlsdated.8
 man_MANS+= man/tlsdate-routeup.1
 man_MANS+= man/tlsdated.conf.5
-man_MANS+= man/tlsdate-dbus-announce.1
 endif
 
 EXTRA_DIST+= $(man_MANS)

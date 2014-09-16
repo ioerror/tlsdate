@@ -20,13 +20,29 @@
 #define API __attribute__((visibility("default")))
 
 extern const char *kTempSuffix;
+#define IGNORE_EINTR(expr) ({ \
+  typeof(expr) _r; \
+  while ((_r = (expr)) == -1 && errno == EINTR); \
+  _r; \
+})
 
 extern int verbose;
 extern int verbose_debug;
 void die (const char *fmt, ...);
 void verb (const char *fmt, ...);
 void verb_debug (const char *fmt, ...);
-extern void logat(int isverbose, const char *fmt, ...);
+extern void logat (int isverbose, const char *fmt, ...);
+
+#ifdef NDEBUG
+#  define _SUPPORT_DEBUG 0
+#else
+#  define _SUPPORT_DEBUG 1
+#endif
+
+#define debug(fmt, ...) do { \
+  if (_SUPPORT_DEBUG) \
+    logat(1, fmt, ## __VA_ARGS__); \
+} while (0)
 
 #define info(fmt, ...) logat(1, fmt, ## __VA_ARGS__)
 #define pinfo(fmt, ...) logat(1, fmt ": %s", ## __VA_ARGS__, strerror(errno))
@@ -38,9 +54,17 @@ extern void logat(int isverbose, const char *fmt, ...);
   exit(1); \
 } while (0)
 
-static inline int min(int x, int y) { return x < y ? x : y; }
+static inline int min (int x, int y)
+{
+  return x < y ? x : y;
+}
 
 void drop_privs_to (const char *user, const char *group);
+const char *sync_type_str (int sync_type);
+
+struct state;
+enum event_id_t;
+void trigger_event (struct state *state, enum event_id_t e, int sec);
 
 /* like wait(), but with a timeout. Returns ordinary fork() error codes, or
  * ETIMEDOUT. */

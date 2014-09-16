@@ -28,6 +28,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef WITH_EVENTS
+#include <event2/event.h>
+#endif
+
+#include "src/tlsdate.h"
 #include "src/util.h"
 
 #if defined(HAVE_STRUCT_RTC_TIME) && defined(RTC_SET_TIME) && defined(RTC_RD_TIME)
@@ -41,11 +46,10 @@ void
 die (const char *fmt, ...)
 {
   va_list ap;
-
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-  exit(1);
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  exit (1);
 }
 
 /** helper function for 'verbose' output */
@@ -73,18 +77,18 @@ verb_debug (const char *fmt, ...)
   va_end(ap);
 }
 
-void API logat(int isverbose, const char *fmt, ...)
+void API logat (int isverbose, const char *fmt, ...)
 {
   if (isverbose && !verbose)
     return;
   va_list ap;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  fprintf(stderr, "\n");
-  va_end(ap);
-  va_start(ap, fmt);
-  vsyslog(LOG_INFO, fmt, ap);
-  va_end(ap);
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  fprintf (stderr, "\n");
+  va_end (ap);
+  va_start (ap, fmt);
+  vsyslog (LOG_INFO, fmt, ap);
+  va_end (ap);
 }
 
 void
@@ -94,12 +98,11 @@ drop_privs_to (const char *user, const char *group)
   gid_t gid;
   struct passwd *pw;
   struct group  *gr;
-
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
          without dropping to 'nobody' (setting time will fail in the end) */
-  pw = getpwnam(user);
-  gr = getgrnam(group);
+  pw = getpwnam (user);
+  gr = getgrnam (group);
   if (NULL == pw)
     die ("Failed to obtain UID for `%s'\n", user);
   if (NULL == gr)
@@ -112,12 +115,10 @@ drop_privs_to (const char *user, const char *group)
     die ("GID for `%s' is 0, refusing to run SSL\n", user);
   if (pw->pw_gid != gr->gr_gid)
     die ("GID for `%s' is not `%s' as expected, refusing to run SSL\n",
-          user, group);
-
-  if (0 != initgroups((const char *)user, gr->gr_gid))
+         user, group);
+  if (0 != initgroups ( (const char *) user, gr->gr_gid))
     die ("Unable to initgroups for `%s' in group `%s' as expected\n",
-          user, group);
-
+         user, group);
 #ifdef HAVE_SETRESGID
   if (0 != setresgid (gid, gid, gid))
     die ("Failed to setresgid: %s\n", strerror (errno));
@@ -132,36 +133,6 @@ drop_privs_to (const char *user, const char *group)
   if (0 != (setuid (uid) | seteuid (uid)))
     die ("Failed to setuid: %s\n", strerror (errno));
 #endif
-}
-
-pid_t
-wait_with_timeout(int *status, int timeout_secs)
-{
-  int st = 0;
-  pid_t exited;
-  /* synthesize waiting with a timeout by using a helper process. We
-   * launch a child process that will exit in |timeout_secs|, guaranteeing
-   * that wait() will return by then. */
-  pid_t helper = fork();
-  if (helper < 0)
-    return helper;
-  if (helper == 0)
-  {
-    sleep(timeout_secs);
-    exit(0);
-  }
-
-  /* use temporary status to avoid touching it if we do ETIMEDOUT */
-  exited = wait(&st);
-  if (exited == helper)
-    /* helper exited before any other child did */
-    return -ETIMEDOUT;
-
-  /* a real child process exited - don't leak the helper */
-  kill(helper, SIGKILL);
-  waitpid(helper, NULL, 0);
-  *status = st;
-  return exited;
 }
 
 #ifdef ENABLE_RTC
@@ -344,3 +315,49 @@ static struct platform default_platform = {
 };
 
 struct platform *platform = &default_platform;
+
+/* TODO(wad) rename to schedule_event */
+void
+trigger_event (struct state *state, enum event_id_t id, int sec)
+{
+#ifdef WITH_EVENTS
+  struct event *e = state->events[id];
+  struct timeval delay = { sec, 0 };
+  /* Fallthrough to tlsdate if there is no resolver. */
+  if (!e && id == E_RESOLVER)
+    e = state->events[E_TLSDATE];
+  if (!e)
+    {
+      info ("trigger_event with NULL |e|. I hope this is a test!");
+      return;
+    }
+  if (event_pending (e, EV_READ|EV_WRITE|EV_TIMEOUT|EV_SIGNAL, NULL))
+    event_del (e);
+  if (sec >= 0)
+    event_add (e, &delay);
+  else /* Note! This will not fire a TIMEOUT event. */
+    event_add (e, NULL);
+#endif
+}
+
+const char *
+sync_type_str (int sync_type)
+{
+  switch (sync_type)
+    {
+    case SYNC_TYPE_NONE:
+      return "none";
+    case SYNC_TYPE_BUILD:
+      return "build-timestamp";
+    case SYNC_TYPE_DISK:
+      return "disk-timestamp";
+    case SYNC_TYPE_RTC:
+      return "system-clock";
+    case SYNC_TYPE_PLATFORM:
+      return "platform-feature";
+    case SYNC_TYPE_NET:
+      return "network";
+    default:
+      return "error";
+    }
+}
