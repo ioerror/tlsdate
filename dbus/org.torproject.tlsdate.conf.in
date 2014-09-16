@@ -1,0 +1,31 @@
+<!DOCTYPE busconfig PUBLIC
+          "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+          "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+
+  <!-- Only certain user can own the tlsdated service -->
+  <policy user="@UNPRIV_USER@">
+    <allow own="org.torproject.tlsdate"/>
+  </policy>
+
+  <!-- Allow anyone in the given group to invoke methods -->
+  <policy group="@DBUS_CLIENT_GROUP@">
+    <allow send_destination="org.torproject.tlsdate"
+           send_interface="org.torproject.tlsdate"
+           send_member="LastSyncInfo"/>
+    <allow send_destination="org.torproject.tlsdate"
+           send_interface="org.torproject.tlsdate"
+           send_member="SetTime"/>
+    <allow send_destination="org.torproject.tlsdate"
+           send_interface="org.torproject.tlsdate"
+           send_member="CanSetTime"/>
+  </policy>
+
+  <!-- Disallow anyone to invoke methods on tlsdated interface -->
+  <policy context="default">
+    <deny send_interface="org.torproject.tlsdate" />
+    <allow send_destination="org.torproject.tlsdate"
+           send_interface="org.torproject.tlsdate"
+           send_member="LastSyncInfo"/>
+  </policy>
+</busconfig>

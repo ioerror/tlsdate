@@ -42,7 +42,7 @@
 #  define TLSDATE_API __global
 #  define TLSDATE_LOCAL __global
 # elif defined(_MSC_VER)
-#  define TLSDATE_API extern __declspec(dllexport) 
+#  define TLSDATE_API extern __declspec(dllexport)
 #  define TLSDATE_LOCAL extern __declspec(dllexport)
 # else
 #  define TLSDATE_API
@@ -57,7 +57,7 @@
 #   define TLSDATE_API __global
 #   define TLSDATE_LOCAL __hidden
 #  elif defined(_MSC_VER)
-#   define TLSDATE_API extern __declspec(dllexport) 
+#   define TLSDATE_API extern __declspec(dllexport)
 #   define TLSDATE_LOCAL
 #  else
 #   define TLSDATE_API
@@ -65,7 +65,7 @@
 #  endif /* defined(HAVE_VISIBILITY) */
 # else  /* defined(BUILDING_TLSDATE) */
 #  if defined(_MSC_VER)
-#   define TLSDATE_API extern __declspec(dllimport) 
+#   define TLSDATE_API extern __declspec(dllimport)
 #   define TLSDATE_LOCAL
 #  else
 #   define TLSDATE_API
