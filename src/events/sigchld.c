@@ -114,7 +114,7 @@ void
 action_sigchld (evutil_socket_t fd, short what, void *arg)
 {
   struct state *state = arg;
-  debug ("[event:%s] a child process has SIGCHLD'd!", __func__);
+  verb_debug ("[event:%s] a child process has SIGCHLD'd!", __func__);
   /* Process SIGCHLDs in two steps: death and stopped until all
    * pending children are sorted.
    */

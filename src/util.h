@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "src/rtc.h"
+
 #ifdef TARGET_OS_HAIKU
 #include <stdarg.h>
 #endif
@@ -32,17 +34,6 @@ void die (const char *fmt, ...);
 void verb (const char *fmt, ...);
 void verb_debug (const char *fmt, ...);
 extern void logat (int isverbose, const char *fmt, ...);
-
-#ifdef NDEBUG
-#  define _SUPPORT_DEBUG 0
-#else
-#  define _SUPPORT_DEBUG 1
-#endif
-
-#define debug(fmt, ...) do { \
-  if (_SUPPORT_DEBUG) \
-    logat(1, fmt, ## __VA_ARGS__); \
-} while (0)
 
 #define info(fmt, ...) logat(1, fmt, ## __VA_ARGS__)
 #define pinfo(fmt, ...) logat(1, fmt ": %s", ## __VA_ARGS__, strerror(errno))
@@ -66,23 +57,25 @@ struct state;
 enum event_id_t;
 void trigger_event (struct state *state, enum event_id_t e, int sec);
 
-/* like wait(), but with a timeout. Returns ordinary fork() error codes, or
- * ETIMEDOUT. */
-pid_t wait_with_timeout(int *status, int timeout_secs);
-
 struct platform {
-	void *(*rtc_open)(void);
-	int (*rtc_write)(void *handle, const struct timeval *tv);
-	int (*rtc_read)(void *handle, struct timeval *tv);
-	int (*rtc_close)(void *handle);
+	int (*rtc_open)(struct rtc_handle *);
+	int (*rtc_write)(struct rtc_handle *, const struct timeval *tv);
+	int (*rtc_read)(struct rtc_handle *, struct timeval *tv);
+	int (*rtc_close)(struct rtc_handle *);
 
-	int (*file_write)(const char *path, void *buf, size_t sz);
-	int (*file_read)(const char *path, void *buf, size_t sz);
+	int (*file_open)(const char *path, int write, int cloexec);
+	int (*file_close)(int fd);
+	/* Atomic file write and read */
+	int (*file_write)(int fd, void *buf, size_t sz);
+	int (*file_read)(int fd, void *buf, size_t sz);
 
 	int (*time_get)(struct timeval *tv);
 
 	int (*pgrp_enter)(void);
 	int (*pgrp_kill)(void);
+
+	int (*process_signal)(pid_t pid, int sig);
+	int (*process_wait)(pid_t pid, int *status, int timeout);
 };
 
 extern struct platform *platform;

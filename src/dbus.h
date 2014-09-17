@@ -31,13 +31,7 @@ struct dbus_event_data
   struct event *event;
 };
 
-#ifdef TLSDATED_MAIN
 void dbus_announce (struct state *);
-#else
-static inline void dbus_announce (struct state *global_state)
-{
-}
-#endif
 
 #else  /* !HAVE_DBUS */
 struct state;

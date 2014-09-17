@@ -184,7 +184,7 @@ runner (FIXTURE_DATA (tlsdate) *self, time_t *newtime)
   return 1;
 }
 
-TEST_F (tlsdate, runner)
+TEST_F (tlsdate, runner_multi)
 {
   struct source source =
   {
@@ -325,69 +325,12 @@ FIXTURE_TEARDOWN(mock_platform) {
 
 /* TODO(wad) add a leap test. */
 
-/*
- * The stuff below this line is ugly. For a lot of these mock functions, we want
- * to smuggle some state (our success) back to the caller, but there's no angle
- * for that, so we're basically stuck with some static variables to store
- * expectations and successes/failures. This could also be done with nested
- * functions, but only gcc supports them.
- */
-static const time_t sync_hwclock_expected = 12345678;
-
-static int sync_hwclock_time_get(struct timeval *tv) {
-  tv->tv_sec = sync_hwclock_expected;
-  tv->tv_usec = 0;
-  return 0;
-}
-
-static int sync_hwclock_rtc_write(void *handle, const struct timeval *tv) {
-  *(int *)handle = tv->tv_sec == sync_hwclock_expected;
-  return 0;
-}
-
-/* TODO(wad)
-TEST_F(mock_platform, sync_hwclock) {
-  int ok = 0;
-  void *fake_handle = (void *)&ok;
+TEST_F(mock_platform, time_setter) {
+  /*
   self->platform.time_get = sync_hwclock_time_get;
   self->platform.rtc_write = sync_hwclock_rtc_write;
-  sync_hwclock(fake_handle);
-  ASSERT_EQ(ok, 1);
+  */
+  ASSERT_EQ(0, 1);
 }
-*/
-
-static const time_t sync_and_save_expected = 12345678;
-
-static int sync_and_save_time_get(struct timeval *tv) {
-  tv->tv_sec = sync_and_save_expected;
-  tv->tv_usec = 0;
-  return 0;
-}
-
-static int sync_and_save_rtc_write(void *handle, const struct timeval *tv) {
-  *(int *)handle += tv->tv_sec == sync_and_save_expected;
-  return 0;
-}
-
-static int sync_and_save_file_write_ok = 0;
-
-static int sync_and_save_file_write(const char *path, void *buf, size_t sz) {
-  if (!strcmp(path, timestamp_path))
-    sync_and_save_file_write_ok++;
-  return 0;
-}
-
-/* TODO(wad) TODO ?
-TEST_F(mock_platform, sync_and_save) {
-  int nosave_ok = 0;
-  self->platform.time_get = sync_and_save_time_get;
-  self->platform.rtc_write = sync_and_save_rtc_write;
-  self->platform.file_write = sync_and_save_file_write;
-  sync_and_save(&sync_and_save_file_write_ok, 1);
-  ASSERT_EQ(sync_and_save_file_write_ok, 2);
-  sync_and_save(&nosave_ok, 0);
-  ASSERT_EQ(nosave_ok, 1);
-}
-*/
 
 TEST_HARNESS_MAIN

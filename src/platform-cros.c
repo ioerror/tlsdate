@@ -192,7 +192,7 @@ handle_service_change (DBusConnection *connection,
   const char *pval;
   const char *service;
   dbus_error_init (&error);
-  debug ("[event:cros:%s]: fired", __func__);
+  verb_debug ("[event:cros:%s]: fired", __func__);
   /* TODO(wad) Track the current DefaultService only fire when it changes */
   service = dbus_message_get_path (message);
   if (!service)
@@ -232,7 +232,7 @@ handle_manager_change (DBusConnection *connection,
   DBusError error;
   const char *pname;
   const char *pval;
-  debug ("[event:cros:%s]: fired", __func__);
+  verb_debug ("[event:cros:%s]: fired", __func__);
   dbus_error_init (&error);
   if (!dbus_message_iter_init (message, &iter))
     return DBUS_HANDLER_RESULT_HANDLED;
@@ -251,7 +251,7 @@ handle_manager_change (DBusConnection *connection,
     return DBUS_HANDLER_RESULT_HANDLED;
   dbus_message_iter_get_basic (&subiter, &pval);
   /* TODO(wad) Filter on the currently active service in pval. */
-  debug ("[event:cros:%s] service change on path %s",
+  verb_debug ("[event:cros:%s] service change on path %s",
          __func__, pval);
   action_kickoff_time_sync (-1, EV_TIMEOUT, ctx->state);
   return DBUS_HANDLER_RESULT_HANDLED;
@@ -266,7 +266,7 @@ handle_suspend_done (DBusConnection *connection,
   DBusMessageIter iter;
   DBusError error;
   const char *pname;
-  debug ("[event:cros:%s]: fired", __func__);
+  verb_debug ("[event:cros:%s]: fired", __func__);
   /* Coming back from resume, trigger a continuity and time
    * check just in case none of the other events happen.
    */
@@ -287,7 +287,7 @@ handle_proxy_change (DBusConnection *connection,
   char time_host[MAX_PROXY_URL];
   int url_len = 0;
   struct source *src = ctx->state->opts.sources;
-  debug ("[event:cros:%s]: fired", __func__);
+  verb_debug ("[event:cros:%s]: fired", __func__);
   if (ctx->state->opts.cur_source && ctx->state->opts.cur_source->next)
     src = ctx->state->opts.cur_source->next;
   if (!ctx->state->resolving)
@@ -337,7 +337,7 @@ handle_dbus_change (DBusConnection *connection,
   DBusMessageIter iter;
   DBusError error;
   const char *pname;
-  debug ("[event:cros:%s]: fired", __func__);
+  verb_debug ("[event:cros:%s]: fired", __func__);
   dbus_error_init (&error);
   if (!dbus_message_iter_init (message, &iter))
     return DBUS_HANDLER_RESULT_HANDLED;
@@ -359,7 +359,7 @@ action_resolve_proxy (evutil_socket_t fd, short what, void *arg)
   struct dbus_state *dbus_state = ctx->state->dbus;
   DBusConnection *conn = dbus_state->conn;
   struct source *src = ctx->state->opts.sources;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   /* Emulate tlsdate-monitor.c:build_argv and choose the next source */
   if (ctx->state->opts.cur_source && ctx->state->opts.cur_source->next)
     src = ctx->state->opts.cur_source->next;
@@ -447,7 +447,7 @@ dbus_filter (DBusConnection *connection, DBusMessage *message, void *data)
       info ("[cros] unknown DBus METHOD_RETURN seen: %u", serial);
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
-  debug ("[cros] unknown message received: "
+  verb_debug ("[cros] unknown message received: "
          "type=%s dest=%s interface=%s member=%s path=%s sig=%s error_name=%s",
          dbus_message_type_to_string (dbus_message_get_type (message)),
          dbus_message_get_destination (message),

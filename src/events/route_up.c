@@ -23,7 +23,7 @@ void action_stdin_wakeup (evutil_socket_t fd, short what, void *arg)
 {
   struct state *state = arg;
   char buf[1];
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   if (what != EV_READ)
     return;
   if (IGNORE_EINTR (read (fd, buf, sizeof (buf))) != sizeof (buf))
@@ -40,13 +40,13 @@ void action_stdin_wakeup (evutil_socket_t fd, short what, void *arg)
 void action_netlink_ready (evutil_socket_t fd, short what, void *arg)
 {
   struct routeup routeup_cfg;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   routeup_cfg.netlinkfd = fd;
   if (what & EV_READ)
     {
       if (routeup_process (&routeup_cfg) == 0)
         {
-          debug ("[event:%s] routes changed", __func__);
+          verb_debug ("[event:%s] routes changed", __func__);
           /* Fire off a proxy resolution attempt and a new sync request */
           action_kickoff_time_sync (-1, EV_TIMEOUT, arg);
         }

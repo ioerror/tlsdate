@@ -22,6 +22,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "src/rtc.h"
+
 #define DEFAULT_HOST "www.ptb.de"
 #define DEFAULT_PORT "443"
 #define DEFAULT_PROXY "none"
@@ -153,6 +155,7 @@ enum event_id_t
 };
 
 struct event_base;
+
 /* This struct is used for passing tlsdated runtime state between
  * events/ in its event loop.
  */
@@ -168,7 +171,7 @@ struct state
   time_t last_time;
 
   char timestamp_path[PATH_MAX];
-  int hwclock_fd;
+  struct rtc_handle hwclock;
   char dynamic_proxy[MAX_PROXY_URL];
   /* Event triggered events */
 

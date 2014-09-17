@@ -18,7 +18,7 @@
 void action_run_tlsdate (evutil_socket_t fd, short what, void *arg)
 {
   struct state *state = arg;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   if (state->last_sync_type == SYNC_TYPE_NET)
     {
       info ("[event:%s] called, but network time isn't needed");

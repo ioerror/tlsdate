@@ -88,7 +88,6 @@ enable_setter_seccomp (void)
     SC_ALLOW (write),
     SC_ALLOW (pwritev),
     SC_ALLOW (ioctl), /* TODO(wad) filter for fd and RTC_SET_TIME */
-    SC_ALLOW (restart_syscall),
     SC_ALLOW (exit_group),
     SC_ALLOW (exit),
     BPF_STMT (BPF_RET+BPF_K, SECCOMP_FILTER_FAIL),
