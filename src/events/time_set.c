@@ -52,7 +52,8 @@ handle_time_setter (struct state *state, int status)
           state->opts.cur_source = NULL;
         }
       /* Share our success. */
-      dbus_announce (state);
+      if (state->opts.should_dbus)
+        dbus_announce (state);
       break;
     case SETTER_NO_SBOX:
       error ("[event:%s] time setter failed to sandbox", __func__);

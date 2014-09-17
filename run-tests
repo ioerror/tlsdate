@@ -5,9 +5,9 @@ run_test() {
 	if [ -r "$1"/tlsdated-flags ]; then
 		flags=$(cat "$1"/tlsdated-flags | sed "s/@TESTDIR@/$1/g")
 	elif [ -r "$1"/test.conf ]; then
-		flags="-w -p -r -l -s -f $1/test.conf -v"
+		flags="-U -w -p -r -l -s -f $1/test.conf -v"
 	else
-		flags="-w -p -r -l -s -f test.conf -v"
+		flags="-U -w -p -r -l -s -f test.conf -v"
 	fi
 	# flags are deliberately unquoted here so that they'll be interpolated
 	timeout 5 src/tlsdated $flags -- "$1"/subproc.sh <"$1"/input >"$1"/run-output \

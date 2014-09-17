@@ -474,5 +474,5 @@ endif
 if !TARGET_OSX
 check_PROGRAMS+= src/test/proxy-override src/test/check-host-1 \
                  src/test/check-host-2 src/test/sleep-wrap \
-                 src/test/return-argc src/test/rotatr
+                 src/test/return-argc
 endif
