@@ -110,6 +110,7 @@ usage (const char *progn)
   printf ("  -j <n>    add up to n seconds jitter to steady state checks\n");
   printf ("  -l        don't load disk timestamps\n");
   printf ("  -s        don't save disk timestamps\n");
+  printf ("  -U        don't use DBus if supported\n");
   printf ("  -u <user> user to change to\n");
   printf ("  -g <grp>  group to change to\n");
   printf ("  -v        be verbose\n");
@@ -136,6 +137,7 @@ set_conf_defaults (struct opts *opts)
   opts->base_path = kCacheDir;
   opts->base_argv = kDefaultArgv;
   opts->argv = NULL;
+  opts->should_dbus = 1;
   opts->should_sync_hwclock = DEFAULT_SYNC_HWCLOCK;
   opts->should_load_disk = DEFAULT_LOAD_FROM_DISK;
   opts->should_save_disk = DEFAULT_SAVE_TO_DISK;
@@ -153,7 +155,7 @@ void
 parse_argv (struct opts *opts, int argc, char *argv[])
 {
   int opt;
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:u:g:")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:Uu:g:")) != -1)
     {
       switch (opt)
         {
@@ -162,6 +164,9 @@ parse_argv (struct opts *opts, int argc, char *argv[])
           break;
         case 'r':
           opts->should_netlink = 0;
+          break;
+        case 'U':
+          opts->should_dbus = 0;
           break;
         case 'p':
           opts->dry_run = 1;
@@ -506,7 +511,7 @@ main (int argc, char *argv[], char *envp[])
       event_priority_set (event, PRI_SAVE);
       event_add (event, NULL);
     }
-  if (init_dbus (&state))
+  if (state.opts.should_dbus && init_dbus (&state))
     {
       error ("Failed to initialize DBus");
       goto out;

@@ -130,6 +130,7 @@ struct opts
   struct source *cur_source;
   char *proxy;
   int leap;
+  int should_dbus;
 };
 
 #define MAX_FQDN_LEN 255
