@@ -61,7 +61,7 @@ action_tlsdate_status (evutil_socket_t fd, short what, void *arg)
   struct state *state = arg;
   time_t t = 0;
   int ret = read_tlsdate_response (fd, &t);
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   if (ret < 0)
     {
       trigger_event (state, E_TLSDATE_TIMEOUT, 0);

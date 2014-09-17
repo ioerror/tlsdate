@@ -29,7 +29,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <sys/uio.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -59,30 +58,20 @@ is_sane_time (time_t ts)
 int
 load_disk_timestamp (const char *path, time_t * t)
 {
-/* TODO(wad)
-  time_t tmpt;
-  if (platform->file_read(path, &tmpt, sizeof(tmpt))) {
-    info("can't load time file");
-    return -1;
-  }
-*/
-  struct iovec iov[1];
-  int fd = open (path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
-  time_t tmpt;
-  iov[0].iov_base = &tmpt;
-  iov[0].iov_len = sizeof (tmpt);
+  int fd = platform->file_open (path, 0 /* RDONLY */, 1 /* CLOEXEC */);
+  time_t tmpt = 0;
   if (fd < 0)
     {
       perror ("Can't open %s for reading", path);
       return -1;
     }
-  if (preadv (fd, iov, 1, 0) != sizeof (tmpt))
+  if (platform->file_read(fd, &tmpt, sizeof(tmpt)))
     {
       perror ("Can't read seconds from %s", path);
-      close (fd);
+      platform->file_close (fd);
       return -1;
     }
-  close (fd);
+  platform->file_close (fd);
   if (!is_sane_time (tmpt))
     {
       error ("Disk timestamp is not sane: %ld", tmpt);
@@ -425,19 +414,19 @@ cleanup_main (struct state *state)
         }
     }
   /* The other half was closed above. */
-  close (state->tlsdate_monitor_fd);
+  platform->file_close (state->tlsdate_monitor_fd);
   if (state->tlsdate_pid)
     {
-      kill (state->tlsdate_pid, SIGKILL);
-      waitpid (state->tlsdate_pid, NULL, WNOHANG);
+      platform->process_signal (state->tlsdate_pid, SIGKILL);
+      platform->process_wait (state->tlsdate_pid, NULL, 0 /* !forever */);
     }
   /* Best effort to tear it down if it is still alive. */
   close(state->setter_notify_fd);
   close(state->setter_save_fd);
   if (state->setter_pid)
     {
-      kill (state->setter_pid, SIGKILL);
-      waitpid (state->setter_pid, NULL, WNOHANG);
+      platform->process_signal (state->setter_pid, SIGKILL);
+      platform->process_wait (state->setter_pid, NULL, 0 /* !forever */);
     }
   /* TODO(wad) Add dbus_cleanup() */
   if (state->base)
@@ -473,12 +462,11 @@ main (int argc, char *argv[], char *envp[])
     add_source_to_conf (&state.opts, DEFAULT_HOST, DEFAULT_PORT, DEFAULT_PROXY);
   state.base = base;
   state.envp = envp;
-  state.hwclock_fd = -1;
   state.backoff = state.opts.wait_between_tries;
   /* TODO(wad) move this into setup_time_setter */
-  /* grab a handle to /dev/rtc for sync_hwclock() */
+  /* grab a handle to /dev/rtc for time-setter. */
   if (state.opts.should_sync_hwclock &&
-      (state.hwclock_fd = open (DEFAULT_RTC_DEVICE, O_RDONLY)) < 0)
+      platform->rtc_open(&state.hwclock))
     {
       pinfo ("can't open hwclock fd");
       state.opts.should_sync_hwclock = 0;
@@ -497,8 +485,7 @@ main (int argc, char *argv[], char *envp[])
       goto out;
     }
   /* release the hwclock now that the time-setter is running. */
-  close (state.hwclock_fd);
-  state.hwclock_fd = -1;
+  platform->rtc_close (&state.hwclock);
   /* drop privileges before touching any untrusted data */
   drop_privs_to (state.opts.user, state.opts.group);
   /* register a signal handler to save time at shutdown */

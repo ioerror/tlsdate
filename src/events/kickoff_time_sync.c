@@ -70,7 +70,7 @@ void
 action_invalidate_time (evutil_socket_t fd, short what, void *arg)
 {
   struct state *state = arg;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   /* If time is already invalid and being acquired, do nothing. */
   if (state->last_sync_type == SYNC_TYPE_RTC &&
       event_pending (state->events[E_TLSDATE], EV_TIMEOUT, NULL))
@@ -118,7 +118,7 @@ setup_event_timer_sync (struct state *state)
 void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
 {
   struct state *state = arg;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   time_t delta = state->clock_delta;
   int jitter = 0;
   if (check_continuity (&delta) > 0)
@@ -134,7 +134,7 @@ void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
     }
   if (state->last_sync_type == SYNC_TYPE_NET)
     {
-      debug ("[event:%s] time in sync. skipping", __func__);
+      verb_debug ("[event:%s] time in sync. skipping", __func__);
       return;
     }
   /* Keep parity with run_tlsdate: for every wake, allow it to retry again. */
@@ -142,7 +142,7 @@ void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
     {
       state->tries -= 1;
       /* Don't bother re-triggering tlsdate */
-      debug ("[event:%s] called while tries are in progress", __func__);
+      verb_debug ("[event:%s] called while tries are in progress", __func__);
       return;
     }
   /* Don't over-schedule if the first attempt hasn't fired. If a wake event
@@ -152,7 +152,7 @@ void action_kickoff_time_sync (evutil_socket_t fd, short what, void *arg)
    */
   if (event_pending (state->events[E_TLSDATE], EV_TIMEOUT, NULL))
     {
-      debug ("[event:%s] called while tlsdate is pending", __func__);
+      verb_debug ("[event:%s] called while tlsdate is pending", __func__);
       return;
     }
   if (!state->events[E_RESOLVER])

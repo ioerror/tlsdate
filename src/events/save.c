@@ -23,7 +23,7 @@ void action_sync_and_save (evutil_socket_t fd, short what, void *arg)
   struct state *state = arg;
   time_t t = state->last_time;
   ssize_t bytes;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   /* For all non-net sources, don't write to disk by
    * flagging the time negative.  We don't use negative
    * times and this won't effect shutdown (0) writes.

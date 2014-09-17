@@ -231,15 +231,21 @@ toggle_timeout (DBusTimeout *t, void *user_data)
     }
 }
 
-#ifdef TLSDATED_MAIN
 void
 dbus_announce (struct state *global_state)
 {
   struct dbus_state *state = global_state->dbus;
-  DBusConnection *conn = state->conn;
+  DBusConnection *conn;
   DBusMessage *msg;
   uint32_t ignored;
   const char *sync_type = sync_type_str (global_state->last_sync_type);
+
+#ifndef TLSDATED_MAIN
+  /* Return early if we're not linked to tlsdated. */
+  return;
+#endif
+
+  conn = state->conn;
   msg = dbus_message_new_signal (kServicePath, kServiceInterface, kTimeUpdated);
   if (!msg)
     {
@@ -259,7 +265,6 @@ dbus_announce (struct state *global_state)
       return;
     }
 }
-#endif
 
 static
 DBusHandlerResult
@@ -374,7 +379,7 @@ handle_set_time (DBusConnection *connection,
   DBusMessageIter iter;
   DBusError error;
   dbus_int64_t requested_time = 0;
-  debug ("[event:%s]: fired", __func__);
+  verb_debug ("[event:%s]: fired", __func__);
   dbus_error_init (&error);
 
   /* Expects DBUS_TYPE_INT64:<time_t> */
@@ -410,7 +415,7 @@ handle_can_set_time (DBusConnection *connection,
                      DBusMessage *message,
                      struct state *state)
 {
-  debug ("[event:%s]: fired", __func__);
+  verb_debug ("[event:%s]: fired", __func__);
   return send_can_reply (connection, message, can_set_time (state));
 }
 
@@ -427,7 +432,7 @@ handle_last_sync_info (DBusConnection *connection,
   const char *sync = sync_type_str (state->last_sync_type);
   int64_t t = state->last_time;
 
-  debug ("[dbus]: handler fired");
+  verb_debug ("[dbus]: handler fired");
   reply = dbus_message_new_method_return (message);
   if (!reply)
     {
@@ -488,7 +493,7 @@ service_dispatch (DBusConnection *conn, DBusMessage *msg, void *data)
   const char *interface;
   const char *method;
 
-  debug ("[dbus] service dispatcher called");
+  verb_debug ("[dbus] service dispatcher called");
   if (dbus_message_get_type (msg) != DBUS_MESSAGE_TYPE_METHOD_CALL)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
@@ -496,13 +501,13 @@ service_dispatch (DBusConnection *conn, DBusMessage *msg, void *data)
   method = dbus_message_get_member (msg);
   if (!interface || !method)
     {
-      debug ("[dbus] service request fired with bogus data");
+      verb_debug ("[dbus] service request fired with bogus data");
       /* Consume it */
       return DBUS_HANDLER_RESULT_HANDLED;
     }
   if (strcmp (interface, kServiceInterface))
     {
-      debug ("[dbus] invalid interface supplied");
+      verb_debug ("[dbus] invalid interface supplied");
       return DBUS_HANDLER_RESULT_HANDLED;
     }
   if (!strcmp (method, kServiceSetTime))
@@ -511,7 +516,7 @@ service_dispatch (DBusConnection *conn, DBusMessage *msg, void *data)
     return handle_can_set_time (conn, msg, state);
   else if (!strcmp (method, kServiceLastSyncInfo))
     return handle_last_sync_info (conn, msg, state);
-  debug ("[dbus] invalid method supplied");
+  verb_debug ("[dbus] invalid method supplied");
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -564,7 +569,7 @@ init_dbus (struct state *tlsdate_state)
       goto err;
     }
 
-  debug ("[dbus] initialized");
+  verb_debug ("[dbus] initialized");
   return 0;
 err:
   tlsdate_state->dbus = NULL;

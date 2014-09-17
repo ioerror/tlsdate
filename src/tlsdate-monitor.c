@@ -81,7 +81,7 @@ tlsdate (struct state *state)
       perror ("fork() failed!");
       return -1;
     default:
-      debug ("[tlsdate-monitor] spawned tlsdate: %d", pid);
+      verb_debug ("[tlsdate-monitor] spawned tlsdate: %d", pid);
       state->tlsdate_pid = pid;
       return 0;
    }

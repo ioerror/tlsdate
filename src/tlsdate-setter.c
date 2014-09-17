@@ -9,14 +9,12 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/rtc.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/prctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/uio.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -32,43 +30,7 @@
 int
 save_timestamp_to_fd (int fd, time_t t)
 {
-  struct iovec iov[1];
-  ssize_t ret;
-  iov[0].iov_base = &t;
-  iov[0].iov_len = sizeof (t);
-  ret = IGNORE_EINTR (pwritev (fd, iov, 1, 0));
-  /* TODO(wad) platform->file_write(path, &t, sizeof(t)) */
-  if (ret != sizeof (t))
-    return 1;
-  return 0;
-}
-
-/*
- * Set the hardware clock referred to by fd (which should be a descriptor to
- * some device that implements the interface documented in rtc(4)) to the system
- * time. See hwclock(8) for details of why this is important. If we fail, we
- * just return - there's nothing the caller can really do about a failure of
- * this function except try later.
- */
-int
-sync_hwclock (int fd, time_t sec)
-{
-  struct tm tm;
-  struct rtc_time rtctm;
-  /* TODO(wad) if (platform->time_get(&tv)) */
-  gmtime_r (&sec, &tm);
-  /* these structs are identical, but separately defined */
-  rtctm.tm_sec = tm.tm_sec;
-  rtctm.tm_min = tm.tm_min;
-  rtctm.tm_hour = tm.tm_hour;
-  rtctm.tm_mday = tm.tm_mday;
-  rtctm.tm_mon = tm.tm_mon;
-  rtctm.tm_year = tm.tm_year;
-  rtctm.tm_wday = tm.tm_wday;
-  rtctm.tm_yday = tm.tm_yday;
-  rtctm.tm_isdst = tm.tm_isdst;
-  /* TODO(wad) if (platform->rtc_write(rtc_handle, &tv)) */
-  return ioctl (fd, RTC_SET_TIME, &rtctm);
+  return platform->file_write(fd, &t, sizeof (t));
 }
 
 void
@@ -190,7 +152,7 @@ time_setter_coprocess (int time_fd, int notify_fd, struct state *state)
                   goto notify_and_die;
                 }
               if (state->opts.should_sync_hwclock &&
-                  sync_hwclock (state->hwclock_fd, tv.tv_sec))
+                  platform->rtc_write(&state->hwclock, &tv))
                 {
                   status = SETTER_NO_RTC;
                   goto notify_and_die;

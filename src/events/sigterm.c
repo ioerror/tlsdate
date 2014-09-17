@@ -22,7 +22,7 @@ void action_sigterm (evutil_socket_t fd, short what, void *arg)
   struct timeval tv;
   info ("[event:%s] starting graceful shutdown . . .", __func__);
   state->exitting = 1;
-  if (gettimeofday (&tv, NULL))
+  if (platform->time_get (&tv))
     {
       pfatal ("[event:%s] couldn't gettimeofday to exit gracefully", __func__);
     }

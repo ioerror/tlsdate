@@ -86,7 +86,7 @@ action_time_set (evutil_socket_t fd, short what, void *arg)
   struct state *state = arg;
   int status = -1;
   ssize_t bytes = 0;
-  debug ("[event:%s] fired", __func__);
+  verb_debug ("[event:%s] fired", __func__);
   bytes = IGNORE_EINTR (read (fd, &status, sizeof (status)));
   if (bytes == -1 && errno == EAGAIN)
     return;  /* Catch next wake up */
