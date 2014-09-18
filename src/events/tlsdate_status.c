@@ -26,7 +26,7 @@ int
 read_tlsdate_response (int fd, time_t *t)
 {
   /* TLS passes time as a 32-bit value. */
-  uint32_t server_time;
+  uint32_t server_time = 0;
   ssize_t ret = IGNORE_EINTR (read (fd, &server_time, sizeof (server_time)));
   if (ret == -1 && errno == EAGAIN)
     {
@@ -36,8 +36,8 @@ read_tlsdate_response (int fd, time_t *t)
   if (ret != sizeof (server_time))
     {
       /* End of pipe (0) or truncated: death probable. */
-      error ("[event:(%s)] invalid time read from tlsdate (ret:%zd).",
-             __func__, ret);
+      error ("[event:(%s)] invalid time read from tlsdate (rd:%d,ret:%zd).",
+             __func__, server_time, ret);
       return -1;
     }
   /* uint32_t moves to signed long so there is room for silliness. */
@@ -64,6 +64,7 @@ action_tlsdate_status (evutil_socket_t fd, short what, void *arg)
   verb_debug ("[event:%s] fired", __func__);
   if (ret < 0)
     {
+      verb_debug ("[event:%s] forcibly timing out tlsdate", __func__);
       trigger_event (state, E_TLSDATE_TIMEOUT, 0);
       return;
     }
@@ -110,12 +111,13 @@ new_tlsdate_monitor_pipe (int fds[2])
 int
 setup_tlsdate_status (struct state *state)
 {
-  int fds[2];
+  int fds[2] = { -1, -1 };
   /* One pair of pipes are reused along with the event. */
   if (new_tlsdate_monitor_pipe (fds))
     {
       return -1;
     }
+  verb_debug ("[%s] monitor fd pair (%d, %d)", __func__, fds[0], fds[1]);
   /* The fd that the monitor process will write to */
   state->tlsdate_monitor_fd = fds[1];
   /* Make the reader fd non-blocking and not leak into tlsdate. */
