@@ -59,6 +59,7 @@ handle_child_death (struct state *state)
   /* Clean exit - don't rerun! */
   if (info.si_status == 0)
     return 1;
+  verb_debug ("[event:%s] scheduling a retry", __func__);
   /* Rerun a failed tlsdate */
   if (state->backoff < MAX_SANE_BACKOFF)
     state->backoff *= 2;

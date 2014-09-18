@@ -79,6 +79,7 @@ time_setter_coprocess (int time_fd, int notify_fd, struct state *state)
   prctl (PR_SET_NAME, "tlsdated-setter");
   if (state->opts.should_save_disk && !state->opts.dry_run)
     {
+      /* TODO(wad) platform->file_open */
       if ( (save_fd = open (state->timestamp_path,
                             O_WRONLY | O_CREAT | O_NOFOLLOW | O_CLOEXEC,
                             S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) < 0)
@@ -166,6 +167,7 @@ time_setter_coprocess (int time_fd, int notify_fd, struct state *state)
             }
           status = SETTER_TIME_SET;
         }
+      /* TODO(wad) platform->file_write */
       IGNORE_EINTR (write (notify_fd, &status, sizeof(status)));
     }
 notify_and_die:

@@ -36,7 +36,6 @@ void action_stdin_wakeup (evutil_socket_t fd, short what, void *arg)
   action_kickoff_time_sync (-1, EV_TIMEOUT, arg);
 }
 
-
 void action_netlink_ready (evutil_socket_t fd, short what, void *arg)
 {
   struct routeup routeup_cfg;

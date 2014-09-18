@@ -1,27 +1,35 @@
 #!/bin/sh
 
 run_test() {
+	# Clear the last results
+	rm -f "$1"/result
 	[ -x "$1"/setup ] && "$1"/setup
 	if [ -r "$1"/tlsdated-flags ]; then
 		flags=$(cat "$1"/tlsdated-flags | sed "s/@TESTDIR@/$1/g")
 	elif [ -r "$1"/test.conf ]; then
-		flags="-U -w -p -r -l -s -f $1/test.conf -v"
+		flags="-U -w -p -r -l -s -b -f $1/test.conf -v"
 	else
-		flags="-U -w -p -r -l -s -f test.conf -v"
+		flags="-U -w -p -r -l -s -b -f test.conf -v"
 	fi
 	# flags are deliberately unquoted here so that they'll be interpolated
-	timeout 5 src/tlsdated $flags -- "$1"/subproc.sh <"$1"/input >"$1"/run-output \
-                     2>"$1"/run-err
+	(test -x "$1"/input.sh && "$1"/input.sh) |
+	   timeout 8 src/tlsdated $flags -- "$1"/subproc.sh  \
+		   >"$1"/run-output 2>"$1"/run-err
 	[ -x "$1"/teardown ] && "$1"/teardown
 }
 
 test_passed() {
-	diff "$t"/output "$t"/run-output >/dev/null
+	f="$t"/result
+	test -f "$f" && grep -q ok "$f"
 }
 
 total=0
 passed=0
 
+if ! test -x src/test/emit; then
+  echo "Make sure src/test/emit has been built (make check)!"
+  exit 1
+fi
 for t in tests/*; do
 	[ ! -d "$t" ] && continue
 	name="$(basename "$t")"

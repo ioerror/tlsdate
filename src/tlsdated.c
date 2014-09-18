@@ -89,7 +89,7 @@ usage (const char *progn)
   printf ("  -w        don't set hwclock\n");
   printf ("  -p        dry run (don't really set time)\n");
   printf ("  -r        use stdin instead of netlink for routes\n");
-  printf ("  -t <n>    try n times when a new route appears\n");
+  printf ("  -t <n>    try n times to synchronize the time\n");
   printf ("  -d <n>    delay n seconds between tries\n");
   printf ("  -T <n>    give subprocess n chances to exit\n");
   printf ("  -D <n>    delay n seconds between wait attempts\n");
@@ -103,6 +103,7 @@ usage (const char *progn)
   printf ("  -u <user> user to change to\n");
   printf ("  -g <grp>  group to change to\n");
   printf ("  -v        be verbose\n");
+  printf ("  -b        use verbose debugging\n");
   printf ("  -x <h>    set proxy for subprocs to h\n");
   printf ("  -h        this\n");
 }
@@ -144,7 +145,7 @@ void
 parse_argv (struct opts *opts, int argc, char *argv[])
 {
   int opt;
-  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvm:j:f:x:Uu:g:")) != -1)
+  while ((opt = getopt (argc, argv, "hwrpt:d:T:D:c:a:lsvbm:j:f:x:Uu:g:")) != -1)
     {
       switch (opt)
         {
@@ -186,6 +187,9 @@ parse_argv (struct opts *opts, int argc, char *argv[])
           break;
         case 'v':
           verbose = 1;
+          break;
+        case 'b':
+          verbose_debug = 1;
           break;
         case 'm':
           opts->min_steady_state_interval = atoi (optarg);
@@ -485,7 +489,10 @@ main (int argc, char *argv[], char *envp[])
       goto out;
     }
   /* release the hwclock now that the time-setter is running. */
-  platform->rtc_close (&state.hwclock);
+  if (state.opts.should_sync_hwclock)
+    {
+      platform->rtc_close (&state.hwclock);
+    }
   /* drop privileges before touching any untrusted data */
   drop_privs_to (state.opts.user, state.opts.group);
   /* register a signal handler to save time at shutdown */

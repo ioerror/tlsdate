@@ -65,24 +65,11 @@ verb (const char *fmt, ...)
   va_end(ap);
 }
 
-/** helper function for 'verbose' output */
-void
-verb_debug (const char *fmt, ...)
-{
-  va_list ap;
-
-  if (! verbose ) return;
-  if (! verbose_debug ) return;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-}
-
 void API logat (int isverbose, const char *fmt, ...)
 {
+  va_list ap;
   if (isverbose && !verbose)
     return;
-  va_list ap;
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   fprintf (stderr, "\n");
