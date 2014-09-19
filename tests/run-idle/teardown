@@ -2,3 +2,14 @@
 . "$(dirname "$0")"/../common.sh
 
 reset_counter "runs"
+# If the run count passed, then make sure the
+# time was being set and it wasn't error calls.
+if result_passed; then
+  if check_err 'time set from the network'; then
+    passed
+  else
+    failed
+  fi
+fi
+
+
