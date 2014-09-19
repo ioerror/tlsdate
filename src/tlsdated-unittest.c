@@ -323,16 +323,6 @@ FIXTURE_TEARDOWN(mock_platform) {
   platform = self->old_platform;
 }
 
-TEST_F(mock_platform, leap_test) {
-  ASSERT_STREQ("Implemented", "Not implemented");
-}
-
-TEST_F(mock_platform, time_setter) {
-  /* TODO(wad) Mock out time_setter test
-  self->platform.time_get = sync_hwclock_time_get;
-  self->platform.rtc_write = sync_hwclock_rtc_write;
-  */
-  ASSERT_STREQ("Implemented", "Not implemented");
-}
+/* TODO: leap_tests, time_setter tests. */
 
 TEST_HARNESS_MAIN
