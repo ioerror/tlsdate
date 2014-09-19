@@ -23,9 +23,8 @@
 int clock_get_real_time(struct tlsdate_time *time)
 {
   /* Safety net */
-  assert(time);
-
-  return clock_gettime(CLOCK_REALTIME, &time->tp);
+  assert (time);
+  return clock_gettime (CLOCK_REALTIME, &time->tp);
 }
 
 /**
@@ -37,9 +36,8 @@ int clock_get_real_time(struct tlsdate_time *time)
 int clock_set_real_time(const struct tlsdate_time *time)
 {
   /* Safety net */
-  assert(time);
-
-  return clock_settime(CLOCK_REALTIME, &time->tp);
+  assert (time);
+  return clock_settime (CLOCK_REALTIME, &time->tp);
 }
 
 /**
@@ -52,8 +50,7 @@ void clock_init_time(struct tlsdate_time *time, time_t sec,
                            long nsec)
 {
   /* Safety net */
-  assert(time);
-
+  assert (time);
   time->tp.tv_sec = sec;
   time->tp.tv_nsec = nsec;
 }

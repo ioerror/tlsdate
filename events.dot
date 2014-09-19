@@ -1,0 +1,58 @@
+/* This DOT file represents the logical interaction between
+ * the events in the system and the "state" of tlsdated.
+ */
+digraph tlsdated {
+  graph[compound=true];
+
+  node[style=filled,color=lightblue];
+
+  subgraph cluster_states {
+    state_label[shape=box,style=dashed,label="States"];
+    sleep -> wake;
+    wake -> sync;
+    sync -> save;
+    save -> sleep;
+    wake -> terminate;
+    sync -> terminate;
+    save -> terminate;
+  }
+
+  subgraph cluster_wake {
+    color=purple;
+    style=filled;
+    wake_label[shape=box,style=dashed,label="Wake Events"];
+    periodic_local_clock_check -> wake;
+    periodic_network_sync -> wake;
+    random_sigterm -> wake;
+    random_route_change -> wake;
+  }
+
+  subgraph cluster_dbus {
+    dbus_label[shape=box,style=dashed,label="DBus Events"];
+    dbus-> cros_shill_manager_change -> wake;
+    dbus-> cros_shill_service_change -> wake;
+    dbus -> cros_proxy_resolved -> {proxy_ok, proxy_failed};
+    dbus -> cros_user_set_time -> save;
+            cros_user_set_time -> sync [style=dotted];
+    get_proxy -> cros_resolve_proxy -> dbus;
+    announce -> dbus;
+  }
+
+  subgraph cluster_sync {
+    sync_label[shape=box,style=dashed,label="Network Sync"];
+    sync -> get_proxy -> {proxy_ok, proxy_failed, proxy_timed_out} -> tlsdate;
+    tlsdate -> tlsdate_ok -> save;
+    tlsdate -> tlsdate_fail;
+    tlsdate_fail -> tlsdate [label="retry",style=dotted];
+    tlsdate_fail -> terminate;
+  };
+
+  subgraph cluster_save {
+    save_label[shape=box,style=dashed,label="Save to the system"];
+    save -> { synchronize_rtc, synchronize_kernel, synchronize_disk } -> { save_ok, save_fail, save_bad_time };
+    save_ok -> announce -> sleep;
+    save_fail -> terminate;
+    save_bad_time -> sleep;
+  }
+}
+
