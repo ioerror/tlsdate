@@ -27,7 +27,7 @@ dry run (don't really set time)
 .IP "\-r"
 use stdin instead of netlink for routes
 .IP "\-t [n]"
-try [n] times when a new route appears
+try up to n times if unsuccessful to synchronize the time
 .IP "\-d [n]"
 delay n seconds between tries
 .IP "\-T [n]"
@@ -39,13 +39,17 @@ set the cache directory
 .IP "\-a [n]"
 run at most every n seconds in steady state
 .IP "\-l"
-don't load disk timestamps 
+don't load disk timestamps
 .IP "\-s"
 don't save disk timestamp
 .IP "\-j [n]"
 add up to n seconds of jitter to steady-state fetches
 .IP "\-v"
 be verbose
+.IP "\-b"
+be extra verbose (debugging)
+.IP "\-U"
+do not use DBus if supported
 .IP "\-h"
 print help message
 .IP "\-f [/path/to/config/file]"
@@ -67,4 +71,3 @@ Jacob Appelbaum <jacob at appelbaum dot net>
 .B tlsdate(1),
 .B tlsdate-helper(1)
 .B tlsdate-routeup(1)
-.B tlsdate-dbus-announce(1)
