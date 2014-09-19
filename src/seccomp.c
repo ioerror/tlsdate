@@ -78,6 +78,8 @@ enable_setter_seccomp (void)
 #ifdef __NR_mmap2
     SC_DENY (mmap2, EINVAL),
 #endif
+    SC_DENY (sendto, EINVAL),
+    SC_DENY (socket, EINVAL),
 
     SC_ALLOW (lseek),
     SC_ALLOW (close),
