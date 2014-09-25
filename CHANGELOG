@@ -1,4 +1,4 @@
-0.0.9 XXX
+0.0.9 Fri 25, Sep, 2014
   Fix missing function prototype.
   major libevent refactor by Will Drewry and Elly Fong-Jones of Google.
   tlsdated should now function properly on ChromeOS and Debian GNU/Linux
