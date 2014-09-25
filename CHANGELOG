@@ -1,6 +1,8 @@
 0.0.9 XXX
-  Fix missing function prototype
-  major libevent refactor by Will Drewry and Elly Fong-Jones of Google
+  Fix missing function prototype.
+  major libevent refactor by Will Drewry and Elly Fong-Jones of Google.
+  Add ability to set COMPILE_DATE at configure/build time.
+  Add support for deterministic builds on Debian GNU/*.
 0.0.8 Sun 14, Sep, 2014
   Add Debian GNU/Hurd and Debian GNU/kFreeBSD build support.
   Fix build on FreeBSD 10 and 11.
