@@ -1,3 +1,11 @@
+tlsdate (0.0.9-1) unstable; urgency=low
+
+  * New upstream release
+  * Deterministic builds with thanks to Lunar^ and h01ger!
+  * h01ger is now an official uploader.
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Thu, 25 Sep 2014 22:11:48 +0000
+
 tlsdate (0.0.8-1) unstable; urgency=low
 
   * New upstream release
