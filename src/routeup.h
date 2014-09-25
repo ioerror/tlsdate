@@ -13,12 +13,32 @@
 #ifndef ROUTEUP_H
 #define ROUTEUP_H
 
-struct routeup {
+struct routeup
+{
   int netlinkfd;  /* AF_NETLINK event socket */
 };
 
-int routeup_setup(struct routeup *ifc);
-int routeup_once(struct routeup *ifc, unsigned int timeout);
-void routeup_teardown(struct routeup *ifc);
+#ifdef TARGET_OS_LINUX
+int routeup_setup (struct routeup *ifc);
+int routeup_once (struct routeup *ifc, unsigned int timeout);
+int routeup_process (struct routeup *rtc);
+void routeup_teardown (struct routeup *ifc);
+#else
+static inline int routeup_setup (struct routeup *ifc)
+{
+  return 1;  /* Fail for platforms without support. */
+}
+static inline int routeup_once (struct routeup *ifc, unsigned int timeout)
+{
+  return -1;
+}
+static inline int routeup_process (struct routeup *rtc)
+{
+  return -1;
+}
+static inline void routeup_teardown (struct routeup *ifc)
+{
+}
+#endif
 
 #endif /* !ROUTEUP_H */

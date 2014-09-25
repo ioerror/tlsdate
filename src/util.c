@@ -23,11 +23,17 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 #include <sys/wait.h>
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
 
+#ifdef WITH_EVENTS
+#include <event2/event.h>
+#endif
+
+#include "src/tlsdate.h"
 #include "src/util.h"
 
 #if defined(HAVE_STRUCT_RTC_TIME) && defined(RTC_SET_TIME) && defined(RTC_RD_TIME)
@@ -41,11 +47,10 @@ void
 die (const char *fmt, ...)
 {
   va_list ap;
-
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-  exit(1);
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  exit (1);
 }
 
 /** helper function for 'verbose' output */
@@ -60,31 +65,18 @@ verb (const char *fmt, ...)
   va_end(ap);
 }
 
-/** helper function for 'verbose' output */
-void
-verb_debug (const char *fmt, ...)
+void API logat (int isverbose, const char *fmt, ...)
 {
   va_list ap;
-
-  if (! verbose ) return;
-  if (! verbose_debug ) return;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  va_end(ap);
-}
-
-void API logat(int isverbose, const char *fmt, ...)
-{
   if (isverbose && !verbose)
     return;
-  va_list ap;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  fprintf(stderr, "\n");
-  va_end(ap);
-  va_start(ap, fmt);
-  vsyslog(LOG_INFO, fmt, ap);
-  va_end(ap);
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  fprintf (stderr, "\n");
+  va_end (ap);
+  va_start (ap, fmt);
+  vsyslog (LOG_INFO, fmt, ap);
+  va_end (ap);
 }
 
 void
@@ -94,12 +86,11 @@ drop_privs_to (const char *user, const char *group)
   gid_t gid;
   struct passwd *pw;
   struct group  *gr;
-
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
          without dropping to 'nobody' (setting time will fail in the end) */
-  pw = getpwnam(user);
-  gr = getgrnam(group);
+  pw = getpwnam (user);
+  gr = getgrnam (group);
   if (NULL == pw)
     die ("Failed to obtain UID for `%s'\n", user);
   if (NULL == gr)
@@ -112,12 +103,10 @@ drop_privs_to (const char *user, const char *group)
     die ("GID for `%s' is 0, refusing to run SSL\n", user);
   if (pw->pw_gid != gr->gr_gid)
     die ("GID for `%s' is not `%s' as expected, refusing to run SSL\n",
-          user, group);
-
-  if (0 != initgroups((const char *)user, gr->gr_gid))
+         user, group);
+  if (0 != initgroups ( (const char *) user, gr->gr_gid))
     die ("Unable to initgroups for `%s' in group `%s' as expected\n",
-          user, group);
-
+         user, group);
 #ifdef HAVE_SETRESGID
   if (0 != setresgid (gid, gid, gid))
     die ("Failed to setresgid: %s\n", strerror (errno));
@@ -134,61 +123,35 @@ drop_privs_to (const char *user, const char *group)
 #endif
 }
 
-pid_t
-wait_with_timeout(int *status, int timeout_secs)
-{
-  int st = 0;
-  pid_t exited;
-  /* synthesize waiting with a timeout by using a helper process. We
-   * launch a child process that will exit in |timeout_secs|, guaranteeing
-   * that wait() will return by then. */
-  pid_t helper = fork();
-  if (helper < 0)
-    return helper;
-  if (helper == 0)
-  {
-    sleep(timeout_secs);
-    exit(0);
-  }
-
-  /* use temporary status to avoid touching it if we do ETIMEDOUT */
-  exited = wait(&st);
-  if (exited == helper)
-    /* helper exited before any other child did */
-    return -ETIMEDOUT;
-
-  /* a real child process exited - don't leak the helper */
-  kill(helper, SIGKILL);
-  waitpid(helper, NULL, 0);
-  *status = st;
-  return exited;
-}
-
 #ifdef ENABLE_RTC
-struct rtc_handle
+int rtc_open(struct rtc_handle *h)
 {
-	int fd;
-};
-
-void *rtc_open()
-{
-	struct rtc_handle *h = malloc(sizeof *h);
+	if (!h)
+		return -1;
+	h->fd = -1;
+	/* TODO: Use platform->file_open but drop NOFOLLOW? */
 	h->fd = open(DEFAULT_RTC_DEVICE, O_RDONLY);
 	if (h->fd < 0)
-  {
+	{
 		pinfo("can't open rtc");
-		free(h);
-		return NULL;
+		return -1;
 	}
-	return h;
+	return 0;
 }
 
-int rtc_write(void *handle, const struct timeval *tv)
+/*
+ * Set the hardware clock referred to by fd (which should be a descriptor to
+ * some device that implements the interface documented in rtc(4)) to the system
+ * time. See hwclock(8) for details of why this is important. If we fail, we
+ * just return - there's nothing the caller can really do about a failure of
+ * this function except try later.
+ */
+int rtc_write(struct rtc_handle *handle, const struct timeval *tv)
 {
   struct tm tmr;
   struct tm *tm;
   struct rtc_time rtctm;
-  int fd = ((struct rtc_handle *)handle)->fd;
+  int fd = handle->fd;
 
   tm = gmtime_r (&tv->tv_sec, &tmr);
 
@@ -213,11 +176,11 @@ int rtc_write(void *handle, const struct timeval *tv)
   return 0;
 }
 
-int rtc_read(void *handle, struct timeval *tv)
+int rtc_read(struct rtc_handle *handle, struct timeval *tv)
 {
   struct tm tm;
   struct rtc_time rtctm;
-  int fd = ((struct rtc_handle *)handle)->fd;
+  int fd = handle->fd;
 
   if (ioctl (fd, RTC_RD_TIME, &rtctm))
   {
@@ -241,73 +204,70 @@ int rtc_read(void *handle, struct timeval *tv)
   return 0;
 }
 
-int rtc_close(void *handle)
+int rtc_close(struct rtc_handle *handle)
 {
 	struct rtc_handle *h = handle;
-	close(h->fd);
-	free(h);
+	platform->file_close(h->fd);
+	h->fd = -1;
 	return 0;
 }
 #endif
 
-int file_write(const char *path, void *buf, size_t sz)
+int file_write(int fd, void *buf, size_t sz)
 {
-	char tmp[PATH_MAX];
-	int oflags = O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC;
-	int perms = S_IRUSR | S_IWUSR;
-	int fd;
-
-	if (snprintf(tmp, sizeof(tmp), path, kTempSuffix) >= sizeof(tmp))
-  {
-		pinfo("path %s too long to use", path);
-		exit(1);
+	struct iovec iov[1];
+	ssize_t ret;
+	iov[0].iov_base = buf;
+	iov[0].iov_len = sz;
+	ret = IGNORE_EINTR (pwritev (fd, iov, 1, 0));
+	if (ret != sz)
+	{
+		return -1;
 	}
-
-	if ((fd = open(tmp, oflags, perms)) < 0)
-  {
-		pinfo("open(%s) failed", tmp);
-		return 1;
-	}
-
-	if (write(fd, buf, sz) != sz)
-  {
-		pinfo("write() failed");
-		close(fd);
-		return 1;
-	}
-
-	if (close(fd))
-  {
-		pinfo("close() failed");
-		return 1;
-	}
-
-	if (rename(tmp, path))
-  {
-		pinfo("rename() failed");
-		return 1;
-	}
-
 	return 0;
 }
 
-int file_read(const char *path, void *buf, size_t sz)
+int file_open(const char *path, int write, int cloexec)
 {
-	int fd = open(path, O_RDONLY | O_NOFOLLOW);
+	int fd;
+	int oflags = cloexec ? O_CLOEXEC : 0;
+	if (write)
+	{
+		int perms = S_IRUSR | S_IWUSR;
+		oflags |= O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC;
+		/* Rely on atomic write calls rather than rename() calls. */
+		fd = open(path, oflags, perms);
+	}
+	else
+	{
+		oflags |= O_RDONLY | O_NOFOLLOW;
+		fd = open(path, oflags);
+	}
 	if (fd < 0)
-  {
+	{
 		pinfo("open(%s) failed", path);
-		return 1;
+		return -1;
 	}
+	return fd;
+}
 
-	if (read(fd, buf, sz) != sz)
-  {
-		pinfo("read() failed");
-		close(fd);
-		return 1;
-	}
-
+int file_close(int fd)
+{
 	return close(fd);
+}
+
+int file_read(int fd, void *buf, size_t sz)
+{
+	struct iovec iov[1];
+	iov[0].iov_base = buf;
+	iov[0].iov_len = sz;
+	if (preadv (fd, iov, 1, 0) != sz)
+	{
+		/* Returns -1 on read failure */
+		return -1;
+	}
+	/* Returns 0 on a successful buffer fill. */
+	return 0;
 }
 
 int time_get(struct timeval *tv)
@@ -326,6 +286,17 @@ int pgrp_kill(void)
 	return kill(-grp, SIGKILL);
 }
 
+int process_signal(pid_t pid, int signal)
+{
+	return kill (pid, signal);
+}
+
+pid_t process_wait(pid_t pid, int *status, int forever)
+{
+  int flag = forever ? 0 : WNOHANG;
+  return waitpid (pid, status, flag);
+}
+
 static struct platform default_platform = {
 #ifdef ENABLE_RTC
 	.rtc_open = rtc_open,
@@ -334,13 +305,64 @@ static struct platform default_platform = {
 	.rtc_close = rtc_close,
 #endif
 
+	.file_open = file_open,
+	.file_close = file_close,
 	.file_write = file_write,
 	.file_read = file_read,
 
 	.time_get = time_get,
 
 	.pgrp_enter = pgrp_enter,
-	.pgrp_kill = pgrp_kill
+	.pgrp_kill = pgrp_kill,
+
+	.process_signal = process_signal,
+	.process_wait = process_wait
 };
 
 struct platform *platform = &default_platform;
+
+/* TODO(wad) rename to schedule_event */
+void
+trigger_event (struct state *state, enum event_id_t id, int sec)
+{
+#ifdef WITH_EVENTS
+  struct event *e = state->events[id];
+  struct timeval delay = { sec, 0 };
+  /* Fallthrough to tlsdate if there is no resolver. */
+  if (!e && id == E_RESOLVER)
+    e = state->events[E_TLSDATE];
+  if (!e)
+    {
+      info ("trigger_event with NULL |e|. I hope this is a test!");
+      return;
+    }
+  if (event_pending (e, EV_READ|EV_WRITE|EV_TIMEOUT|EV_SIGNAL, NULL))
+    event_del (e);
+  if (sec >= 0)
+    event_add (e, &delay);
+  else /* Note! This will not fire a TIMEOUT event. */
+    event_add (e, NULL);
+#endif
+}
+
+const char *
+sync_type_str (int sync_type)
+{
+  switch (sync_type)
+    {
+    case SYNC_TYPE_NONE:
+      return "none";
+    case SYNC_TYPE_BUILD:
+      return "build-timestamp";
+    case SYNC_TYPE_DISK:
+      return "disk-timestamp";
+    case SYNC_TYPE_RTC:
+      return "system-clock";
+    case SYNC_TYPE_PLATFORM:
+      return "platform-feature";
+    case SYNC_TYPE_NET:
+      return "network";
+    default:
+      return "error";
+    }
+}

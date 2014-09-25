@@ -1,0 +1,42 @@
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+
+  <interface name="org.torproject.tlsdate">
+    <method name="SetTime">
+      <arg name="time" direction="in" type="x">
+        <doc:doc><doc:summary>The requested time to set the system clock to. It may be tested
+        with:
+        dbus-send --print-reply --system --dest=org.torproject.tlsdate --type=method_call \
+                 /org/torproject/tlsdate org.torproject.tlsdate.SetTime int64:12345678
+        </doc:summary></doc:doc>
+      </arg>
+      <arg name="code" direction="out" type="u">
+        <doc:doc><doc:summary>Returns success or failure via an enum:
+          OK:0, Bad value:1, Not allowed:2, Bad call format:3
+        </doc:summary></doc:doc>
+      </arg>
+    </method>
+    <method name="CanSetTime">
+      <arg name="code" direction="out" type="b">
+        <doc:doc><doc:summary>Returns TRUE is SetTime is allowed.
+        </doc:summary></doc:doc>
+      </arg>
+    </method>
+    <method name="LastSyncInfo">
+      <arg name="network_synchronized" direction="out" type="b">
+        <doc:doc><doc:summary>Whether the time is rooted in a network synchronization source since
+                              fallback to "system-clock" happens at steady state intervals.
+        </doc:summary></doc:doc>
+      </arg>
+      <arg name="source" direction="out" type="s">
+        <doc:doc><doc:summary>Name of the last source</doc:summary></doc:doc>
+      </arg>
+      <arg name="time" direction="out" type="x">
+        <doc:doc><doc:summary>Last sync time</doc:summary></doc:doc>
+      </arg>
+    </method>
+
+  </interface>
+</node>

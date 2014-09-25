@@ -1356,7 +1356,7 @@ main(int argc, char **argv)
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);
   }
-  if (ssl_child != waitpid (ssl_child, &status, 0))
+  if (ssl_child != platform->process_wait (ssl_child, &status, 1))
     die ("waitpid failed: %s\n", strerror (errno));
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
     die ("child process failed in SSL handshake\n");
