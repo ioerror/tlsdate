@@ -3,6 +3,12 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+# To make this package Deterministic, we parse the last Debian release date
+# from the debian/changelog. This means that we must do regular releases! :)
+# To read more about this process and other details, please refer to this bug:
+# https://github.com/ioerror/tlsdate/issues/142
+export COMPILE_DATE ?= $(shell date -u --date="`dpkg-parsechangelog -SDate`" +%s)
+
 DEB_BUILD_ARCH_OS ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH_OS)
 
 %:
