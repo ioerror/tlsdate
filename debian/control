@@ -11,6 +11,7 @@ Build-Depends: autoconf,
                debhelper (>= 9.20120909~),
                dh-apparmor,
                libssl-dev,
+               libevent (libevent >= 2.0),
                libtool,
                pkg-config
 Standards-Version: 3.9.5
