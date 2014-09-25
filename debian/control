@@ -2,7 +2,7 @@ Source: tlsdate
 Section: net
 Priority: extra
 Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
-Uploaders: Kartik Mistry <kartik@debian.org>
+Uploaders: Holger Levsen <holger@debian.org>
 Build-Depends: autoconf,
                dh-autoreconf,
                dh-systemd,
