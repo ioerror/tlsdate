@@ -13,7 +13,6 @@ include src/compat/include.am
 if TARGET_LINUX
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
-bin_PROGRAMS+= src/tlsdated
 
 sbin_PROGRAMS+= src/tlsdated
 
