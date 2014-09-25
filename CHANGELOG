@@ -1,6 +1,7 @@
 0.0.9 XXX
   Fix missing function prototype.
   major libevent refactor by Will Drewry and Elly Fong-Jones of Google.
+  tlsdated should now function properly on ChromeOS and Debian GNU/Linux
   Add ability to set COMPILE_DATE at configure/build time.
   Add support for deterministic builds on Debian GNU/*.
 0.0.8 Sun 14, Sep, 2014
