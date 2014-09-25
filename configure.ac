@@ -25,7 +25,24 @@ AX_PLATFORM
 dnl Here we should build a small program to fetch the build system time in a portable
 dnl manner. We have no Win32 users, we can fix this if we ever find one that
 dnl cares.
-COMPILE_DATE=`date +%s`
+dnl
+dnl In Debian GNU/Linux and other Debian GNU/* systems, we wish to make this a
+dnl deterministic build process. There is only one part of the build process that
+dnl is entropic and that is this COMPILE_DATE value. We want to check to see if
+dnl COMPILE_DATE is defined by the debian/rules file and if it is - we want to use
+dnl the value provided by the environment. If it isn't we'll use one that we
+dnl generate here.
+dnl
+echo "checking for \$COMPILE_DATE in the environment..."
+if test "${COMPILE_DATE+set}" = set; then
+  echo "...we've found \$COMPILE_DATE in the environment."
+  echo "...\$COMPILE_DATE is set to: $COMPILE_DATE"
+else
+  echo "...no \$COMPILE_DATE found in our build environment. Generating now..."
+  COMPILE_DATE=`date +%s`
+  echo "...\$COMPILE_DATE is set to: $COMPILE_DATE"
+fi
+
 AC_SUBST([COMPILE_DATE])
 AC_DEFINE_UNQUOTED([RECENT_COMPILE_DATE],
                    [(uint32_t) ${COMPILE_DATE}],
