@@ -148,7 +148,10 @@ main ()
   if (routeup_setup (&rtc))
     return 1;
   while (!routeup_once (&rtc, 0))
-    printf ("n\n");
+    {
+      printf ("n\n");
+      fflush (stdout);
+    }
   routeup_teardown (&rtc);
   return 0;
 }
