@@ -1,5 +1,6 @@
-0.0.10 XXX
+0.0.10 Fri 26, Sep, 2014 
   tlsdated removed from /usr/bin and now is only in /usr/sbin
+  This release is because 0.0.9 had two trivial bugs. Argh.
 0.0.9 Fri 25, Sep, 2014
   Fix missing function prototype.
   major libevent refactor by Will Drewry and Elly Fong-Jones of Google.
