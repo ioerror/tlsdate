@@ -7,6 +7,7 @@
 #
 
 #include <tunables/global>
+#include <tunables/multiarch.d>
 /usr/bin/tlsdate {
   #include <abstractions/consoles>
   #include <abstractions/ssl_certs>
@@ -54,12 +55,10 @@
   /dev/urandom r,
 
   # Allow mapping of shared libraries
-  /lib/* rm,
-  /lib32/* rm,
-  /lib64/* rm,
+  /lib{,32,64}/* rm,
   /usr/lib/* rm,
-  /lib/x86_64-linux-gnu/* rm,
-  /usr/lib/x86_64-linux-gnu/* rm,
+  /lib/@{multiarch}/* rm,
+  /usr/lib/@{multiarch}/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
   /tmp/ r,
@@ -117,13 +116,10 @@
   /dev/urandom r,
 
   # Allow mapping of shared libraries
-  /lib/* rm,
-  /lib32/* rm,
-  /lib64/* rm,
+  /lib{,32,64}/* rm,
   /usr/lib/* rm,
-  /usr/local/lib/* rm,
-  /lib/x86_64-linux-gnu/* rm,
-  /usr/lib/x86_64-linux-gnu/* rm,
+  /lib/@{multiarch}/* rm,
+  /usr/lib/@{multiarch}/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
   /tmp/ r,
@@ -183,13 +179,10 @@
   /dev/rtc0 rw,
 
   # Allow mapping of shared libraries
-  /lib/* rm,
-  /lib32/* rm,
-  /lib64/* rm,
+  /lib{,32,64}/* rm,
   /usr/lib/* rm,
-  /usr/local/lib/* rm,
-  /lib/x86_64-linux-gnu/* rm,
-  /usr/lib/x86_64-linux-gnu/* rm,
+  /lib/@{multiarch}/* rm,
+  /usr/lib/@{multiarch}/* rm,
 
   # We'll allow tlsdate to write a new root to chroot into
   /tmp/ r,
@@ -219,12 +212,10 @@
   /dev/urandom r,
 
   # Allow mapping of shared libraries
-  /lib/* rm,
-  /lib32/* rm,
-  /lib64/* rm,
+  /lib{,32,64}/* rm,
   /usr/lib/* rm,
-  /lib/x86_64-linux-gnu/* rm,
-  /usr/lib/x86_64-linux-gnu/* rm,
+  /lib/@{multiarch}/* rm,
+  /usr/lib/@{multiarch}/* rm,
 }
 
 /usr/bin/tlsdate-dbus-announce {
@@ -237,10 +228,8 @@
   /etc/ld.so.cache r,
 
   # Allow mapping of shared libraries
-  /lib/* rm,
-  /lib32/* rm,
-  /lib64/* rm,
+  /lib{,32,64}/* rm,
   /usr/lib/* rm,
-  /lib/x86_64-linux-gnu/* rm,
-  /usr/lib/x86_64-linux-gnu/* rm,
+  /lib/@{multiarch}/* rm,
+  /usr/lib/@{multiarch}/* rm,
 }
