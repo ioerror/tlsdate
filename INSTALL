@@ -143,7 +143,32 @@ OpenBSD builds from source and is not yet in the port system:
   make
   make install
 
-To make a Debian source package:
+If you wish to make a Debian package there are several options. It is expected
+that you are building for Sid and that you are familiar with how to build
+Debian packages that are for upload into Debian directly. It is expected that
+you should build in a chroot if you wish to have reliable and or reproducible
+builds.
+ 
+  # Prep your schroot
+  mysid=sid$RANDOM;
+  schroot -b -c sid -n $mysid;
+  dd-schroot-cmd -c $mysid apt-get update;
+  dd-schroot-cmd -c $mysid apt-get build-dep tlsdate;
+  dd-schroot-cmd -c $mysid apt-get install git ca-certificates \
+     lintian libevent-dev;
+  echo "Your chroot is called: $mysid";
+  schroot -r -c $mysid
+  # Build tlsdate
+  git clone https://www.github.com/ioerror/tlsdate/
+  cd tlsdate/
+  git checkout debian-master
+  dpkg-buildpackage -B "-mMyName <MyEmail>" -uc
+
+Building without schroot should work with dpkg-buildpackage but the build
+environment will have to be manually configured.
+
+To make a Debian source package if you are the tlsdate maintainer (this isn't
+you):
 
   git checkout master
   ./autogen.sh
@@ -153,7 +178,8 @@ To make a Debian source package:
   cd ../
   dpkg-source -i'.*' -b tlsdate
 
-Example of how to build a package for Debian:
+Example of how to build a package for Debian if you are a maintainer (you
+aren't):
 
   # First build the source package above
   scp tlsdate_* dixie.torproject.org:~/src/debian-builds/
