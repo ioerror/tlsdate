@@ -30,6 +30,7 @@ extern const char *kTempSuffix;
 
 extern int verbose;
 extern int verbose_debug;
+void initalize_syslog (void);
 void die (const char *fmt, ...);
 void verb (const char *fmt, ...);
 extern void logat (int isverbose, const char *fmt, ...);
