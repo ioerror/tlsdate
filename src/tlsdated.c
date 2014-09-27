@@ -443,6 +443,7 @@ cleanup_main (struct state *state)
 int API
 main (int argc, char *argv[], char *envp[])
 {
+  initalize_syslog ();
   struct state state;
   /* TODO(wad) EVENT_BASE_FLAG_PRECISE_TIMER | EVENT_BASE_FLAG_PRECISE_TIMER */
   struct event_base *base = event_base_new();
