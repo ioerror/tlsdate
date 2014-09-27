@@ -53,6 +53,12 @@ die (const char *fmt, ...)
   exit (1);
 }
 
+/* Initalize syslog */
+void initalize_syslog (void)
+{
+  openlog("tlsdated", LOG_PID, LOG_DAEMON);
+}
+
 /** helper function for 'verbose' output */
 void
 verb (const char *fmt, ...)
