@@ -154,8 +154,9 @@ builds.
   schroot -b -c sid -n $mysid;
   dd-schroot-cmd -c $mysid apt-get update;
   dd-schroot-cmd -c $mysid apt-get build-dep tlsdate;
+  # If build-dep is building an older tlsdate, you may need these tools too:
   dd-schroot-cmd -c $mysid apt-get install git ca-certificates \
-     lintian libevent-dev;
+     lintian libevent-dev libseccomp-dev;
   echo "Your chroot is called: $mysid";
   schroot -r -c $mysid
   # Build tlsdate
