@@ -3,7 +3,7 @@ tlsdate (0.0.11-1) unstable; urgency=low
   * New upstream release
   * Upstream now uses AppArmor multiarch abstraction (Closes: #704680)
 
- -- Jacob Appelbaum <jacob@appelbaum.net>  XXX TBD
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Sat, 27 Sep 2014 14:03:36 +0000
 
 tlsdate (0.0.10-1) unstable; urgency=low
 
