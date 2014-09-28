@@ -124,7 +124,7 @@ FIXTURE (tlsdate)
 
 FIXTURE_SETUP (tlsdate)
 {
-  memset (self, 0, sizeof (self));
+  memset (self, 0, sizeof (*self));
   /* TODO(wad) make this use the same function tlsdated uses. */
   self->state.base = event_base_new();
   set_conf_defaults (&self->state.opts);
