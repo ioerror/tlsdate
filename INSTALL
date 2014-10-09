@@ -168,6 +168,22 @@ builds.
 Building without schroot should work with dpkg-buildpackage but the build
 environment will have to be manually configured.
 
+To make a Debian package with git-buildpackage is also quite easy:
+
+  # install dependencies
+  apt-get install git ca-certificates \
+     lintian libevent-dev libseccomp-dev build-essential \
+     autoconf dh-autoreconf dh-systemd automake autotools-dev \
+     dh-apparmor libssl-dev libevent-dev libtool pkg-config \
+     debhelper fakeroot;
+  git clone https://www.github.com/ioerror/tlsdate/
+  cd tlsdate/
+  git checkout debian-master
+  git-buildpackage --git-upstream-branch=master \
+    --git-debian-branch=debian-master \
+    --git-upstream-tree=master \
+    --git-ignore-new
+
 To make a Debian source package if you are the tlsdate maintainer (this isn't
 you):
 
