@@ -1429,7 +1429,7 @@ main(int argc, char **argv)
     if (CLOCK_SEC(&server_time) <= RECENT_COMPILE_DATE)
       die ("remote server is a false ticker!\n");
     if (0 != clock_set_real_time(&server_time))
-      die ("setting time failed: %s (Difference from server is about %d)\n",
+      die ("setting time failed: %s (Difference from server is about %d s)\n",
      strerror (errno),
      CLOCK_SEC(&start_time) - server_time_s);
     verb ("V: setting time succeeded\n");

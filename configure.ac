@@ -217,7 +217,7 @@ case "$host" in
     dnl the fmemopen prototype is hidden causing the unit tests to segfault.
     dnl This can happen if gcc is a symlink to gcc46 and is preferred to clang.
     AC_CHECK_FUNC([fmemopen], ,
-                  [AC_MSG_ERROR([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
+                  [AC_MSG_WARN([Missing fmemopen, unit tests are likely to segfault. Try CC=clang.])])
     AC_ARG_WITH([unpriv-group],
                 [AS_HELP_STRING([--with-unpriv-group=<group>],
                 [Group to drop privs to @<:@default: nobody@:>@])])
@@ -423,6 +423,15 @@ case "$host" in
     LDFLAGS="$LDFLAGS -lbsd"
     CC="/boot/develop/abi/x86/gcc4/tools/gcc-4.6.3-haiku-121101/bin/gcc"
     ;;
+  *)
+   AC_ARG_WITH([unpriv-group],
+               [AS_HELP_STRING([--with-unpriv-group=<group>],
+               [Group to drop privs to @<:@default: nogroup@:>@])])
+   AS_CASE([$with_unpriv_group],
+           [""|yes|no], [UNPRIV_GROUP="nogroup"],
+           [*], [UNPRIV_GROUP=$with_unpriv_group])
+   AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
+   ;;
 esac
 
 dnl Android conditional
@@ -438,14 +447,6 @@ AS_CASE([$with_unpriv_user],
         [*], [UNPRIV_USER=$with_unpriv_user])
 AC_DEFINE_UNQUOTED([UNPRIV_USER], ["${UNPRIV_USER}"], [Unprivileged user])
 AC_SUBST([UNPRIV_USER])
-
-AC_ARG_WITH([unpriv-group],
-            [AS_HELP_STRING([--with-unpriv-group=<group>],
-                            [Group to drop privs to @<:@default: nogroup@:>@])])
-AS_CASE([$with_unpriv_group],
-        [""|yes|no], [UNPRIV_GROUP="nogroup"],
-        [*], [UNPRIV_GROUP=$with_unpriv_group])
-AC_DEFINE_UNQUOTED([UNPRIV_GROUP], ["${UNPRIV_GROUP}"], [Unprivileged group])
 
 AC_MSG_RESULT(${UNPRIV_USER}:${UNPRIV_GROUP})
 

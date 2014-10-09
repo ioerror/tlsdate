@@ -261,6 +261,13 @@ endif
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
+# XXX This conditional should apply for any system where we're building
+# conf_unittest, but I don't know how to tell that to automake.
+if !HAVE_FMEMOPEN
+if HAVE_FUNOPEN
+src_conf_unittest_SOURCES+= src/common/fmemopen-funopen.c
+endif
+endif
 endif
 
 if TARGET_NETBSD
