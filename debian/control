@@ -13,7 +13,8 @@ Build-Depends: autoconf,
                libssl-dev,
                libevent-dev (>= 2.0),
                libtool,
-               pkg-config
+               pkg-config,
+               hardening-wrapper
 Standards-Version: 3.9.5
 Homepage: https://www.github.com/ioerror/tlsdate/
 Vcs-Git: https://www.github.com/ioerror/tlsdate/ -b debian-master

@@ -3,6 +3,10 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+# Enable Debian hardening at build time
+# https://wiki.debian.org/Hardening#hardening-wrapper
+export DEB_BUILD_HARDENING=1
+
 # To make this package Deterministic, we parse the last Debian release date
 # from the debian/changelog. This means that we must do regular releases! :)
 # To read more about this process and other details, please refer to this bug:
