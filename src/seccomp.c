@@ -69,6 +69,21 @@ enable_setter_seccomp (void)
     BPF_STMT (BPF_LD+BPF_W+BPF_ABS,
     offsetof (struct seccomp_data, nr)),
 
+    /* Process ALLOWs as quickly as possible */
+    SC_ALLOW (read),
+    SC_ALLOW (write),
+    SC_ALLOW (pwritev),
+
+    SC_ALLOW (settimeofday),
+    SC_ALLOW (ioctl), /* TODO(wad) filter for fd and RTC_SET_TIME */
+
+    SC_ALLOW (lseek),
+    SC_ALLOW (close),
+    SC_ALLOW (munmap),
+
+    SC_ALLOW (exit_group),
+    SC_ALLOW (exit),
+
     SC_DENY (open, EINVAL),
     SC_DENY (fcntl, EINVAL),
     SC_DENY (fstat, EINVAL),
@@ -87,18 +102,6 @@ enable_setter_seccomp (void)
 #ifdef __NR_socketcall
     SC_DENY (socketcall, EINVAL),
 #endif
-
-    SC_ALLOW (lseek),
-    SC_ALLOW (close),
-    SC_ALLOW (munmap),
-
-    SC_ALLOW (settimeofday),
-    SC_ALLOW (read),
-    SC_ALLOW (write),
-    SC_ALLOW (pwritev),
-    SC_ALLOW (ioctl), /* TODO(wad) filter for fd and RTC_SET_TIME */
-    SC_ALLOW (exit_group),
-    SC_ALLOW (exit),
     BPF_STMT (BPF_RET+BPF_K, SECCOMP_FILTER_FAIL),
   };
   static const struct sock_fprog prog =
