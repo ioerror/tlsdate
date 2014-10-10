@@ -57,6 +57,7 @@ die (const char *fmt, ...)
 void initalize_syslog (void)
 {
   openlog ("tlsdated", LOG_PID, LOG_DAEMON);
+  info ("tlsdated parasitic time synchronization initialized");
 }
 
 /* Signal to syslog that we're finished logging */
