@@ -76,6 +76,9 @@ enable_setter_seccomp (void)
 
     SC_ALLOW (settimeofday),
     SC_ALLOW (ioctl), /* TODO(wad) filter for fd and RTC_SET_TIME */
+#ifdef __NR_time /* This is required for x86 systems */
+    SC_ALLOW (time),
+#endif
 
     SC_ALLOW (lseek),
     SC_ALLOW (close),
