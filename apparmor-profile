@@ -1,5 +1,5 @@
 #
-#    AppArmor tlsdate profile for Ubuntu 11.04 and later
+#    AppArmor tlsdate profile for Debian GNU/Linux
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -196,40 +196,4 @@
   /usr/bin/tlsdate-routeup ixm,
   /usr/bin/tlsdate-helper ixm,
   /usr/bin/tlsdate ixm,
-}
-
-/usr/bin/tlsdate-routeup {
-  #include <abstractions/consoles>
-
-  # Allow reading of /etc/tlsdate/
-  /etc/tlsdate/*/** r,
-
-  # Allow reading of libs and /tmp
-  /etc/ld.so.cache r,
-
-  # Random number generation requires these two
-  /dev/random r,
-  /dev/urandom r,
-
-  # Allow mapping of shared libraries
-  /lib{,32,64}/* rm,
-  /usr/lib/* rm,
-  /lib/@{multiarch}/* rm,
-  /usr/lib/@{multiarch}/* rm,
-}
-
-/usr/bin/tlsdate-dbus-announce {
-  #include <abstractions/consoles>
-
-  # Allow reading of /etc/tlsdate/
-  /etc/tlsdate/*/** r,
-
-  # Allow reading of libs and /tmp
-  /etc/ld.so.cache r,
-
-  # Allow mapping of shared libraries
-  /lib{,32,64}/* rm,
-  /usr/lib/* rm,
-  /lib/@{multiarch}/* rm,
-  /usr/lib/@{multiarch}/* rm,
 }
