@@ -437,7 +437,7 @@ cleanup_main (struct state *state)
     event_base_free (state->base);
   memset(state, 0, sizeof(*state));
   info ("tlsdated clean up finished; exiting!");
-  terminate_syslog (void);
+  terminate_syslog ();
   return 0;
 }
 
@@ -445,7 +445,7 @@ cleanup_main (struct state *state)
 int API
 main (int argc, char *argv[], char *envp[])
 {
-  initalize_syslog (void);
+  initalize_syslog ();
   info ("tlsdated parasitic time synchronization initialized");
   struct state state;
   /* TODO(wad) EVENT_BASE_FLAG_PRECISE_TIMER | EVENT_BASE_FLAG_PRECISE_TIMER */
