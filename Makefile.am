@@ -82,7 +82,6 @@ man_MANS+= man/tlsdate-helper.1
 
 if TARGET_LINUX
 man_MANS+= man/tlsdated.8
-man_MANS+= man/tlsdate-routeup.1
 man_MANS+= man/tlsdated.conf.5
 endif
 
