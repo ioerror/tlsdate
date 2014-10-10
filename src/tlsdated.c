@@ -446,7 +446,6 @@ int API
 main (int argc, char *argv[], char *envp[])
 {
   initalize_syslog ();
-  info ("tlsdated parasitic time synchronization initialized");
   struct state state;
   /* TODO(wad) EVENT_BASE_FLAG_PRECISE_TIMER | EVENT_BASE_FLAG_PRECISE_TIMER */
   struct event_base *base = event_base_new();
