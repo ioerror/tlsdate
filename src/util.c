@@ -56,7 +56,13 @@ die (const char *fmt, ...)
 /* Initalize syslog */
 void initalize_syslog (void)
 {
-  openlog("tlsdated", LOG_PID, LOG_DAEMON);
+  openlog ("tlsdated", LOG_PID, LOG_DAEMON);
+}
+
+/* Signal to syslog that we're finished logging */
+void terminate_syslog (void)
+{
+  closelog (void);
 }
 
 /** helper function for 'verbose' output */
