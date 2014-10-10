@@ -62,7 +62,7 @@ void initalize_syslog (void)
 /* Signal to syslog that we're finished logging */
 void terminate_syslog (void)
 {
-  closelog (void);
+  closelog ();
 }
 
 /** helper function for 'verbose' output */
