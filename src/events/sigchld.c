@@ -48,7 +48,7 @@ handle_child_death (struct state *state)
              info.si_pid, info.si_uid, info.si_status, info.si_code);
       return 1;
     }
-  info ("[event:%s] tlsdate reaped => "
+  verb ("[event:%s] tlsdate reaped => "
         "pid:%d uid:%d status:%d code:%d", __func__,
         info.si_pid, info.si_uid, info.si_status, info.si_code);
 
@@ -120,7 +120,7 @@ action_sigchld (evutil_socket_t fd, short what, void *arg)
    * pending children are sorted.
    */
   if (!handle_child_death (state) && !handle_child_stop (state))
-    info ("[event:%s] SIGCHLD fired but no children ready!", __func__);
+    verb ("[event:%s] SIGCHLD fired but no children ready!", __func__);
   while (handle_child_death (state) || handle_child_stop (state));
 }
 
