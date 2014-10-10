@@ -21,7 +21,7 @@ void action_run_tlsdate (evutil_socket_t fd, short what, void *arg)
   verb_debug ("[event:%s] fired", __func__);
   if (state->last_sync_type == SYNC_TYPE_NET)
     {
-      info ("[event:%s] called, but network time isn't needed",
+      verb ("[event:%s] called, but network time isn't needed",
             __func__);
       return;
     }
@@ -57,7 +57,7 @@ void action_run_tlsdate (evutil_socket_t fd, short what, void *arg)
       return;
     }
   state->running = 1;
-  info ("[event:%s] attempt %d backoff %d", __func__,
+  verb ("[event:%s] attempt %d backoff %d", __func__,
         state->tries, state->backoff);
   /* Setup a timeout before killing tlsdate */
   trigger_event (state, E_TLSDATE_TIMEOUT,

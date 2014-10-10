@@ -436,6 +436,7 @@ cleanup_main (struct state *state)
   if (state->base)
     event_base_free (state->base);
   memset(state, 0, sizeof(*state));
+  info ("tlsdated clean up finished; exiting!");
   return 0;
 }
 
@@ -444,6 +445,7 @@ int API
 main (int argc, char *argv[], char *envp[])
 {
   initalize_syslog ();
+  info ("tlsdated parasitic time synchronization initialized");
   struct state state;
   /* TODO(wad) EVENT_BASE_FLAG_PRECISE_TIMER | EVENT_BASE_FLAG_PRECISE_TIMER */
   struct event_base *base = event_base_new();
@@ -483,7 +485,7 @@ main (int argc, char *argv[], char *envp[])
       goto out;
     }
   /* fork off the privileged helper */
-  info ("spawning time setting helper . . .");
+  verb ("spawning time setting helper . . .");
   if (setup_time_setter (&state))
     {
       error ("could not fork privileged coprocess");
@@ -546,7 +548,7 @@ main (int argc, char *argv[], char *envp[])
       time_t disk_time = state.last_time;
       if (!load_disk_timestamp (state.timestamp_path, &disk_time))
         {
-          info ("disk timestamp available: yes");
+          verb ("disk timestamp available: yes");
           if (!is_sane_time (state.last_time) ||
               state.last_time < disk_time)
             {
@@ -556,7 +558,7 @@ main (int argc, char *argv[], char *envp[])
         }
       else
         {
-          info ("disk timestamp available: no");
+          verb ("disk timestamp available: no");
         }
     }
   if (!is_sane_time (state.last_time))
@@ -590,7 +592,7 @@ main (int argc, char *argv[], char *envp[])
     }
   /* Add a forced sync event to the event list. */
   action_kickoff_time_sync (-1, EV_TIMEOUT, &state);
-  info ("Entering dispatch . . .");
+  verb ("Entering dispatch . . .");
   event_base_dispatch (base);
   info ("tlsdated terminating gracefully");
 out:
