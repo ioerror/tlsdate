@@ -8,7 +8,8 @@
   Update man pages.
   Update AppArmor profile to remove unused stanzas.
   Fix seccomp filter support on x86 systems.
-  Refactor chatty tlsdated logging output to make it quiet
+  Refactor chatty tlsdated logging output to make it quiet.
+  Close syslog after tlsdated finishes using it.
 0.0.10 Fri 26, Sep, 2014 
   tlsdated removed from /usr/bin and now is only in /usr/sbin
   This release is because 0.0.9 had two trivial bugs. Argh.

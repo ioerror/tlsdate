@@ -594,7 +594,7 @@ main (int argc, char *argv[], char *envp[])
   action_kickoff_time_sync (-1, EV_TIMEOUT, &state);
   verb ("Entering dispatch . . .");
   event_base_dispatch (base);
-  info ("tlsdated terminating gracefully");
+  verb ("tlsdated event dispatch terminating gracefully");
 out:
   return cleanup_main (&state);
 }
