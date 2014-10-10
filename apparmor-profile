@@ -126,7 +126,7 @@
   owner /tmp/tlsdate_*/ rw,
 }
 
-/usr/bin/tlsdated {
+/usr/sbin/tlsdated {
   #include <abstractions/consoles>
   #include <abstractions/ssl_certs>
 
@@ -177,6 +177,7 @@
 
   # RTC
   /dev/rtc0 rw,
+  /dev/rtc1 rw,
 
   # Allow mapping of shared libraries
   /lib{,32,64}/* rm,
@@ -192,8 +193,6 @@
   owner /var/cache/tlsdated/* rw,
 
   # We'll allow tlsdated to exec tlsdate-helper
-  /usr/bin/tlsdate-dbus-announce ixm,
-  /usr/bin/tlsdate-routeup ixm,
   /usr/bin/tlsdate-helper ixm,
   /usr/bin/tlsdate ixm,
 }
