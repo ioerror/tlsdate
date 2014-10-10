@@ -436,6 +436,7 @@ cleanup_main (struct state *state)
   if (state->base)
     event_base_free (state->base);
   memset(state, 0, sizeof(*state));
+  info ("tlsdated clean up finished; exiting!");
   return 0;
 }
 
