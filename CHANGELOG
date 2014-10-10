@@ -3,10 +3,12 @@
   Update AppArmor profile to support multiarch systems.
   Instruct syslog to properly output tlsdated and pid information.
     (This closes: https://github.com/ioerror/tlsdate/issues/144 )
-  Fix -Wsizeof-pointer-memaccess in build of tlsdated unit test
-  FreeBSD build improvements by Fabian Keil
-  Update man pages
-  Update AppArmor profile to remove unused stanzas
+  Fix -Wsizeof-pointer-memaccess in build of tlsdated unit test.
+  FreeBSD build improvements (Fabian Keil).
+  Update man pages.
+  Update AppArmor profile to remove unused stanzas.
+  Fix seccomp filter support on x86 systems.
+  Refactor chatty tlsdated logging output to make it quiet
 0.0.10 Fri 26, Sep, 2014 
   tlsdated removed from /usr/bin and now is only in /usr/sbin
   This release is because 0.0.9 had two trivial bugs. Argh.
