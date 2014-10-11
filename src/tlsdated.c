@@ -568,6 +568,7 @@ main (int argc, char *argv[], char *envp[])
     }
   /* Save and announce the initial time source. */
   trigger_event (&state, E_SAVE, -1);
+  verb ("tlsdated parasitic time synchronization initialized");
   info ("initial time sync type: %s", sync_type_str (state.last_sync_type));
   /* Initialize platform specific loop behavior */
   if (platform_init_cros (&state))
