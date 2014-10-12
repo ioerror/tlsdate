@@ -74,6 +74,10 @@ verb (const char *fmt, ...)
   if (! verbose ) return;
   va_start(ap, fmt);
   vfprintf(stderr, fmt, ap);
+  fprintf (stderr, "\n");
+  va_end(ap);
+  va_start(ap, fmt);
+  vsyslog (LOG_INFO, fmt, ap);
   va_end(ap);
 }
 
@@ -87,7 +91,7 @@ void API logat (int isverbose, const char *fmt, ...)
   fprintf (stderr, "\n");
   va_end (ap);
   va_start (ap, fmt);
-  vsyslog (LOG_INFO, fmt, ap);
+  vsyslog (LOG_DAEMON, fmt, ap);
   va_end (ap);
 }
 
