@@ -199,23 +199,10 @@ To make a Debian package with git-buildpackage is also quite easy:
 To make a Debian source package if you are the tlsdate maintainer (this isn't
 you):
 
+  git checkout master
+  make debian_orig
   git checkout debian-master
   debuild -S
-
-Example of how to build a package for Debian if you are a maintainer (you
-aren't):
-
-  # First build the source package above
-  scp tlsdate_* dixie.torproject.org:~/src/debian-builds/
-  ~/bin/sbuild-stuff tlsdate_0.0.1-1.dsc
-  # Download or build the package locally
-  # and sign the .changes or .dsc file
-  debsign -k0xD81D840E tlsdate_0.0.1-1.dsc 
-
-Example of how to upload it (after a Debian sponsor signs off on it):
-
-  dget http://www.example.com/tlsdate_0.0.1-1_amd64.changes
-  dput tlsdate_0.0.1-1_amd64.changes
 
 For Android:
 
