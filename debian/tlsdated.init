@@ -13,7 +13,6 @@
 #                    enabled service, and provides some protection against
 #                    adversaries that try to feed you malicious time
 #                    information.
-
 ### END INIT INFO
 
 # Author: Jacob Appelbaum <jacob@appelbaum.net>
