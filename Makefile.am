@@ -64,6 +64,7 @@ maintainer-clean-local:
 	@rm m4/lt~obsolete.m4
 	@rm -f tlsdate-*.tar.gz
 	-rm src/configmake.h
+	-rm dbus/org.torproject.tlsdate.conf
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 certdir =  @TLSDATE_CA_ROOTS@
@@ -89,7 +90,7 @@ EXTRA_DIST+= $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
 debian_orig:
-	$(MAKE) distcheck
+	$(MAKE) dist
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
 
 git-tag:
