@@ -107,11 +107,6 @@ It should also be possible to install tlsdate on OS X 10.8.x with brew directly:
 
   brew install tlsdate
 
-To make an unsigned Debian package from the root of the git repository:
-
-  git checkout debian-master
-  debuild
-
 On Fedora:
 
   yum install tlsdate
@@ -180,7 +175,7 @@ reproducible builds.
 Building without schroot should work with dpkg-buildpackage but the build
 environment will have to be manually configured.
 
-To make a Debian package with git-buildpackage is also quite easy:
+To make a Debian package with git-buildpackage is the expected build process:
 
   # install dependencies
   apt-get install git ca-certificates \
@@ -195,14 +190,6 @@ To make a Debian package with git-buildpackage is also quite easy:
     --git-debian-branch=debian-master \
     --git-upstream-tree=master \
     --git-ignore-new
-
-To make a Debian source package if you are the tlsdate maintainer (this isn't
-you):
-
-  git checkout master
-  make debian_orig
-  git checkout debian-master
-  debuild -S
 
 For Android:
 
