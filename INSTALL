@@ -85,7 +85,8 @@ Please note that setting time on GNU/Hurd has not yet been tested.
 
 On ChromeOS:
 
- tlsdated and tlsdate is part of the ChromeOS TCB; no install needed.
+ tlsdated and tlsdate are included in the ChromeOS TCB; no install needed. They
+ run automatically and are the core ntp service for ChromeOS.
 
 On Gentoo:
 
