@@ -1,34 +1,36 @@
-#!/bin/sh
+#! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          tlsdated
-# Required-Start:    $network $local_fs $remote_fs
-# Required-Stop:     $local_fs $remote_fs
+# Required-Start:    $network $local_fs $remote_fs $syslog
+# Required-Stop:     $network $local_fs $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: secure parasitic rdate replacement
-# Description:       tlsdate sets the local clock by securely connecting with
+# Short-Description: Secure parasitic time daemon
+# Description:       tlsdated sets the local clock by securely connecting with
 #                    TLS to remote servers and extracting the remote time out
-#                    of the secure handshake. Unlike ntpdate, tlsdate uses
+#                    of the secure handshake. Unlike ntpdate, tlsdated uses
 #                    TCP, for instance connecting to a remote HTTPS or TLS
 #                    enabled service, and provides some protection against
 #                    adversaries that try to feed you malicious time
 #                    information.
-#                    
+
 ### END INIT INFO
 
 # Author: Jacob Appelbaum <jacob@appelbaum.net>
+# Based on latest /etc/init.d/skeleton
+# Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="secure parasitic rdate replacement daemon"
+DESC="secure parasitic time daemon"
 NAME=tlsdated
-DAEMON=/usr/sbin/tlsdated
-DAEMON_ARGS=""
+DAEMON=/usr/sbin/$NAME
+DAEMON_ARGS="-f /etc/tlsdate/tlsdated.conf"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
 # Exit if the package is not installed
-[ -x $DAEMON ] || exit 0
+[ -x "$DAEMON" ] || exit 0
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
@@ -37,7 +39,8 @@ SCRIPTNAME=/etc/init.d/$NAME
 . /lib/init/vars.sh
 
 # Define LSB log_* functions.
-# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
 . /lib/lsb/init-functions
 
 #
@@ -49,9 +52,9 @@ do_start()
 	#   0 if daemon has been started
 	#   1 if daemon was already running
 	#   2 if daemon could not be started
-	start-stop-daemon --background --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+	start-stop-daemon --start --background -m --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
 		|| return 1
-	start-stop-daemon --background --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
+	start-stop-daemon --start --background -m --pidfile $PIDFILE --exec $DAEMON -- \
 		$DAEMON_ARGS \
 		|| return 2
 	# Add code here, if necessary, that waits for the process to be ready
@@ -69,7 +72,7 @@ do_stop()
 	#   1 if daemon was already stopped
 	#   2 if daemon could not be stopped
 	#   other if a failure occurred
-	start-stop-daemon --stop --quiet --retry=TERM/5/KILL/1 --pidfile $PIDFILE --name $NAME
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
 	RETVAL="$?"
 	[ "$RETVAL" = 2 ] && return 2
 	# Wait for children to finish too if this is a daemon that forks
@@ -78,7 +81,7 @@ do_stop()
 	# that waits for the process to drop all resources that could be
 	# needed by services started subsequently.  A last resort is to
 	# sleep for some time.
-	start-stop-daemon --stop --quiet --oknodo --retry=0/5/KILL/5 --exec $DAEMON
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
 	[ "$?" = 2 ] && return 2
 	# Many daemons don't delete their pidfiles when they exit.
 	rm -f $PIDFILE
@@ -100,13 +103,13 @@ do_reload() {
 
 case "$1" in
   start)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC " "$NAME"
-    do_start
-    case "$?" in
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
 		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
 	esac
-  ;;
+	;;
   stop)
 	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
 	do_stop
@@ -116,8 +119,8 @@ case "$1" in
 	esac
 	;;
   status)
-       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-       ;;
+	status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+	;;
   #reload|force-reload)
 	#
 	# If do_reload() is not implemented then leave this commented out
@@ -144,13 +147,12 @@ case "$1" in
 		esac
 		;;
 	  *)
-	  	# Failed to stop
+		# Failed to stop
 		log_end_msg 1
 		;;
 	esac
 	;;
   *)
-	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
 	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
 	exit 3
 	;;
