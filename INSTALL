@@ -56,11 +56,22 @@ On Debian Gnu/Linux sid/unstable:
 
   apt-get install tlsdate
 
-On Debian GNU/Linux and related systems, we provide an init.d script that
+On other versions of Debian GNU/Linux and with Debian backports, tlsdate may be
+available:
+
+  apt-get install tlsdate
+
+On recent Debian GNU/Linux and related systems, we provide a systemd service.
+It will notice network changes and regularly invoke tlsdate to keep the clock
+in sync. Start it like so:
+
+  service tlsdated start
+
+On older Debian GNU/Linux and related systems, we provide an init.d script that
 controls the tlsdated daemon. It will notice network changes and regularly
 invoke tlsdate to keep the clock in sync. Start it like so:
 
-  /etc/init.d/tlsdate start
+  /etc/init.d/tlsdated start
 
 Debian GNU/Hurd does not yet support autotools bootstrapping and users must
 bootstrap with `make dist` on another platform from the tlsdate git
@@ -74,7 +85,8 @@ Please note that setting time on GNU/Hurd has not yet been tested.
 
 On ChromeOS:
 
- tlsdate is part of the ChromeOS TCB; no install needed
+ tlsdated and tlsdate are included in the ChromeOS TCB; no install needed. They
+ run automatically and are the core ntp service for ChromeOS.
 
 On Gentoo:
 
@@ -94,11 +106,6 @@ for autoconf and automake packages:
 It should also be possible to install tlsdate on OS X 10.8.x with brew directly:
 
   brew install tlsdate
-
-To make an unsigned Debian package:
-
-  git checkout debian-master
-  make deb
 
 On Fedora:
 
@@ -143,11 +150,11 @@ OpenBSD builds from source and is not yet in the port system:
   make
   make install
 
-If you wish to make a Debian package there are several options. It is expected
-that you are building for Sid and that you are familiar with how to build
-Debian packages that are for upload into Debian directly. It is expected that
-you should build in a chroot if you wish to have reliable and or reproducible
-builds.
+If you wish to make a Debian package there are several other options. It is
+expected that you are building for Sid and that you are familiar with how to
+build Debian packages that are for upload into Debian directly. It is expected
+that you should build in a chroot if you wish to have reliable and or
+reproducible builds.
  
   # Prep your schroot
   mysid=sid$RANDOM;
@@ -168,7 +175,7 @@ builds.
 Building without schroot should work with dpkg-buildpackage but the build
 environment will have to be manually configured.
 
-To make a Debian package with git-buildpackage is also quite easy:
+To make a Debian package with git-buildpackage is the expected build process:
 
   # install dependencies
   apt-get install git ca-certificates \
@@ -183,32 +190,6 @@ To make a Debian package with git-buildpackage is also quite easy:
     --git-debian-branch=debian-master \
     --git-upstream-tree=master \
     --git-ignore-new
-
-To make a Debian source package if you are the tlsdate maintainer (this isn't
-you):
-
-  git checkout master
-  ./autogen.sh
-  ./configure && make debian_orig
-  git checkout debian-master
-  fakeroot debian/rules clean
-  cd ../
-  dpkg-source -i'.*' -b tlsdate
-
-Example of how to build a package for Debian if you are a maintainer (you
-aren't):
-
-  # First build the source package above
-  scp tlsdate_* dixie.torproject.org:~/src/debian-builds/
-  ~/bin/sbuild-stuff tlsdate_0.0.1-1.dsc
-  # Download or build the package locally
-  # and sign the .changes or .dsc file
-  debsign -k0xD81D840E tlsdate_0.0.1-1.dsc 
-
-Example of how to upload it (after a Debian sponsor signs off on it):
-
-  dget http://www.example.com/tlsdate_0.0.1-1_amd64.changes
-  dput tlsdate_0.0.1-1_amd64.changes
 
 For Android:
 
