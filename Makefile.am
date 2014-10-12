@@ -64,6 +64,7 @@ maintainer-clean-local:
 	@rm m4/lt~obsolete.m4
 	@rm -f tlsdate-*.tar.gz
 	-rm src/configmake.h
+	-rm dbus/org.torproject.tlsdate.conf
 	@find ./ | $(GREP) \~$$ | xargs rm -f
 
 certdir =  @TLSDATE_CA_ROOTS@
