@@ -38,7 +38,7 @@ extern void logat (int isverbose, const char *fmt, ...);
 
 #define verb_debug debug
 #define debug(fmt, ...) if (verbose_debug) logat(1, fmt, ## __VA_ARGS__)
-#define info(fmt, ...) logat(1, fmt, ## __VA_ARGS__)
+#define info(fmt, ...) logat(0, fmt, ## __VA_ARGS__)
 #define pinfo(fmt, ...) logat(1, fmt ": %s", ## __VA_ARGS__, strerror(errno))
 #define error(fmt, ...) logat(0, fmt, ## __VA_ARGS__)
 #define perror(fmt, ...) logat(0, fmt ": %s", ## __VA_ARGS__, strerror(errno))
