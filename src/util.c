@@ -77,7 +77,7 @@ verb (const char *fmt, ...)
   fprintf (stderr, "\n");
   va_end(ap);
   va_start(ap, fmt);
-  vsyslog (LOG_INFO, fmt, ap);
+  vsyslog (LOG_DAEMON, fmt, ap);
   va_end(ap);
 }
 
