@@ -89,7 +89,7 @@ EXTRA_DIST+= $(man_MANS)
 
 .PHONY: debian_orig git-tag git-push git-tag-debian deb really-clean valgrind_test
 debian_orig:
-	$(MAKE) distcheck
+	$(MAKE) dist
 	mv tlsdate-$(VERSION).tar.gz ../tlsdate_$(VERSION).orig.tar.gz
 
 git-tag:
