@@ -9,6 +9,9 @@ case "$1" in
 		dpkg-maintscript-helper mv_conffile \
 			/etc/default/tlsdate /etc/default/tlsdated 0.0.7-1.3~ -- "$@"
 		;;
+	install)
+		date -u +%s > /var/cache/tlsdated/timestamp
+		;;
 	*)
 		;;
 esac
