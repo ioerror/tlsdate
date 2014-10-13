@@ -136,6 +136,8 @@ void no_new_privs(void)
 void enable_seccomp(void)
 {
 #ifdef HAVE_SECCOMP_FILTER
+ int status;
+ prctl (PR_SET_NAME, "tlsdate seccomp");
  verb ("seccomp support is enabled");
  if (enable_setter_seccomp())
  {
