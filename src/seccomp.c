@@ -87,6 +87,11 @@ enable_setter_seccomp (void)
     SC_ALLOW (exit_group),
     SC_ALLOW (exit),
 
+    /* tlsdate-helper */
+#ifdef __NR_sys_getuid
+    SC_ALLOW (sys_getuid),
+#endif
+
     SC_DENY (open, EINVAL),
     SC_DENY (fcntl, EINVAL),
     SC_DENY (fstat, EINVAL),
