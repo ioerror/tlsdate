@@ -182,7 +182,7 @@ To make a Debian package with git-buildpackage is the expected build process:
      lintian libevent-dev libseccomp-dev build-essential \
      autoconf dh-autoreconf dh-systemd automake autotools-dev \
      dh-apparmor libssl-dev libevent-dev libtool pkg-config \
-     debhelper fakeroot hardening-wrapper;
+     debhelper fakeroot hardening-wrapper git-buildpackage;
   git clone https://www.github.com/ioerror/tlsdate/
   cd tlsdate/
   git checkout debian-master
