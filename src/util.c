@@ -65,6 +65,19 @@ void terminate_syslog (void)
   closelog ();
 }
 
+/** helper function for 'verbose' output without syslog support */
+void
+verb_no_syslog (const char *fmt, ...)
+{
+  va_list ap;
+
+  if (! verbose ) return;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf (stderr, "\n");
+  va_end(ap);
+}
+
 /** helper function for 'verbose' output */
 void
 verb (const char *fmt, ...)
