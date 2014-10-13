@@ -94,6 +94,6 @@ tlsdate (struct state *state)
       _exit (2);
     }
   execve (new_argv[0], new_argv, state->envp);
-  perror ("execve() failed");
+  perror ("[tlsdate-monitor] execve() failed");
   _exit (1);
 }
