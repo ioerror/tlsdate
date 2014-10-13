@@ -247,6 +247,9 @@ src_proxy_bio_unittest_SOURCES = src/proxy-bio.c
 src_proxy_bio_unittest_SOURCES+= src/proxy-bio-unittest.c
 src_proxy_bio_unittest_SOURCES+= src/test-bio.c
 src_proxy_bio_unittest_SOURCES+= src/util.c
+if HAVE_SECCOMP_FILTER
+src_proxy_bio_unittest_SOURCES+= src/seccomp.c
+endif
 check_PROGRAMS+= src/proxy-bio_unittest
 noinst_PROGRAMS+= src/proxy-bio_unittest
 endif
