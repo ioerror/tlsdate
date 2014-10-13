@@ -29,6 +29,9 @@
 #include <grp.h>
 #include <arpa/inet.h>
 #include <ctype.h>
+#ifdef HAVE_PRCTL
+#include <sys/prctl.h>
+#endif
 
 #ifndef USE_POLARSSL
 #include <openssl/bio.h>
