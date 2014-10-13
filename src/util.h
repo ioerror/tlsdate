@@ -15,6 +15,9 @@
 
 #ifdef HAVE_PRCTL
 #include <sys/prctl.h>
+#ifndef PR_SET_NO_NEW_PRIVS
+#  define PR_SET_NO_NEW_PRIVS 38
+#endif
 #endif
 
 #include "src/rtc.h"
