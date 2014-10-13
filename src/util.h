@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#ifdef HAVE_PRCTL
+#include <sys/prctl.h>
+#endif
+
 #include "src/rtc.h"
 
 #ifdef TARGET_OS_HAIKU
