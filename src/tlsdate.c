@@ -204,7 +204,7 @@ main (int argc, char **argv)
           exit (1);
         }
     }
-  if (2 == verbose) {
+  if (1 == verbose) {
     fprintf(stderr,
       "V: tlsdate version %s\n"
             "V: We were called with the following arguments:\n"
