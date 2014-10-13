@@ -95,6 +95,25 @@ void API logat (int isverbose, const char *fmt, ...)
   va_end (ap);
 }
 
+void no_new_privs(void)
+{
+#ifdef TARGET_OS_LINUX
+#ifdef HAVE_PRCTL // XXX: Make this specific to PR_SET_NO_NEW_PRIVS
+  // Check to see if we're already set PR_SET_NO_NEW_PRIVS
+  // This happens in tlsdated earlier than when tlsdate-helper drops
+  // privileges.
+  if (0 == prctl (PR_GET_NO_NEW_PRIVS)) {
+    // Remove the ability to regain privilegess
+    if (0 != prctl (PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0));
+      die ("Failed to PR_SET_NO_NEW_PRIVS");
+  } else {
+    verb ("V: Parent process has already set PR_SET_NO_NEW_PRIVS");
+  }
+#else
+  verb ("V: we are unwilling to set PR_SET_NO_NEW_PRIVS");
+#endif
+#endif
+}
 void
 drop_privs_to (const char *user, const char *group)
 {
@@ -102,6 +121,8 @@ drop_privs_to (const char *user, const char *group)
   gid_t gid;
   struct passwd *pw;
   struct group  *gr;
+  no_new_privs ();
+
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
          without dropping to 'nobody' (setting time will fail in the end) */
@@ -136,18 +157,6 @@ drop_privs_to (const char *user, const char *group)
 #else
   if (0 != (setuid (uid) | seteuid (uid)))
     die ("Failed to setuid: %s\n", strerror (errno));
-#endif
-#ifdef HAVE_PRCTL
-  // Check to see if we're already set PR_SET_NO_NEW_PRIVS
-  // This happens in tlsdated earlier than when tlsdate-helper drops
-  // privileges.
-  if (0 == prctl (PR_GET_NO_NEW_PRIVS)) {
-    // Remove the ability to regain privilegess
-    if (0 != prctl (PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0));
-      die ("Failed to PR_SET_NO_NEW_PRIVS");
-  } else {
-    verb ("Parent process has already set PR_SET_NO_NEW_PRIVS");
-  }
 #endif
 }
 
