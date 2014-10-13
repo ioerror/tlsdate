@@ -733,7 +733,8 @@ check_san (SSL *ssl, const char *hostname)
                 break;
               }
             }
-            verb_debug ("V: subjectAltName found but not matched: %s, type: %s", nval->value, nval->name); // XXX: Clean this string!
+            verb_debug ("V: subjectAltName found but not matched: %s, type: %s",
+                nval->value, sanitize_string(nval->name));
           }
         }
       } else {
