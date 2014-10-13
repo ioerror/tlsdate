@@ -157,7 +157,6 @@ drop_privs_to (const char *user, const char *group)
   struct passwd *pw;
   struct group  *gr;
   enable_seccomp ();
-  no_new_privs ();
 
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
