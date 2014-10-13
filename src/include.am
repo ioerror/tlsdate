@@ -14,6 +14,10 @@ if TARGET_LINUX
 bin_PROGRAMS+= src/tlsdate
 bin_PROGRAMS+= src/tlsdate-helper
 
+if HAVE_SECCOMP_FILTER
+src_tlsdate_helper_SOURCES+= src/seccomp.c
+endif
+
 sbin_PROGRAMS+= src/tlsdated
 
 src_conf_unittest_SOURCES = src/conf.c
