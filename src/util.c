@@ -136,21 +136,17 @@ void no_new_privs(void)
 void enable_seccomp(void)
 {
 #ifdef HAVE_SECCOMP_FILTER
- int status;
- prctl (PR_SET_NAME, "tlsdate seccomp");
- verb ("seccomp support is enabled");
- if (enable_setter_seccomp())
- {
-   status = SETTER_NO_SBOX;
-   //IGNORE_EINTR (write (notify_fd, &status, sizeof(status)));
-   //close (notify_fd);
-   //close (save_fd);
-   _exit (status);
- }
+  int status;
+  prctl (PR_SET_NAME, "tlsdate seccomp");
+  verb ("V: seccomp support is enabled");
+  if (enable_setter_seccomp())
+  {
+    status = SETTER_NO_SBOX;
+    _exit (status);
+  }
 #else
- verb ("seccomp support is disabled");
+  verb ("V: seccomp support is disabled");
 #endif
-
 }
 
 void
@@ -161,7 +157,6 @@ drop_privs_to (const char *user, const char *group)
   struct passwd *pw;
   struct group  *gr;
   enable_seccomp ();
-  no_new_privs ();
 
   if (0 != getuid ())
     return; /* not running as root to begin with; should (!) be harmless to continue
