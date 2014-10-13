@@ -105,7 +105,7 @@ validate_proxy_scheme(const char *scheme)
     return;
   if (!strcmp(scheme, "socks5"))
     return;
-  die("invalid proxy scheme\n");
+  die("invalid proxy scheme");
 }
 
 static void
@@ -116,7 +116,7 @@ validate_proxy_host(const char *host)
                        "0123456789"
                        ".-";
   if (strspn(host, kValid) != strlen(host))
-    die("invalid char in host\n");
+    die("invalid char in host");
 }
 
 static void
@@ -124,7 +124,7 @@ validate_proxy_port(const char *port)
 {
   while (*port)
     if (!isdigit((int)(unsigned char)*port++))
-      die("invalid char in port\n");
+      die("invalid char in port");
 }
 
 static void
@@ -134,14 +134,14 @@ parse_proxy_uri(char *proxy, char **scheme, char **host, char **port)
   *scheme = proxy;
   proxy = strstr(proxy, "://");
   if (!proxy)
-    die("malformed proxy URI\n");
+    die("malformed proxy URI");
   *proxy = '\0'; /* terminate scheme string */
   proxy += strlen("://");
 
   *host = proxy;
   proxy = strchr(proxy, ':');
   if (!proxy)
-    die("malformed proxy URI\n");
+    die("malformed proxy URI");
   *proxy++ = '\0';
 
   *port = proxy;
@@ -186,9 +186,9 @@ make_ssl_bio(SSL_CTX *ctx)
   BIO *ssl = NULL;
 
   if (!(con = BIO_new(BIO_s_connect())))
-    die("BIO_s_connect failed\n");
+    die("BIO_s_connect failed");
   if (!(ssl = BIO_new_ssl(ctx, 1)))
-    die("BIO_new_ssl failed\n");
+    die("BIO_new_ssl failed");
   setup_proxy(ssl);
   BIO_push(ssl, con);
   return ssl;
@@ -256,10 +256,10 @@ handle_date_line(const char *dateline, uint32_t *result)
 
   dateline += 8;
   if (strlen(dateline) > MAX_DATE_LINE_LEN) {
-    verb("V: The date line was impossibly long.\n");
+    verb("V: The date line was impossibly long.");
     return -1;
   }
-  verb("V: The alleged date is <%s>\n", sanitize_string(dateline));
+  verb("V: The alleged date is <%s>", sanitize_string(dateline));
 
   while (*dateline == ' ')
     ++dateline;
@@ -280,10 +280,10 @@ handle_date_line(const char *dateline, uint32_t *result)
     if (year < 100)
       year += 1900;
 
-    verb("V: Parsed the date: %04d-%s-%02d %02d:%02d:%02d\n",
+    verb("V: Parsed the date: %04d-%s-%02d %02d:%02d:%02d",
          year, month, day, hour, min, sec);
   } else {
-    verb("V: Couldn't parse date.\n");
+    verb("V: Couldn't parse date.");
     return -1;
   }
 
@@ -327,7 +327,7 @@ read_http_date_from_bio(BIO *bio, uint32_t *result)
       return 0;
     buf_len += n;
     buf[buf_len] = 0;
-    verb_debug ("V: read %d bytes.\n", n, buf);
+    verb_debug ("V: read %d bytes.", n, buf);
 
     dateline = memmem(buf, buf_len, "\r\nDate: ", 8);
     if (NULL == dateline)
@@ -350,11 +350,11 @@ xmalloc (size_t size)
   void *ptr;
 
   if (0 == size)
-    die("xmalloc: zero size\n");
+    die("xmalloc: zero size");
 
   ptr = malloc(size);
   if (NULL == ptr)
-    die("xmalloc: out of memory (allocating %zu bytes)\n", size);
+    die("xmalloc: out of memory (allocating %zu bytes)", size);
 
   return ptr;
 }
@@ -365,7 +365,7 @@ static void
 xfree (void *ptr)
 {
   if (NULL == ptr)
-    die("xfree: NULL pointer given as argument\n");
+    die("xfree: NULL pointer given as argument");
 
   free(ptr);
 }
@@ -386,19 +386,19 @@ openssl_time_callback (const SSL* ssl, int where, int ret)
     uint32_t compiled_time = RECENT_COMPILE_DATE;
     uint32_t max_reasonable_time = MAX_REASONABLE_TIME;
     uint32_t server_time;
-    verb("V: freezing time for x509 verification\n");
+    verb("V: freezing time for x509 verification");
     memcpy(&server_time, ssl->s3->server_random, sizeof(uint32_t));
     if (compiled_time < ntohl(server_time)
         &&
         ntohl(server_time) < max_reasonable_time)
     {
-      verb("V: remote peer provided: %d, preferred over compile time: %d\n",
+      verb("V: remote peer provided: %d, preferred over compile time: %d",
             ntohl(server_time), compiled_time);
-      verb("V: freezing time with X509_VERIFY_PARAM_set_time\n");
+      verb("V: freezing time with X509_VERIFY_PARAM_set_time");
       X509_VERIFY_PARAM_set_time(ssl->ctx->cert_store->param,
                                  (time_t) ntohl(server_time) + 86400);
     } else {
-      die("V: the remote server is a false ticker! server: %d compile: %d\n",
+      die("V: the remote server is a false ticker! server: %d compile: %d",
            ntohl(server_time), compiled_time);
     }
   }
@@ -414,48 +414,48 @@ get_certificate_keybits (EVP_PKEY *public_key)
   switch (public_key->type)
   {
     case EVP_PKEY_RSA:
-      verb("V: key type: EVP_PKEY_RSA\n");
+      verb("V: key type: EVP_PKEY_RSA");
       key_bits = BN_num_bits(public_key->pkey.rsa->n);
       break;
     case EVP_PKEY_RSA2:
-      verb("V: key type: EVP_PKEY_RSA2\n");
+      verb("V: key type: EVP_PKEY_RSA2");
       key_bits = BN_num_bits(public_key->pkey.rsa->n);
       break;
     case EVP_PKEY_DSA:
-      verb("V: key type: EVP_PKEY_DSA\n");
+      verb("V: key type: EVP_PKEY_DSA");
       key_bits = BN_num_bits(public_key->pkey.dsa->p);
       break;
     case EVP_PKEY_DSA1:
-      verb("V: key type: EVP_PKEY_DSA1\n");
+      verb("V: key type: EVP_PKEY_DSA1");
       key_bits = BN_num_bits(public_key->pkey.dsa->p);
       break;
     case EVP_PKEY_DSA2:
-      verb("V: key type: EVP_PKEY_DSA2\n");
+      verb("V: key type: EVP_PKEY_DSA2");
       key_bits = BN_num_bits(public_key->pkey.dsa->p);
       break;
     case EVP_PKEY_DSA3:
-      verb("V: key type: EVP_PKEY_DSA3\n");
+      verb("V: key type: EVP_PKEY_DSA3");
       key_bits = BN_num_bits(public_key->pkey.dsa->p);
       break;
     case EVP_PKEY_DSA4:
-      verb("V: key type: EVP_PKEY_DSA4\n");
+      verb("V: key type: EVP_PKEY_DSA4");
       key_bits = BN_num_bits(public_key->pkey.dsa->p);
       break;
     case EVP_PKEY_DH:
-      verb("V: key type: EVP_PKEY_DH\n");
+      verb("V: key type: EVP_PKEY_DH");
       key_bits = BN_num_bits(public_key->pkey.dh->pub_key);
       break;
     case EVP_PKEY_EC:
-      verb("V: key type: EVP_PKEY_EC\n");
+      verb("V: key type: EVP_PKEY_EC");
       key_bits = EVP_PKEY_bits(public_key);
       break;
     // Should we also care about EVP_PKEY_HMAC and EVP_PKEY_CMAC?
     default:
       key_bits = 0;
-      die ("unknown public key type\n");
+      die ("unknown public key type");
       break;
   }
-  verb ("V: keybits: %d\n", key_bits);
+  verb ("V: keybits: %d", key_bits);
   return key_bits;
 }
 
@@ -486,7 +486,7 @@ dns_label_count(char *label, char *delim)
       saveptr_tmp = strtok_r(NULL, delim, &saveptr);
     } while (NULL != saveptr_tmp);
   }
-  verb_debug ("V: label found; total label count: %d\n", label_count);
+  verb_debug ("V: label found; total label count: %d", label_count);
   free(label_tmp);
   return label_count;
 }
@@ -520,7 +520,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   delim = strdup(".");
   wildchar = strdup("*");
 
-  verb_debug ("V: Inspecting '%s' for possible wildcard match against '%s'\n",
+  verb_debug ("V: Inspecting '%s' for possible wildcard match against '%s'",
          hostname, cert_wild_card);
 
   // By default we have not processed any labels
@@ -536,7 +536,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   {
     if (wildchar[0] == cert_wild_card[0])
     {
-      verb_debug ("V: Found wildcard in at start of provided certificate name\n");
+      verb_debug ("V: Found wildcard in at start of provided certificate name");
       do
       {
         // Skip over the bytes between the first char and until the next label
@@ -549,41 +549,41 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
         {
           // Now we only consider this wildcard valid if the rest of the
           // hostnames match verbatim
-          verb_debug ("V: Attempting match of '%s' against '%s'\n",
+          verb_debug ("V: Attempting match of '%s' against '%s'",
                  expected_label, wildcard_label);
           // This is the case where we have a label that begins with wildcard
           // Furthermore, we only allow this for the first label
           if (wildcard_label[0] == wildchar[0] &&
               0 == wildcard_encountered && 0 == ok)
           {
-            verb ("V: Forced match of '%s' against '%s'\n", expected_label, wildcard_label);
+            verb ("V: Forced match of '%s' against '%s'", expected_label, wildcard_label);
             wildcard_encountered = 1;
           } else {
-            verb_debug ("V: Attempting match of '%s' against '%s'\n",
+            verb_debug ("V: Attempting match of '%s' against '%s'",
                    hostname, cert_wild_card);
             if (0 == strcasecmp (expected_label, wildcard_label) &&
                 label_count >= ((uint32_t)RFC2595_MIN_LABEL_COUNT))
             {
               ok = 1;
-              verb_debug ("V: remaining labels match!\n");
+              verb_debug ("V: remaining labels match!");
               break;
             } else {
               ok = 0;
-              verb_debug ("V: remaining labels do not match!\n");
+              verb_debug ("V: remaining labels do not match!");
               break;
             }
           }
         } else {
           // We hit this case when we have a mismatched number of labels
-          verb_debug ("V: NULL label; no wildcard here\n");
+          verb_debug ("V: NULL label; no wildcard here");
           break;
         }
       } while (0 != wildcard_encountered && label_count <= RFC2595_MIN_LABEL_COUNT);
     } else {
-      verb_debug ("V: Not a RFC 2595 wildcard\n");
+      verb_debug ("V: Not a RFC 2595 wildcard");
     }
   } else {
-    verb_debug ("V: Not a valid wildcard certificate\n");
+    verb_debug ("V: Not a valid wildcard certificate");
     ok = 0;
   }
   // Free our copies
@@ -593,11 +593,11 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
   free(cert_wild_card_to_free);
   if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
   {
-    verb_debug ("V: wildcard match of %s against %s\n",
+    verb_debug ("V: wildcard match of %s against %s",
           orig_hostname, orig_cert_wild_card);
     return (wildcard_encountered & ok);
   } else {
-    verb_debug ("V: wildcard match failure of %s against %s\n",
+    verb_debug ("V: wildcard match failure of %s against %s",
           orig_hostname, orig_cert_wild_card);
     return 0;
   }
@@ -624,7 +624,7 @@ check_cn (SSL *ssl, const char *hostname)
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
   {
-    die ("Unable to extract certificate\n");
+    die ("Unable to extract certificate");
   }
 
   memset(cn_buf, '\0', (TLSDATE_HOST_NAME_MAX + 1));
@@ -634,14 +634,14 @@ check_cn (SSL *ssl, const char *hostname)
 
   if (-1 == ret || ret != (int) strlen(cn_buf))
   {
-    die ("Unable to extract commonName\n");
+    die ("Unable to extract commonName");
   }
   if (strcasecmp(cn_buf, hostname))
   {
-    verb ("V: commonName mismatch! Expected: %s - received: %s\n",
+    verb ("V: commonName mismatch! Expected: %s - received: %s",
           hostname, cn_buf);
   } else {
-    verb ("V: commonName matched: %s\n", cn_buf);
+    verb ("V: commonName matched: %s", cn_buf);
     ok = 1;
   }
 
@@ -663,7 +663,7 @@ check_san (SSL *ssl, const char *hostname)
   /* What an OpenSSL mess ... */
   if (NULL == (cert = SSL_get_peer_certificate(ssl)))
   {
-    die ("Getting certificate failed\n");
+    die ("Getting certificate failed");
   }
 
   if ((extcount = X509_get_ext_count(cert)) > 0)
@@ -720,7 +720,7 @@ check_san (SSL *ssl, const char *hostname)
                 (!strcasecmp(nval->name, "iPAddress") &&
                 !strcasecmp(nval->value, hostname)))
             {
-              verb ("V: subjectAltName matched: %s, type: %s\n", nval->value, nval->name); // We matched this; so it's safe to print
+              verb ("V: subjectAltName matched: %s, type: %s", nval->value, nval->name); // We matched this; so it's safe to print
               ok = 1;
               break;
             }
@@ -733,11 +733,11 @@ check_san (SSL *ssl, const char *hostname)
                 break;
               }
             }
-            verb_debug ("V: subjectAltName found but not matched: %s, type: %s\n", nval->value, nval->name); // XXX: Clean this string!
+            verb_debug ("V: subjectAltName found but not matched: %s, type: %s", nval->value, nval->name); // XXX: Clean this string!
           }
         }
       } else {
-        verb_debug ("V: found non subjectAltName extension\n");
+        verb_debug ("V: found non subjectAltName extension");
       }
       if (ok)
       {
@@ -745,7 +745,7 @@ check_san (SSL *ssl, const char *hostname)
       }
     }
   } else {
-    verb_debug ("V: no X509_EXTENSION field(s) found\n");
+    verb_debug ("V: no X509_EXTENSION field(s) found");
   }
   X509_free(cert);
   return ok;
@@ -759,9 +759,9 @@ check_name (SSL *ssl, const char *hostname)
   ret += check_san(ssl, hostname);
   if (0 != ret && 0 < ret)
   {
-    verb ("V: hostname verification passed\n");
+    verb ("V: hostname verification passed");
   } else {
-    die ("hostname verification failed for host %s!\n", host);
+    die ("hostname verification failed for host %s!", host);
   }
   return ret;
 }
@@ -776,28 +776,28 @@ verify_signature (ssl_context *ssl, const char *hostname)
   ssl_verify_result = ssl_get_verify_result (ssl);
   if (ssl_verify_result & BADCERT_EXPIRED)
   {
-    die ("certificate has expired\n");
+    die ("certificate has expired");
   }
   if (ssl_verify_result & BADCERT_REVOKED)
   {
-    die ("certificate has been revoked\n");
+    die ("certificate has been revoked");
   }
   if (ssl_verify_result & BADCERT_CN_MISMATCH)
   {
-    die ("CN and subject AltName mismatch for certificate\n");
+    die ("CN and subject AltName mismatch for certificate");
   }
   if (ssl_verify_result & BADCERT_NOT_TRUSTED)
   {
-    die ("certificate is self-signed or not signed by a trusted CA\n");
+    die ("certificate is self-signed or not signed by a trusted CA");
   }
 
   if (0 == ssl_verify_result)
   {
-    verb ("V: verify success\n");
+    verb ("V: verify success");
   }
   else
   {
-    die ("certificate verification error: -0x%04x\n", -ssl_verify_result);
+    die ("certificate verification error: -0x%04x", -ssl_verify_result);
   }
   return 0;
 }
@@ -811,7 +811,7 @@ verify_signature (SSL *ssl, const char *hostname)
   certificate = SSL_get_peer_certificate(ssl);
   if (NULL == certificate)
   {
-    die ("Getting certificate failed\n");
+    die ("Getting certificate failed");
   }
   // In theory, we verify that the cert is valid
   ssl_verify_result = SSL_get_verify_result(ssl);
@@ -819,12 +819,12 @@ verify_signature (SSL *ssl, const char *hostname)
   {
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
   case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-    die ("certificate is self signed\n");
+    die ("certificate is self signed");
   case X509_V_OK:
-    verb ("V: certificate verification passed\n");
+    verb ("V: certificate verification passed");
     break;
   default:
-    die ("certification verification error: %ld\n",
+    die ("certification verification error: %ld",
          ssl_verify_result);
   }
  return 0;
@@ -843,25 +843,25 @@ check_key_length (ssl_context *ssl)
   certificate = ssl_get_peer_cert (ssl);
   if (NULL == certificate)
   {
-    die ("Getting certificate failed\n");
+    die ("Getting certificate failed");
   }
 
   x509parse_dn_gets(buf, 1024, &certificate->subject);
-  verb_debug ("V: Certificate for subject '%s'\n", buf);
+  verb_debug ("V: Certificate for subject '%s'", buf);
 
   public_key = &certificate->rsa;
   if (NULL == public_key)
   {
-    die ("public key extraction failure\n");
+    die ("public key extraction failure");
   } else {
-    verb_debug ("V: public key is ready for inspection\n");
+    verb_debug ("V: public key is ready for inspection");
   }
   key_bits = mpi_msb (&public_key->N);
   if (MIN_PUB_KEY_LEN >= key_bits)
   {
-    die ("Unsafe public key size: %d bits\n", key_bits);
+    die ("Unsafe public key size: %d bits", key_bits);
   } else {
-    verb_debug ("V: key length appears safe\n");
+    verb_debug ("V: key length appears safe");
   }
 }
 #else
@@ -874,30 +874,30 @@ check_key_length (SSL *ssl)
   certificate = SSL_get_peer_certificate (ssl);
   if (NULL == certificate)
   {
-    die ("Getting certificate failed\n");
+    die ("Getting certificate failed");
   }
   public_key = X509_get_pubkey (certificate);
   if (NULL == public_key)
   {
-    die ("public key extraction failure\n");
+    die ("public key extraction failure");
   } else {
-    verb_debug ("V: public key is ready for inspection\n");
+    verb_debug ("V: public key is ready for inspection");
   }
 
   key_bits = get_certificate_keybits (public_key);
   if (MIN_PUB_KEY_LEN >= key_bits && public_key->type != EVP_PKEY_EC)
   {
-    die ("Unsafe public key size: %d bits\n", key_bits);
+    die ("Unsafe public key size: %d bits", key_bits);
   } else {
      if (public_key->type == EVP_PKEY_EC)
        if(key_bits >= MIN_ECC_PUB_KEY_LEN
           && key_bits <= MAX_ECC_PUB_KEY_LEN)
        {
-         verb_debug ("V: ECC key length appears safe\n");
+         verb_debug ("V: ECC key length appears safe");
        } else {
-         die ("Unsafe ECC key size: %d bits\n", key_bits);
+         die ("Unsafe ECC key size: %d bits", key_bits);
      } else {
-       verb_debug ("V: key length appears safe\n");
+       verb_debug ("V: key length appears safe");
      }
   }
   EVP_PKEY_free (public_key);
@@ -933,10 +933,10 @@ check_timestamp (uint32_t server_time)
       &&
       server_time < max_reasonable_time)
   {
-    verb("V: remote peer provided: %d, preferred over compile time: %d\n",
+    verb("V: remote peer provided: %d, preferred over compile time: %d",
           server_time, compiled_time);
   } else {
-    die("V: the remote server is a false ticker! server: %d compile: %d\n",
+    die("V: the remote server is a false ticker! server: %d compile: %d",
          server_time, compiled_time);
   }
 }
@@ -951,14 +951,14 @@ static int ssl_do_handshake_part(ssl_context *ssl)
     ret = ssl_handshake_step (ssl);
     if (0 != ret)
     {
-      die("SSL handshake failed\n");
+      die("SSL handshake failed");
     }
   }
   /* Do ServerHello so we can skim the timestamp */
   ret = ssl_handshake_step (ssl);
   if (0 != ret)
   {
-    die("SSL handshake failed\n");
+    die("SSL handshake failed");
   }
 
   return 0;
@@ -988,12 +988,12 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   memset (&ssl, 0, sizeof(ssl_context));
   memset (&cacert, 0, sizeof(x509_cert));
 
-  verb("V: Using PolarSSL for SSL\n");
+  verb("V: Using PolarSSL for SSL");
   if (ca_racket)
   {
     if (-1 == stat (ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container %s\n", ca_cert_container);
+      die("Unable to stat CA certficate container %s", ca_cert_container);
     }
     else
     {
@@ -1001,14 +1001,14 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
       {
       case S_IFREG:
         if (0 > x509parse_crtfile(&cacert, ca_cert_container))
-          fprintf(stderr, "x509parse_crtfile failed\n");
+          fprintf(stderr, "x509parse_crtfile failed");
         break;
       case S_IFDIR:
         if (0 > x509parse_crtpath(&cacert, ca_cert_container))
-          fprintf(stderr, "x509parse_crtpath failed\n");
+          fprintf(stderr, "x509parse_crtpath failed");
         break;
       default:
-        die("Unable to load CA certficate container %s\n", ca_cert_container);
+        die("Unable to load CA certficate container %s", ca_cert_container);
       }
     }
   }
@@ -1017,12 +1017,12 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   if (0 != ctr_drbg_init (&ctr_drbg, entropy_func, &entropy,
                          (unsigned char *) pers, strlen(pers)))
   {
-    die("Failed to initialize CTR_DRBG\n");
+    die("Failed to initialize CTR_DRBG");
   }
 
   if (0 != ssl_init (&ssl))
   {
-    die("SSL initialization failed\n");
+    die("SSL initialization failed");
   }
   ssl_set_endpoint (&ssl, SSL_IS_CLIENT);
   ssl_set_rng (&ssl, ctr_drbg_random, &ctr_drbg);
@@ -1042,10 +1042,10 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 
     parse_proxy_uri (proxy, &scheme, &proxy_host, &proxy_port);
 
-    verb("V: opening socket to proxy %s:%s\n", proxy_host, proxy_port);
+    verb("V: opening socket to proxy %s:%s", proxy_host, proxy_port);
     if (0 != net_connect (&server_fd, proxy_host, atoi(proxy_port)))
     {
-      die ("SSL connection failed\n");
+      die ("SSL connection failed");
     }
 
     proxy_polarssl_init (&proxy_ctx);
@@ -1056,24 +1056,24 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
 
     ssl_set_bio (&ssl, proxy_polarssl_recv, &proxy_ctx, proxy_polarssl_send, &proxy_ctx);
 
-    verb("V: Handle proxy connection\n");
+    verb("V: Handle proxy connection");
     if (0 == proxy_ctx.f_connect (&proxy_ctx))
-      die("Proxy connection failed\n");
+      die("Proxy connection failed");
   }
   else
   {
-    verb("V: opening socket to %s:%s\n", host, port);
+    verb("V: opening socket to %s:%s", host, port);
     if (0 != net_connect (&server_fd, host, atoi(port)))
     {
-      die ("SSL connection failed\n");
+      die ("SSL connection failed");
     }
 
     ssl_set_bio (&ssl, net_recv, &server_fd, net_send, &server_fd);
   }
 
-  verb("V: starting handshake\n");
+  verb("V: starting handshake");
   if (0 != ssl_do_handshake_part (&ssl))
-    die("SSL handshake first part failed\n");
+    die("SSL handshake first part failed");
 
   uint32_t timestamp = ( (uint32_t) ssl.in_msg[6] << 24 )
                      | ( (uint32_t) ssl.in_msg[7] << 16 )
@@ -1081,14 +1081,14 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
                      | ( (uint32_t) ssl.in_msg[9]       );
   check_timestamp (timestamp);
 
-  verb("V: continuing handshake\n");
+  verb("V: continuing handshake");
   /* Continue with handshake */
   while (0 != (ret = ssl_handshake (&ssl)))
   {
     if (POLARSSL_ERR_NET_WANT_READ  != ret &&
         POLARSSL_ERR_NET_WANT_WRITE != ret)
     {
-      die("SSL handshake failed\n");
+      die("SSL handshake failed");
     }
   }
 
@@ -1096,7 +1096,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   if (ca_racket) {
     inspect_key (&ssl, hostname_to_verify);
   } else {
-    verb ("V: Certificate verification skipped!\n");
+    verb ("V: Certificate verification skipped!");
   }
   check_key_length (&ssl);
 
@@ -1130,55 +1130,55 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   ctx = NULL;
   if (0 == strcmp("sslv23", protocol))
   {
-    verb ("V: using SSLv23_client_method()\n");
+    verb ("V: using SSLv23_client_method()");
     ctx = SSL_CTX_new(SSLv23_client_method());
   } else if (0 == strcmp("sslv3", protocol))
   {
-    verb ("V: using SSLv3_client_method()\n");
+    verb ("V: using SSLv3_client_method()");
     ctx = SSL_CTX_new(SSLv3_client_method());
   } else if (0 == strcmp("tlsv1", protocol))
   {
-    verb ("V: using TLSv1_client_method()\n");
+    verb ("V: using TLSv1_client_method()");
     ctx = SSL_CTX_new(TLSv1_client_method());
   } else
-    die("Unsupported protocol `%s'\n", protocol);
+    die("Unsupported protocol `%s'", protocol);
 
   if (ctx == NULL)
-    die("OpenSSL failed to support protocol `%s'\n", protocol);
+    die("OpenSSL failed to support protocol `%s'", protocol);
 
-  verb("V: Using OpenSSL for SSL\n");
+  verb("V: Using OpenSSL for SSL");
   if (ca_racket)
   {
     if (-1 == stat(ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container %s\n", ca_cert_container);
+      die("Unable to stat CA certficate container %s", ca_cert_container);
     } else
     {
       switch (statbuf.st_mode & S_IFMT)
       {
       case S_IFREG:
         if (1 != SSL_CTX_load_verify_locations(ctx, ca_cert_container, NULL))
-          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed");
         break;
       case S_IFDIR:
         if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
-          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed");
         break;
       default:
         if (1 != SSL_CTX_load_verify_locations(ctx, NULL, ca_cert_container))
         {
-          fprintf(stderr, "SSL_CTX_load_verify_locations failed\n");
-          die("Unable to load CA certficate container %s\n", ca_cert_container);
+          fprintf(stderr, "SSL_CTX_load_verify_locations failed");
+          die("Unable to load CA certficate container %s", ca_cert_container);
         }
       }
     }
   }
 
   if (NULL == (s_bio = make_ssl_bio(ctx)))
-    die ("SSL BIO setup failed\n");
+    die ("SSL BIO setup failed");
   BIO_get_ssl(s_bio, &ssl);
   if (NULL == ssl)
-    die ("SSL setup failed\n");
+    die ("SSL setup failed");
 
   if (time_is_an_illusion)
   {
@@ -1186,10 +1186,10 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   }
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-  verb("V: opening socket to %s:%s\n", host, port);
+  verb("V: opening socket to %s:%s", host, port);
   if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
        (1 != BIO_set_conn_port(s_bio, port)) )
-    die ("Failed to initialize connection to `%s:%s'\n", host, port);
+    die ("Failed to initialize connection to `%s:%s'", host, port);
 
   if (NULL == BIO_new_fp(stdout, BIO_NOCLOSE))
     die ("BIO_new_fp returned error, possibly: %s", strerror(errno));
@@ -1197,29 +1197,29 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   // This should run in seccomp
   // eg:     prctl(PR_SET_SECCOMP, 1);
   if (1 != BIO_do_connect(s_bio)) // XXX TODO: BIO_should_retry() later?
-    die ("SSL connection failed\n");
+    die ("SSL connection failed");
   if (1 != BIO_do_handshake(s_bio))
-    die ("SSL handshake failed\n");
+    die ("SSL handshake failed");
 
   // from /usr/include/openssl/ssl3.h
   //  ssl->s3->server_random is an unsigned char of 32 bits
   memcpy(&result_time, ssl->s3->server_random, sizeof (uint32_t));
-  verb("V: In TLS response, T=%lu\n", (unsigned long)ntohl(result_time));
+  verb("V: In TLS response, T=%lu", (unsigned long)ntohl(result_time));
 
   if (http) {
     char buf[1024];
-    verb_debug ("V: Starting HTTP\n");
+    verb_debug ("V: Starting HTTP");
     if (snprintf(buf, sizeof(buf),
                  HTTP_REQUEST, HTTPS_USER_AGENT, hostname_to_verify) >= 1024)
       die("hostname too long");
     buf[1023]='\0'; /* Unneeded. */
-    verb_debug ("V: Writing HTTP request\n");
+    verb_debug ("V: Writing HTTP request");
     if (1 != write_all_to_bio(s_bio, buf))
-      die ("write all to bio failed.\n");
-    verb_debug ("V: Reading HTTP response\n");
+      die ("write all to bio failed.");
+    verb_debug ("V: Reading HTTP response");
     if (1 != read_http_date_from_bio(s_bio, &result_time))
-      die ("read all from bio failed.\n");
-    verb ("V: Received HTTP response. T=%lu\n", (unsigned long)result_time);
+      die ("read all from bio failed.");
+    verb ("V: Received HTTP response. T=%lu", (unsigned long)result_time);
 
     result_time = htonl(result_time);
   }
@@ -1228,7 +1228,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   if (ca_racket) {
     inspect_key (ssl, hostname_to_verify);
   } else {
-    verb ("V: Certificate verification skipped!\n");
+    verb ("V: Certificate verification skipped!");
   }
   check_key_length(ssl);
 
@@ -1277,19 +1277,19 @@ main(int argc, char **argv)
   /* Initalize warp_time with RECENT_COMPILE_DATE */
   clock_init_time(&warp_time, RECENT_COMPILE_DATE, 0);
 
-  verb ("V: RECENT_COMPILE_DATE is %lu.%06lu\n",
+  verb ("V: RECENT_COMPILE_DATE is %lu.%06lu",
        (unsigned long) CLOCK_SEC(&warp_time),
        (unsigned long) CLOCK_USEC(&warp_time));
 
   if (1 != timewarp)
   {
-    verb ("V: we'll do the time warp another time - we're not setting clock\n");
+    verb ("V: we'll do the time warp another time - we're not setting clock");
   }
 
   /* We are not going to set the clock, thus no need to stay root */
   if (0 == setclock && 0 == timewarp)
   {
-    verb ("V: attemping to drop administrator privileges\n");
+    verb ("V: attemping to drop administrator privileges");
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
   }
 
@@ -1301,7 +1301,7 @@ main(int argc, char **argv)
        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
    if (MAP_FAILED == time_map)
   {
-    fprintf (stderr, "mmap failed: %s\n",
+    fprintf (stderr, "mmap failed: %s",
              strerror (errno));
     return 1;
   }
@@ -1309,37 +1309,37 @@ main(int argc, char **argv)
   /* Get the current time from the system clock. */
   if (0 != clock_get_real_time(&start_time))
   {
-    die ("Failed to read current time of day: %s\n", strerror (errno));
+    die ("Failed to read current time of day: %s", strerror (errno));
   }
 
-  verb ("V: time is currently %lu.%06lu\n",
+  verb ("V: time is currently %lu.%06lu",
        (unsigned long) CLOCK_SEC(&start_time),
        (unsigned long) CLOCK_NSEC(&start_time));
 
   if (((unsigned long) CLOCK_SEC(&start_time)) < ((unsigned long) CLOCK_SEC(&warp_time)))
   {
-    verb ("V: local clock time is less than RECENT_COMPILE_DATE\n");
+    verb ("V: local clock time is less than RECENT_COMPILE_DATE");
     if (timewarp)
     {
-      verb ("V: Attempting to warp local clock into the future\n");
+      verb ("V: Attempting to warp local clock into the future");
       if (0 != clock_set_real_time(&warp_time))
       {
-        die ("setting time failed: %s (Attempted to set clock to %lu.%06lu)\n",
+        die ("setting time failed: %s (Attempted to set clock to %lu.%06lu)",
         strerror (errno),
         (unsigned long) CLOCK_SEC(&warp_time),
         (unsigned long) CLOCK_SEC(&warp_time));
       }
       if (0 != clock_get_real_time(&start_time))
       {
-        die ("Failed to read current time of day: %s\n", strerror (errno));
+        die ("Failed to read current time of day: %s", strerror (errno));
       }
-      verb ("V: time is currently %lu.%06lu\n",
+      verb ("V: time is currently %lu.%06lu",
            (unsigned long) CLOCK_SEC(&start_time),
            (unsigned long) CLOCK_NSEC(&start_time));
-      verb ("V: It's just a step to the left...\n");
+      verb ("V: It's just a step to the left...");
     }
   } else {
-    verb ("V: time is greater than RECENT_COMPILE_DATE\n");
+    verb ("V: time is greater than RECENT_COMPILE_DATE");
   }
 
   /* initialize to bogus value, just to be on the safe side */
@@ -1348,7 +1348,7 @@ main(int argc, char **argv)
   /* Run SSL interaction in separate process (and not as 'root') */
   ssl_child = fork ();
   if (-1 == ssl_child)
-    die ("fork failed: %s\n", strerror (errno));
+    die ("fork failed: %s", strerror (errno));
   if (0 == ssl_child)
   {
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
@@ -1357,12 +1357,12 @@ main(int argc, char **argv)
     _exit (0);
   }
   if (ssl_child != platform->process_wait (ssl_child, &status, 1))
-    die ("waitpid failed: %s\n", strerror (errno));
+    die ("waitpid failed: %s", strerror (errno));
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status)) ))
-    die ("child process failed in SSL handshake\n");
+    die ("child process failed in SSL handshake");
 
   if (0 != clock_get_real_time(&end_time))
-    die ("Failed to read current time of day: %s\n", strerror (errno));
+    die ("Failed to read current time of day: %s", strerror (errno));
 
   /* calculate RTT */
   rt_time_ms = (CLOCK_SEC(&end_time) - CLOCK_SEC(&start_time)) * 1000 + (CLOCK_USEC(&end_time) - CLOCK_USEC(&start_time)) / 1000;
@@ -1376,10 +1376,10 @@ main(int argc, char **argv)
   // We should never have a time_map of zero here;
   // It either stayed zero or we have a false ticker.
   if ( 0 == server_time_s )
-    die ("child process failed to update time map; weird platform issues?\n");
+    die ("child process failed to update time map; weird platform issues?");
   munmap (time_map, sizeof (uint32_t));
 
-  verb ("V: server time %u (difference is about %d s) was fetched in %lld ms\n",
+  verb ("V: server time %u (difference is about %d s) was fetched in %lld ms",
   (unsigned int) server_time_s,
   CLOCK_SEC(&start_time) - server_time_s,
   rt_time_ms);
@@ -1387,11 +1387,11 @@ main(int argc, char **argv)
   /* warning if the handshake took too long */
   if (rt_time_ms > TLS_RTT_UNREASONABLE) {
     die ("the TLS handshake took more than %d msecs - consider using a different " \
-      "server or run it again\n", TLS_RTT_UNREASONABLE);
+      "server or run it again", TLS_RTT_UNREASONABLE);
   }
   if (rt_time_ms > TLS_RTT_THRESHOLD) {
     verb ("V: the TLS handshake took more than %d msecs - consider using a different " \
-      "server or run it again\n", TLS_RTT_THRESHOLD);
+      "server or run it again", TLS_RTT_THRESHOLD);
   }
 
   if (showtime_raw)
@@ -1408,9 +1408,9 @@ main(int argc, char **argv)
      localtime_r(&tim, &ltm);
      if (0 == strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y", &ltm))
      {
-       die ("strftime returned 0\n");
+       die ("strftime returned 0");
      }
-     fprintf(stdout, "%s\n", buf);
+     fprintf(stdout, "%s", buf);
   }
 
   /* finally, actually set the time */
@@ -1425,14 +1425,14 @@ main(int argc, char **argv)
     // compiled; we subscribe to the linear theory of time for this program
     // and this program alone!
     if (CLOCK_SEC(&server_time) >= MAX_REASONABLE_TIME)
-      die("remote server is a false ticker from the future!\n");
+      die("remote server is a false ticker from the future!");
     if (CLOCK_SEC(&server_time) <= RECENT_COMPILE_DATE)
-      die ("remote server is a false ticker!\n");
+      die ("remote server is a false ticker!");
     if (0 != clock_set_real_time(&server_time))
-      die ("setting time failed: %s (Difference from server is about %d s)\n",
+      die ("setting time failed: %s (Difference from server is about %d s)",
      strerror (errno),
      CLOCK_SEC(&start_time) - server_time_s);
-    verb ("V: setting time succeeded\n");
+    verb ("V: setting time succeeded");
   }
   return 0;
 }
