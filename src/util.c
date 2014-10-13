@@ -36,6 +36,10 @@
 #include "src/tlsdate.h"
 #include "src/util.h"
 
+#ifdef HAVE_SECCOMP_FILTER
+#include "src/seccomp.h"
+#endif
+
 #if defined(HAVE_STRUCT_RTC_TIME) && defined(RTC_SET_TIME) && defined(RTC_RD_TIME)
 #define ENABLE_RTC
 #endif
@@ -128,6 +132,25 @@ void no_new_privs(void)
 #endif
 #endif
 }
+
+void enable_seccomp(void)
+{
+#ifdef HAVE_SECCOMP_FILTER
+ verb ("seccomp support is enabled");
+ if (enable_setter_seccomp())
+ {
+   status = SETTER_NO_SBOX;
+   //IGNORE_EINTR (write (notify_fd, &status, sizeof(status)));
+   //close (notify_fd);
+   //close (save_fd);
+   _exit (status);
+ }
+#else
+ verb ("seccomp support is disabled");
+#endif
+
+}
+
 void
 drop_privs_to (const char *user, const char *group)
 {
@@ -135,6 +158,7 @@ drop_privs_to (const char *user, const char *group)
   gid_t gid;
   struct passwd *pw;
   struct group  *gr;
+  enable_seccomp ();
   no_new_privs ();
 
   if (0 != getuid ())
