@@ -64,6 +64,7 @@ static inline int min (int x, int y)
 }
 
 void drop_privs_to (const char *user, const char *group);
+void no_new_privs (void);
 const char *sync_type_str (int sync_type);
 
 struct state;
