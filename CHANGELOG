@@ -1,4 +1,4 @@
-0.0.11 XXX
+0.0.11 Mon 20, Oct, 2014
   Fix routeup flushing when using stdout (Avery Pennarun).
   Update AppArmor profile to support multiarch systems.
   Instruct syslog to properly output tlsdated and pid information.
@@ -7,7 +7,7 @@
   FreeBSD build improvements (Fabian Keil).
   Update man pages.
   Update AppArmor profile to remove unused stanzas.
-  Fix seccomp filter support on x86 systems.
+  Fix seccomp filter support on x86 systems (Will Drewry).
   Refactor chatty tlsdated logging output to make it quiet.
   Close syslog after tlsdated finishes using it.
   Update systemd and init.d scripts for Debian.
