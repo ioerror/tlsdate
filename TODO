@@ -22,7 +22,7 @@ Here is a nice list of things to do to improve tlsdate:
 28)  Check that extended key usage is empty, or includes TLS Server Auth
 29)  extract the SubjectPublicKeyInfo from the certificates; match against
      public keys
-31)  Fetch HTTP over TLS to parse date field and confirm sync with the tls date
+31)  Confirm HTTP and TLS date is within a sane range
 32)  Integrate tack support https://github.com/tack/tackc
 33)  Implement checking of RFC 2818 style wildcards:
        http://wiki.cacert.org/WildcardCertificates
@@ -34,6 +34,8 @@ Here is a nice list of things to do to improve tlsdate:
       https://code.google.com/p/chromium/codesearch#chrome/src/net/base/x509_certificate.cc&l=500
 48) Complain when server uses very weak DH group parameters
       example weak server: https://demo.cmrg.net/
+49) Add seccomp tlsdate and tlsdate-helper
+50) Add AppArmor fixes for Tails
 
 Patches welcome!
 
