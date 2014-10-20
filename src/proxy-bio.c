@@ -77,7 +77,7 @@ int socks4a_connect (BIO *b)
   unsigned char buf[NI_MAXHOST + 16];
   uint16_t port_n = htons (ctx->port);
   size_t sz = 0;
-  verb ("V: proxy4: connecting %s:%d\n", ctx->host, ctx->port);
+  verb ("V: proxy4: connecting %s:%d", ctx->host, ctx->port);
   /*
    * Packet layout:
    * 1b: Version (must be 0x04)
@@ -115,7 +115,7 @@ int socks4a_connect (BIO *b)
     return 0;
   if (buf[1] == 0x5a)
     {
-      verb ("V: proxy4: connected\n");
+      verb ("V: proxy4: connected");
       ctx->connected = 1;
       return 1;
     }
@@ -132,7 +132,7 @@ int socks5_connect (BIO *b)
   /* the length for SOCKS addresses is only one byte. */
   if (strnlen (ctx->host, UINT8_MAX + 1) == UINT8_MAX + 1)
     return 0;
-  verb ("V: proxy5: connecting %s:%d\n", ctx->host, ctx->port);
+  verb ("V: proxy5: connecting %s:%d", ctx->host, ctx->port);
   /*
    * Hello packet layout:
    * 1b: Version
@@ -153,7 +153,7 @@ int socks5_connect (BIO *b)
     return 0;
   if (buf[0] != 0x05 || buf[1] != 0x00)
     {
-      verb ("V: proxy5: auth error %02x %02x\n", buf[0], buf[1]);
+      verb ("V: proxy5: auth error %02x %02x", buf[0], buf[1]);
       return 0;
     }
   /*
@@ -197,7 +197,7 @@ int socks5_connect (BIO *b)
     return 0;
   if (buf[0] != 0x05 || buf[1] != 0x00)
     {
-      verb ("V: proxy5: connect error %02x %02x\n", buf[0], buf[1]);
+      verb ("V: proxy5: connect error %02x %02x", buf[0], buf[1]);
       return 0;
     }
   if (buf[3] == 0x03)
@@ -223,7 +223,7 @@ int socks5_connect (BIO *b)
       if (r != 6)
         return 0;
     }
-  verb ("V: proxy5: connected\n");
+  verb ("V: proxy5: connected");
   ctx->connected = 1;
   return 1;
 }
