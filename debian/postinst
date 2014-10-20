@@ -10,7 +10,7 @@ case "$1" in
 			/etc/default/tlsdate /etc/default/tlsdated 0.0.7-1.3~ -- "$@"
 		;;
 	install)
-		date -u '+%s' > /var/cache/tlsdated/timestamp
+		tlsdate --showtime=raw -n > /var/cache/tlsdated/timestamp
 		;;
 	*)
 		;;

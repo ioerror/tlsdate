@@ -4,7 +4,7 @@ tlsdate (0.0.11-1) unstable; urgency=low
   * Upstream now uses AppArmor multiarch abstraction (Closes: #704680)
   * Populate timestamp in /var/cache/tlsdated/timestamp at install time.
 
- -- Jacob Appelbaum <jacob@appelbaum.net>  Sat, 27 Sep 2014 14:03:36 +0000
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 20 Oct 2014 17:53:41 +0000
 
 tlsdate (0.0.10-1) unstable; urgency=low
 
