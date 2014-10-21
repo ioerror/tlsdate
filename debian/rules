@@ -8,9 +8,10 @@
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
-CFLAGS+=$(CPPFLAGS)
-CXXFLAGS+=$(CPPFLAGS)
-LDFLAGS+=$(LDFLAGS)
+CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
+CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
+CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
+LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 
 # To make this package Deterministic, we parse the last Debian release date
 # from the debian/changelog. This means that we must do regular releases! :)
