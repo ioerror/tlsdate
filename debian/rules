@@ -10,6 +10,7 @@ DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 CFLAGS+=$(CPPFLAGS)
 CXXFLAGS+=$(CPPFLAGS)
+LDFLAGS+=$(LDFLAGS)
 
 # To make this package Deterministic, we parse the last Debian release date
 # from the debian/changelog. This means that we must do regular releases! :)
