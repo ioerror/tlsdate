@@ -1,6 +1,7 @@
 tlsdate (0.0.12-1) unstable; urgency=low
 
   * New upstream release
+  * Properly populate timestamp or fail silently
 
  -- Jacob Appelbaum <jacob@appelbaum.net>  Wed, 22 Oct 2014 00:38:22 +0000
 
