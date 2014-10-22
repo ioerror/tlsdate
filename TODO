@@ -36,6 +36,11 @@ Here is a nice list of things to do to improve tlsdate:
       example weak server: https://demo.cmrg.net/
 49) Add seccomp tlsdate and tlsdate-helper
 50) Add AppArmor fixes for Tails
+51) Add time stamp cache fix
+52) Fix output for --showtime:
+      eg: tlsdate -H www.google.com -p 443 -n -P tlsv1 \
+            --showtime -x socks5://127.0.0.1:9050
+      The above output will be missing a newline.
 
 Patches welcome!
 
