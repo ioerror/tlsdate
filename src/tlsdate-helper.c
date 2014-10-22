@@ -1411,7 +1411,7 @@ main(int argc, char **argv)
      {
        die ("strftime returned 0");
      }
-     fprintf(stdout, "%s", buf);
+     fprintf(stdout, "%s\n", buf);
   }
 
   /* finally, actually set the time */
