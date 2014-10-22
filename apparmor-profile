@@ -191,6 +191,8 @@
 
   # We'll allow tlsdated to cache the time here
   owner /var/cache/tlsdated/* rw,
+  # We'll allow the unprivileged helper to read the time
+  /var/cache/tlsdated/* r,
 
   # We'll allow tlsdated to exec tlsdate-helper
   /usr/bin/tlsdate-helper ixm,
