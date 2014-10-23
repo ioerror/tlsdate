@@ -1,6 +1,10 @@
 [Unit]
 Description=Secure parasitic rdate replacement
+After=network.target
 
 [Service]
-ExecStart=/usr/sbin/tlsdated
-Type=forking
+Type=simple
+EnvironmentFile=/etc/default/tlsdated
+ExecStart=/usr/sbin/tlsdated ${DAEMON_OPTS}
+ExecReload=/bin/kill -HUP ${MAINPID}
+ExecStop=/bin/kill -INT ${MAINPID}
