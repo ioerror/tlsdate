@@ -37,6 +37,7 @@ Here is a nice list of things to do to improve tlsdate:
 49) Add seccomp tlsdate and tlsdate-helper
 50) Add AppArmor fixes for Tails
 51) Add time stamp cache fix
+52) Port tlsdated to FreeBSD and other non GNU/Linux systems
 
 Patches welcome!
 
