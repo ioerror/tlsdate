@@ -1,5 +1,6 @@
 0.0.12 XXX
-  Fix AppArmor for tlsdated: allow unprivileged helper to read the time
+  Fix AppArmor for tlsdated: allow unprivileged helper to read the time.
+  Update tlsdated systemd service file.
 0.0.11 Mon 20, Oct, 2014
   Fix routeup flushing when using stdout (Avery Pennarun).
   Update AppArmor profile to support multiarch systems.
