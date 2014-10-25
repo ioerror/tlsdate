@@ -2,7 +2,8 @@ tlsdate (0.0.12-1) unstable; urgency=low
 
   * New upstream release
   * Properly populate timestamp or fail silently
-  * Update systemd service file for tlsdated
+  * Update systemd service file for tlsdated (Closes: #766533)
+  * Fix AppArmor policy (Closes: #766579)
 
  -- Jacob Appelbaum <jacob@appelbaum.net>  Wed, 22 Oct 2014 00:38:22 +0000
 
