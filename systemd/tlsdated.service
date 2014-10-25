@@ -1,0 +1,10 @@
+[Unit]
+Description=Secure parasitic time daemon
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/tlsdated
+ExecStart=/usr/sbin/tlsdated ${DAEMON_OPTS}
+ExecReload=/bin/kill -HUP ${MAINPID}
+ExecStop=/bin/kill -INT ${MAINPID}
