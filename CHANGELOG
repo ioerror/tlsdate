@@ -1,6 +1,7 @@
-0.0.12 XXX
+0.0.12 Sun 26, Oct, 2014
   Fix AppArmor for tlsdated: allow unprivileged helper to read the time.
   Update tlsdated systemd service file.
+  Various little fixes and an early release to make the Debian Freeze!
 0.0.11 Mon 20, Oct, 2014
   Fix routeup flushing when using stdout (Avery Pennarun).
   Update AppArmor profile to support multiarch systems.
