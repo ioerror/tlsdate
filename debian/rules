@@ -22,7 +22,7 @@ export COMPILE_DATE ?= $(shell date -u --date="`dpkg-parsechangelog|grep ^Date|h
 DEB_BUILD_ARCH_OS ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH_OS)
 
 %:
-	dh $@ -with autotools_dev,autoreconf
+	dh $@ -with autotools_dev,autoreconf,systemd
 
 override_dh_auto_configure:
 	./autogen.sh
@@ -43,8 +43,8 @@ endif
 ifeq ($(DEB_BUILD_ARCH_OS),linux)
 override_dh_install:
 	cp apparmor-profile debian/tlsdate/etc/apparmor.d/usr.bin.tlsdate
-	# use copy from debian/tlsdated.service as long as upstream file is broken:
-	cp debian/tlsdated.service debian/tlsdate/lib/systemd/system/
+	cp systemd/tlsdated.service debian/tlsdate/lib/systemd/system/
+	cp systemd/tlsdated.default debian/tlsdate/etc/default/tlsdated
 	dh_apparmor --profile-name=usr.bin.tlsdate -ptlsdate
 override_dh_installinit:
 	dh_installinit --name=tlsdated
