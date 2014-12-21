@@ -1,9 +1,9 @@
-tlsdate (0.0.12-2) UNRELEASED; urgency=medium
+tlsdate (0.0.12-2) unstable; urgency=medium
 
   * Add SECCOMP_AUDIT_ARCH definition for MIPS. Thanks to Ben Chan for the
     patch! (Closes: #772956)
 
- -- Holger Levsen <holger@debian.org>  Sun, 21 Dec 2014 22:00:26 +0100
+ -- Holger Levsen <holger@debian.org>  Sun, 21 Dec 2014 22:09:05 +0100
 
 tlsdate (0.0.12-1) unstable; urgency=low
 
