@@ -1,0 +1,52 @@
+From 5175004c2560dc3955abe45e442180fd1df0d720 Mon Sep 17 00:00:00 2001
+From: Ben Chan <benchan@chromium.org>
+Date: Mon, 22 Sep 2014 22:08:43 -0700
+Subject: tlsdate: add SECCOMP_AUDIT_ARCH definition for MIPS
+
+BUG=chromium:416748
+TEST=`USE=seccomp emerge-{x86,amd64,arm,mipsel-o32}-generic tlsdate`
+
+Change-Id: Ie50b4739aa35042d9a322c05c8d1b6875f14ee4a
+Reviewed-on: https://chromium-review.googlesource.com/219419
+Reviewed-by: Jorge Lucangeli Obes <jorgelo@chromium.org>
+Tested-by: Ben Chan <benchan@chromium.org>
+Commit-Queue: Ben Chan <benchan@chromium.org>
+---
+ src/seccomp.c | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/src/seccomp.c b/src/seccomp.c
+index bc25e4c..8ce0967 100644
+--- a/src/seccomp.c
++++ b/src/seccomp.c
+@@ -44,10 +44,24 @@
+ #elif defined(__x86_64__)
+ #  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_X86_64
+ #elif defined(__arm__)
+-# ifndef EM_ARM
+-#   define EM_ARM 40
+-# endif
++#  ifndef EM_ARM
++#    define EM_ARM 40
++#  endif
+ #  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_ARM
++#elif defined(__mips__)
++#  if defined(__mips64)
++#    if defined(__MIPSEB__)
++#      define SECCOMP_AUDIT_ARCH AUDIT_ARCH_MIPS64
++#    else
++#      define SECCOMP_AUDIT_ARCH AUDIT_ARCH_MIPSEL64
++#    endif
++#  else
++#    if defined(__MIPSEB__)
++#      define SECCOMP_AUDIT_ARCH AUDIT_ARCH_MIPS
++#    else
++#      define SECCOMP_AUDIT_ARCH AUDIT_ARCH_MIPSEL
++#    endif
++#  endif
+ #else
+ #  error "Platform does not support seccomp filter yet"
+ #endif
+-- 
+2.1.3
+
