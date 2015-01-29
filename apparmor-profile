@@ -198,4 +198,7 @@
   # We'll allow tlsdated to exec tlsdate-helper
   /usr/bin/tlsdate-helper ixm,
   /usr/bin/tlsdate ixm,
+  
+  # Allow unconfined processes to send signals
+  signal (receive) peer=unconfined,
 }
