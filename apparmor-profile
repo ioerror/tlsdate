@@ -50,6 +50,10 @@
   # Allow reading of libs and /tmp
   /etc/ld.so.cache r,
 
+
+  # tlsdate looks into proc for answers
+  /proc/meminfo r,
+  
   # Random number generation requires these two
   /dev/random r,
   /dev/urandom r,
