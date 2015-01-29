@@ -180,6 +180,9 @@
   /dev/rtc0 rw,
   /dev/rtc1 rw,
 
+  # syslog
+  /dev/log w,
+  
   # Allow mapping of shared libraries
   /lib{,32,64}/* rm,
   /usr/lib/* rm,
