@@ -126,7 +126,7 @@ update_ca_root_data:
 	rm ca-roots/certdata.txt
 
 test_run:
-	./src/tlsdate-helper www.ptb.de 443 tlsv1 racket verbose ca-roots/tlsdate-ca-roots.conf dont-set-clock showtime no-fun holdfast none
+	./src/tlsdate-helper google.com 443 tlsv1 racket verbose ca-roots/tlsdate-ca-roots.conf dont-set-clock showtime no-fun holdfast none
 
 BUILT_SOURCES+= src/configmake.h
 noinst_HEADERS+= src/configmake.h

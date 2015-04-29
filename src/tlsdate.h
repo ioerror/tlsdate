@@ -24,7 +24,7 @@
 
 #include "src/rtc.h"
 
-#define DEFAULT_HOST "www.ptb.de"
+#define DEFAULT_HOST "google.com"
 #define DEFAULT_PORT "443"
 #define DEFAULT_PROXY "none"
 #define DEFAULT_PROTOCOL "tlsv1"
