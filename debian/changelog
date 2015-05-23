@@ -1,3 +1,12 @@
+tlsdate (0.0.12-3) unstable; urgency=low
+
+  * Switch from www.ptb.de to www.google.com as the former is now
+    sending randomized gmt values.
+    (Closes: #783174)
+    (Closes: #783193)
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Sat, 23 May 2015 17:26:43 +0000
+
 tlsdate (0.0.12-2) unstable; urgency=medium
 
   * Add SECCOMP_AUDIT_ARCH definition for MIPS. Thanks to Ben Chan for the
