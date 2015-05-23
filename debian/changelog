@@ -1,4 +1,4 @@
-tlsdate (0.0.12-3) unstable; urgency=low
+tlsdate (0.0.12-3) unstable; urgency=high
 
   * Switch from www.ptb.de to www.google.com as the former is now
     sending randomized gmt values.
