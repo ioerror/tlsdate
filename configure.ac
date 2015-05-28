@@ -1,4 +1,4 @@
-AC_INIT([tlsdate],[0.0.12],[jacob at appelbaum.net])
+AC_INIT([tlsdate],[0.0.13],[jacob at appelbaum.net])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
