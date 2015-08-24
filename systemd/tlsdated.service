@@ -8,3 +8,6 @@ EnvironmentFile=/etc/default/tlsdated
 ExecStart=/usr/sbin/tlsdated ${DAEMON_OPTS}
 ExecReload=/bin/kill -HUP ${MAINPID}
 ExecStop=/bin/kill -INT ${MAINPID}
+
+[Install]
+WantedBy=multi-user.target
