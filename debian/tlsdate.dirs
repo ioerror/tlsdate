@@ -2,3 +2,4 @@ etc/apparmor.d
 etc/tlsdate
 var/cache/tlsdated
 lib/systemd/system
+etc/default
