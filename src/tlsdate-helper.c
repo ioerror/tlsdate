@@ -468,6 +468,8 @@ dns_label_count(char *label, char *delim)
   uint32_t label_count;
 
   label_tmp = strdup(label);
+  if (label_tmp == NULL)
+    fatal ("out of memory for base path");
   label_count = 0;
   saveptr = NULL;
   saveptr_tmp = NULL;
@@ -514,11 +516,15 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
 
   // First we copy the original strings
   hostname = strndup(orig_hostname, strlen(orig_hostname));
+  if (hostname == NULL)
+    fatal("");
   cert_wild_card = strndup(orig_cert_wild_card, strlen(orig_cert_wild_card));
+  if (cert_wild_card == NULL)
+    fatal("");
   hostname_to_free = hostname;
   cert_wild_card_to_free = cert_wild_card;
-  delim = strdup(".");
-  wildchar = strdup("*");
+  delim = ".";
+  wildchar = "*";
 
   verb_debug ("V: Inspecting '%s' for possible wildcard match against '%s'",
          hostname, cert_wild_card);
@@ -587,8 +593,6 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
     ok = 0;
   }
   // Free our copies
-  free(wildchar);
-  free(delim);
   free(hostname_to_free);
   free(cert_wild_card_to_free);
   if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
