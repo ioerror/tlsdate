@@ -114,6 +114,8 @@ validate_proxy_host(const char *host)
                        "abcdefghijklmnopqrstuvwxyz"
                        "0123456789"
                        ".-";
+  if (!*host)
+    die("host is empty\n");
   if (strspn(host, kValid) != strlen(host))
     die("invalid char in host\n");
 }
@@ -121,6 +123,8 @@ validate_proxy_host(const char *host)
 static void
 validate_proxy_port(const char *port)
 {
+  if (!*port)
+    die("port is empty\n");
   while (*port)
     if (!isdigit(*port++))
       die("invalid char in port\n");
