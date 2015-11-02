@@ -49,6 +49,8 @@ static size_t buf_drain (unsigned char **buf, size_t *bufsz,
     memmove (*buf, *buf + outsz, *bufsz - outsz);
   *bufsz -= outsz;
   *buf = realloc (*buf, *bufsz);
+  if (*buf == NULL)
+    fatal("out of memory for buf");
   return outsz;
 }
 
@@ -56,6 +58,8 @@ static void buf_fill (unsigned char **buf, size_t *bufsz,
                       const unsigned char *in, size_t insz)
 {
   *buf = realloc (*buf, *bufsz + insz);
+  if (*buf == NULL)
+    fatal("out of memory for buf");
   memcpy (*buf + *bufsz, in, insz);
   *bufsz += insz;
 }

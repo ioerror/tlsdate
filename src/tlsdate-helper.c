@@ -115,6 +115,8 @@ validate_proxy_host(const char *host)
                        "abcdefghijklmnopqrstuvwxyz"
                        "0123456789"
                        ".-";
+  if (!*host)
+    die("host is invalid");
   if (strspn(host, kValid) != strlen(host))
     die("invalid char in host");
 }
@@ -122,6 +124,8 @@ validate_proxy_host(const char *host)
 static void
 validate_proxy_port(const char *port)
 {
+  if (!*port)
+    die("port is empty");
   while (*port)
     if (!isdigit((int)(unsigned char)*port++))
       die("invalid char in port");
@@ -468,6 +472,8 @@ dns_label_count(char *label, char *delim)
   uint32_t label_count;
 
   label_tmp = strdup(label);
+  if (NULL == label_tmp)
+    fatal("out of memory for label_tmp");
   label_count = 0;
   saveptr = NULL;
   saveptr_tmp = NULL;
@@ -514,11 +520,15 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
 
   // First we copy the original strings
   hostname = strndup(orig_hostname, strlen(orig_hostname));
+  if (NULL == hostname)
+    fatal("out of memory for hostname");
   cert_wild_card = strndup(orig_cert_wild_card, strlen(orig_cert_wild_card));
+  if (NULL == cert_wild_card)
+    fatal("out of memory for cert_wild_card");
   hostname_to_free = hostname;
   cert_wild_card_to_free = cert_wild_card;
-  delim = strdup(".");
-  wildchar = strdup("*");
+  delim = ".";
+  wildchar = "*";
 
   verb_debug ("V: Inspecting '%s' for possible wildcard match against '%s'",
          hostname, cert_wild_card);
@@ -587,8 +597,6 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
     ok = 0;
   }
   // Free our copies
-  free(wildchar);
-  free(delim);
   free(hostname_to_free);
   free(cert_wild_card_to_free);
   if (wildcard_encountered & ok && label_count >= RFC2595_MIN_LABEL_COUNT)
