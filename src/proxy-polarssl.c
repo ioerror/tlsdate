@@ -314,7 +314,7 @@ int API proxy_polarssl_set_host(proxy_polarssl_ctx *ctx, const char *host)
   if (strnlen(host, NI_MAXHOST) == NI_MAXHOST)
     return 1;
   ctx->host = strdup(host);
-  return ctx->host == NULL;
+  return NULL == ctx->host;
 }
 
 void API proxy_polarssl_set_port(proxy_polarssl_ctx *ctx, uint16_t port)

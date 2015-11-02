@@ -439,7 +439,7 @@ int API BIO_proxy_set_host(BIO *b, const char *host)
   if (strlen(host) == NI_MAXHOST)
     return 1;
   ctx->host = strdup(host);
-  return ctx->host == NULL;
+  return NULL == ctx->host;
 }
 
 void API BIO_proxy_set_port(BIO *b, uint16_t port)
