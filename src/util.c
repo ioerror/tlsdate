@@ -286,12 +286,7 @@ int rtc_close(struct rtc_handle *handle)
 
 int file_write(int fd, void *buf, size_t sz)
 {
-	struct iovec iov[1];
-	ssize_t ret;
-	iov[0].iov_base = buf;
-	iov[0].iov_len = sz;
-	ret = IGNORE_EINTR (pwritev (fd, iov, 1, 0));
-	if (ret != sz)
+	if (IGNORE_EINTR(pwrite(fd, buf, sz, 0)) != sz)
 	{
 		return -1;
 	}
@@ -329,10 +324,7 @@ int file_close(int fd)
 
 int file_read(int fd, void *buf, size_t sz)
 {
-	struct iovec iov[1];
-	iov[0].iov_base = buf;
-	iov[0].iov_len = sz;
-	if (preadv (fd, iov, 1, 0) != sz)
+	if (pread(fd, buf, sz, 0) != sz)
 	{
 		/* Returns -1 on read failure */
 		return -1;

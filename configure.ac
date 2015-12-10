@@ -461,14 +461,6 @@ AC_DEFINE_UNQUOTED([DBUS_CLIENT_GROUP], ["${DBUS_CLIENT_GROUP}"], [DBus client g
 AC_MSG_RESULT(${DBUS_CLIENT_GROUP})
 AC_SUBST([DBUS_CLIENT_GROUP])
 
-dnl Check for clock_gettime.  Some systems put it into -lc, while
-dnl others use -lrt.  Try the first and fallback to the latter.
-RT_LIB=
-AC_CHECK_FUNC([clock_gettime], [:],
-              [AC_CHECK_LIB([rt], [clock_gettime], [RT_LIB="-lrt"],
-                            [AC_MSG_ERROR([Your system lacks clock_gettime])])])
-AC_SUBST(RT_LIB)
-
 PKG_CHECK_MODULES([LIBEVENT], [libevent >= 2.0])
 
 have_dbus=false
