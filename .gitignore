@@ -38,3 +38,6 @@ TAGS
 tags
 config.h
 config.in
+.dirstamp
+dbus/org.torproject.tlsdate.conf
+src/conf_unittest
