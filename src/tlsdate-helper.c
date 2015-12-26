@@ -1353,6 +1353,7 @@ main(int argc, char **argv)
   if (0 == ssl_child)
   {
     drop_privs_to (UNPRIV_USER, UNPRIV_GROUP);
+    forbid_fork ();
     run_ssl (time_map, leap, http);
     (void) munmap (time_map, sizeof (uint32_t));
     _exit (0);

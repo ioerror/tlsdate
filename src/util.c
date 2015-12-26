@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -146,6 +147,26 @@ void enable_seccomp(void)
   }
 #else
   verb ("V: seccomp support is disabled");
+#endif
+}
+
+/** Use prlimit to prevent a process from forking, thus making exploitation harder */
+void forbid_fork(void)
+{
+#ifdef TARGET_OS_LINUX
+#ifdef HAVE_PRLIMIT
+  const struct rlimit limit = {
+    .rlim_cur = 0,
+    .rlim_max = 0,
+  };
+
+  if (-1 == prlimit(0, RLIMIT_NPROC, &limit, NULL))
+  {
+    die ("Failed to prlimit: %s\n", strerror (errno));
+  }
+#else
+  verb ("V: prlimit is not supported");
+#endif
 #endif
 }
 

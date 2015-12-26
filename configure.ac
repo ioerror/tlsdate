@@ -183,6 +183,8 @@ AM_CONDITIONAL(HAVE_STRCHRNUL, [test "x${ac_cv_func_strchrnul}" = xyes])
 AC_CHECK_FUNCS([strnlen])
 AM_CONDITIONAL(HAVE_STRNLEN, [test "x${ac_cv_func_strnlen}" = xyes])
 
+AC_CHECK_FUNCS([prlimit])
+
 AC_CHECK_FUNCS_ONCE(m4_flatten([
     gettimeofday
     prctl
