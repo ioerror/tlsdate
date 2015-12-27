@@ -1,3 +1,5 @@
+0.0.14 XXX
+  Use prlimit on Linux to prevent tlsdate SSL code from forking again
 0.0.13 Thu 28, May, 2015
   Update default host to google.com - www.ptb.de randomized timestamps
 0.0.12 Sun 26, Oct, 2014
