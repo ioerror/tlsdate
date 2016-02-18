@@ -87,7 +87,9 @@ enable_setter_seccomp (void)
     SC_ALLOW (exit_group),
     SC_ALLOW (exit),
 
+#ifdef __NR_open
     SC_DENY (open, EINVAL),
+#endif
     SC_DENY (fcntl, EINVAL),
     SC_DENY (fstat, EINVAL),
 #ifdef __NR_mmap
