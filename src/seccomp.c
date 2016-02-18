@@ -56,6 +56,10 @@
 #  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_PPC64LE
 #elif defined(__powerpc64__)
 #  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_PPC64
+#elif defined(__s390__)
+#  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_S390
+#elif defined(__s390x__)
+#  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_S390X
 #else
 #  error "Platform does not support seccomp filter yet"
 #endif
