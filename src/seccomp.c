@@ -50,6 +50,12 @@
 #  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_ARM
 #elif defined(__aarch64__)
 #  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_AARCH64
+#elif defined(__powerpc__)
+#  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_PPC
+#elif defined(__powerpc64le__)
+#  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_PPC64LE
+#elif defined(__powerpc64__)
+#  define SECCOMP_AUDIT_ARCH AUDIT_ARCH_PPC64
 #else
 #  error "Platform does not support seccomp filter yet"
 #endif
