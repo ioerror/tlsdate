@@ -1,3 +1,5 @@
+0.0.14
+  Add support for AArch64 and s/390(x) architectures.
 0.0.13 Thu 28, May, 2015
   Update default host to google.com - www.ptb.de randomized timestamps
 0.0.12 Sun 26, Oct, 2014
