@@ -1152,7 +1152,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   {
     if (-1 == stat(ca_cert_container, &statbuf))
     {
-      die("Unable to stat CA certficate container %s", ca_cert_container);
+      die("Unable to stat CA certificate container %s", ca_cert_container);
     } else
     {
       switch (statbuf.st_mode & S_IFMT)
