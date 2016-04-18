@@ -1187,6 +1187,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   }
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+  SSL_set_tlsext_host_name(ssl, host);
   verb("V: opening socket to %s:%s", host, port);
   if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
        (1 != BIO_set_conn_port(s_bio, port)) )
