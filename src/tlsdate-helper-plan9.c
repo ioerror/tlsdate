@@ -974,23 +974,10 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   SSL_library_init();
 
   ctx = NULL;
-  if (0 == strcmp("sslv23", protocol))
-  {
-    verb ("V: using SSLv23_client_method()\n");
-    ctx = SSL_CTX_new(SSLv23_client_method());
-  } else if (0 == strcmp("sslv3", protocol))
-  {
-    verb ("V: using SSLv3_client_method()\n");
-    ctx = SSL_CTX_new(SSLv3_client_method());
-  } else if (0 == strcmp("tlsv1", protocol))
-  {
-    verb ("V: using TLSv1_client_method()\n");
-    ctx = SSL_CTX_new(TLSv1_client_method());
-  } else
-    die("Unsupported protocol `%s'\n", protocol);
-
+  verb ("V: using SSLv23_client_method()\n");
+  ctx = SSL_CTX_new(SSLv23_client_method());
   if (ctx == NULL)
-    die("OpenSSL failed to support protocol `%s'\n", protocol);
+    die("OpenSSL failed to support protocol `sslv23'\n");
 
   verb("V: Using OpenSSL for SSL\n");
   if (ca_racket)
@@ -1077,20 +1064,19 @@ main(int argc, char **argv)
   int timewarp;
   int leap;
 
-  if (argc != 12)
+  if (argc != 11)
     return 1;
   host = argv[1];
   hostname_to_verify = argv[1];
   port = argv[2];
-  protocol = argv[3];
-  ca_cert_container = argv[6];
-  ca_racket = (0 != strcmp ("unchecked", argv[4]));
-  verbose = (0 != strcmp ("quiet", argv[5]));
-  setclock = (0 == strcmp ("setclock", argv[7]));
-  showtime = (0 == strcmp ("showtime", argv[8]));
-  timewarp = (0 == strcmp ("timewarp", argv[9]));
-  leap = (0 == strcmp ("leapaway", argv[10]));
-  proxy = (0 == strcmp ("none", argv[11]) ? NULL : argv[11]);
+  ca_cert_container = argv[5];
+  ca_racket = (0 != strcmp ("unchecked", argv[3]));
+  verbose = (0 != strcmp ("quiet", argv[4]));
+  setclock = (0 == strcmp ("setclock", argv[6]));
+  showtime = (0 == strcmp ("showtime", argv[7]));
+  timewarp = (0 == strcmp ("timewarp", argv[8]));
+  leap = (0 == strcmp ("leapaway", argv[9]));
+  proxy = (0 == strcmp ("none", argv[10]) ? NULL : argv[10]);
 
   if (timewarp)
   {

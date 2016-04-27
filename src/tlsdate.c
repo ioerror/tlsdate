@@ -88,7 +88,6 @@ usage (void)
            " [-n|--dont-set-clock]\n"
            " [-H|--host] [hostname|ip]\n"
            " [-p|--port] [port number]\n"
-           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
            " [-C|--certcontainer] [dirname|filename]\n"
            " [-v|--verbose]\n"
            " [-V|--showtime] [human|raw]\n"
@@ -108,7 +107,6 @@ main (int argc, char **argv)
   int setclock;
   const char *host;
   const char *port;
-  const char *protocol;
   const char *ca_cert_container;
   int timewarp;
   int leap;
@@ -117,7 +115,6 @@ main (int argc, char **argv)
 
   host = DEFAULT_HOST;
   port = DEFAULT_PORT;
-  protocol = DEFAULT_PROTOCOL;
   ca_cert_container = DEFAULT_CERTFILE;
   verbose = 0;
   ca_racket = 1;
@@ -176,7 +173,7 @@ main (int argc, char **argv)
           port = optarg;
           break;
         case 'P':
-          protocol = optarg;
+          /* ignore for compatibility */
           break;
         case 'n':
           setclock = 0;
@@ -219,7 +216,6 @@ main (int argc, char **argv)
           "tlsdate",
           host,
           port,
-          protocol,
           (ca_racket ? "racket" : "unchecked"),
           (verbose ? "verbose" : "quiet"),
           ca_cert_container,
