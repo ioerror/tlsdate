@@ -118,8 +118,6 @@ static const char *hostname_to_verify;
 
 static const char *port;
 
-static const char *protocol;
-
 static char *proxy;
 
 static const char *ca_cert_container;
