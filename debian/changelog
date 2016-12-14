@@ -1,0 +1,62 @@
+tlsdate (0.0.7-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Correctly set DAEMON path in debian/tlsdate.init to /usr/sbin.
+    (Closes: #746606)
+
+ -- Holger Levsen <holger@debian.org>  Sun, 15 Jun 2014 13:44:43 +0000
+
+tlsdate (0.0.7-1) unstable; urgency=low
+
+  * New upstream version.
+  * Add two bug fix patches merged into master post 0.0.7 release
+  * debian/control:
+    + Updated Standards-Version to 3.9.5
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Sat, 02 Nov 2013 01:26:22 +0100
+
+tlsdate (0.0.5-2) unstable; urgency=low
+
+  [Kartik Mistry]
+  * debian/control:
+    + Added Suggests: apparmor, as package ships an AppArmor profile.
+      Thanks to intrigeri@debian.org for report (Closes: #699181)
+    + Bumped Standards-Version to 3.9.4
+    + Added myself as Uploaders.
+  * debian/watch:
+    + Updated as per suggestion from Bart Martens <bartm@debian.org>.
+
+ -- Kartik Mistry <kartik@debian.org>  Wed, 30 Jan 2013 08:21:34 +0530
+
+tlsdate (0.0.5-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Tue, 22 Jan 2013 23:08:21 +0100
+
+tlsdate (0.0.4-1) unstable; urgency=low
+
+  * Initial release (Closes: #681000)
+  * New upstream version.
+  * Merge in all git fixes after 0.0.4 to fix various lintian issues.
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Fri, 16 Nov 2012 02:00:00 -0800
+
+tlsdate (0.0.3-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 05 Nov 2012 14:55:22 -0800
+
+tlsdate (0.0.2-1) unstable; urgency=low
+
+  * New upstream version
+  * Update init.d script to run tlsdated
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Tue, 30 Oct 2012 00:06:35 +0100
+
+tlsdate (0.0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Mon, 09 Jul 2012 21:04:36 +0200

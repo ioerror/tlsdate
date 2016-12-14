@@ -1,0 +1,2 @@
+version=3
+https://github.com/ioerror/tlsdate/tags .*/tlsdate-(\d[^n]*)\.(?:tgz|tbz2|txz|tar\.(?:gz|bz2|xz))

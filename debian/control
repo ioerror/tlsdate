@@ -1,0 +1,29 @@
+Source: tlsdate
+Section: net
+Priority: extra
+Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
+Uploaders: Kartik Mistry <kartik@debian.org>
+Build-Depends: autoconf,
+               automake,
+               autotools-dev,
+               debhelper (>= 7.0.50~),
+               dh-apparmor,
+               hardening-wrapper,
+               libssl-dev,
+               libtool,
+               pkg-config
+Standards-Version: 3.9.5
+Homepage: https://www.github.com/ioerror/tlsdate/
+Vcs-Git: https://www.github.com/ioerror/tlsdate/ -b debian-master
+Vcs-Browser: https://www.github.com/ioerror/tlsdate/
+
+Package: tlsdate
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Suggests: apparmor
+Description: secure parasitic rdate replacement
+ tlsdate sets the local clock by securely connecting with TLS to remote
+ servers and extracting the remote time out of the secure handshake. Unlike
+ ntpdate, tlsdate uses TCP, for instance connecting to a remote HTTPS or TLS
+ enabled service, and provides some protection against adversaries that try to
+ feed you malicious time information.
