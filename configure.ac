@@ -107,12 +107,6 @@ AS_IF([test "x${OPT_POLARSSL}" != "xno"], [
     addcflags=-I${POLARSSL_DIR}/include
     polarssllib=${POLARSSL_DIR}/lib$libsuff
 
-    LDFLAGS="$LDFLAGS $addld"
-    AS_IF([test "$addcflags" != "-I/usr/include"], [
-        AX_APPEND_COMPILE_FLAGS(["$addcflags"])
-       CPPFLAGS="$CPPFLAGS $addcflags"
-    ])
-
     AC_CHECK_LIB(polarssl, ssl_init,
      [
        AC_DEFINE(USE_POLARSSL, 1, [if PolarSSL is enabled])
