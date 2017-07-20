@@ -986,6 +986,14 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion)
   {
     verb ("V: using TLSv1_client_method()\n");
     ctx = SSL_CTX_new(TLSv1_client_method());
+  } else if (0 == strcmp("tlsv11", protocol))
+  {
+    verb ("V: using TLSv1_1_client_method()");
+    ctx = SSL_CTX_new(TLSv1_1_client_method());
+  } else if (0 == strcmp("tlsv12", protocol))
+  {
+    verb ("V: using TLSv1_2_client_method()");
+    ctx = SSL_CTX_new(TLSv1_2_client_method());
   } else
     die("Unsupported protocol `%s'\n", protocol);
 

@@ -88,7 +88,7 @@ usage (void)
            " [-n|--dont-set-clock]\n"
            " [-H|--host] [hostname|ip]\n"
            " [-p|--port] [port number]\n"
-           " [-P|--protocol] [sslv23|sslv3|tlsv1]\n"
+           " [-P|--protocol] [sslv23|sslv3|tlsv1|tlsv11|tlsv12]\n"
            " [-C|--certcontainer] [dirname|filename]\n"
            " [-v|--verbose]\n"
            " [-V|--showtime] [human|raw]\n"
