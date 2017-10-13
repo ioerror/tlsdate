@@ -94,6 +94,10 @@ know:
 #include "polarssl/entropy.h"
 #include "polarssl/ctr_drbg.h"
 #include "polarssl/ssl.h"
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #endif
 
 static void
@@ -180,18 +184,52 @@ setup_proxy(BIO *ssl)
 }
 
 static BIO *
-make_ssl_bio(SSL_CTX *ctx)
+make_ssl_bio(SSL_CTX *ctx, const char *host, const char *port)
 {
   BIO *con = NULL;
   BIO *ssl = NULL;
+  int err, sock = -1;
+  struct addrinfo *ai = NULL, *cai = NULL;
+  struct addrinfo hints = {
+    .ai_flags = AI_ADDRCONFIG,
+    .ai_family = AF_UNSPEC,
+    .ai_socktype = SOCK_STREAM,
+  };
+  err = getaddrinfo(host, port, &hints, &ai);
+  if (err != 0 || !ai) {
+    fprintf(stderr, "getaddrinfo(%s): %s\n", host, gai_strerror(err));
+    goto error;
+  }
 
-  if (!(con = BIO_new(BIO_s_connect())))
-    die("BIO_s_connect failed");
+  for (cai = ai; cai; cai = cai->ai_next) {
+    sock = socket(cai->ai_family, SOCK_STREAM, 0);
+    if (sock < 0) {
+      perror("socket");
+      continue;
+    }
+
+    if (connect(sock, cai->ai_addr, cai->ai_addrlen) != 0) {
+      perror("connect");
+      close(sock);
+      sock = -1;
+      continue;
+    }
+
+    break;
+  }
+  if (ai) freeaddrinfo(ai);
+  if (sock < 0) goto error;
+
+  if (!(con = BIO_new_fd(sock, 1)))
+    die("BIO_new_fd failed");
   if (!(ssl = BIO_new_ssl(ctx, 1)))
     die("BIO_new_ssl failed");
   setup_proxy(ssl);
   BIO_push(ssl, con);
   return ssl;
+error:
+  die("connection failed");
+  return NULL;
 }
 
 
@@ -1175,7 +1213,8 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
     }
   }
 
-  if (NULL == (s_bio = make_ssl_bio(ctx)))
+  verb("V: opening socket to %s:%s", host, port);
+  if (NULL == (s_bio = make_ssl_bio(ctx, host, port)))
     die ("SSL BIO setup failed");
   BIO_get_ssl(s_bio, &ssl);
   if (NULL == ssl)
@@ -1187,10 +1226,6 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
   }
 
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-  verb("V: opening socket to %s:%s", host, port);
-  if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
-       (1 != BIO_set_conn_port(s_bio, port)) )
-    die ("Failed to initialize connection to `%s:%s'", host, port);
 
   if (NULL == BIO_new_fp(stdout, BIO_NOCLOSE))
     die ("BIO_new_fp returned error, possibly: %s", strerror(errno));
